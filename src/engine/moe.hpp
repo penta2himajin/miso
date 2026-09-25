@@ -20,7 +20,7 @@ struct MoeLayer {
 };
 
 struct MoeScratch {
-  DeviceBuffer<float> logits{257}, h{9 * 1024}, weights{8};
+  DeviceBuffer<float> logits{257}, h{9 * 512}, weights{8};
   DeviceBuffer<int> ids{8};
 };
 

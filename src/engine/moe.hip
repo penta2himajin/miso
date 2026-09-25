@@ -69,10 +69,12 @@ void moe_decode(const MoeLayer& w, MoeScratch& sc, const float* x, float* y, hip
                                   w.down_sh.data.data(),
                                   sc.h.data(),
                                   y};
+  // 120 workgroups: each reloads the 9x512 activations into LDS. 60 was 94/93 us, 120 is 90/87,
+  // 180 is 102/88, 240 is 102/95 (Q6_K layer 0 / Q4_K layer 5).
   if (w.down_exps.type == gguf::GgmlType::Q4_K) {
-    kernels::moe_down_kernel<kernels::QType::Q4K, kBlock><<<240, kBlock, 0, stream>>>(dp);
+    kernels::moe_down_kernel<kernels::QType::Q4K, kBlock><<<120, kBlock, 0, stream>>>(dp);
   } else {
-    kernels::moe_down_kernel<kernels::QType::Q6K, kBlock><<<240, kBlock, 0, stream>>>(dp);
+    kernels::moe_down_kernel<kernels::QType::Q6K, kBlock><<<120, kBlock, 0, stream>>>(dp);
   }
   MISO_HIP_CHECK(hipGetLastError());
 }

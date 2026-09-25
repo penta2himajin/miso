@@ -1,0 +1,5 @@
+# Fused SiLU(gate)*up, down grid 120. Previous (run1): layer 0 103.6 us, layer 5 102.2 us.
+# Down grid sweep on this kernel: 60 -> 94.1/92.9, 120 -> 90.3/87.3, 180 -> 101.9/88.0, 240 -> 101.8/95.2.
+# A separate top-k launch was 25 us and cancelled the gate/up saving, so top-k stays inside gate/up.
+MoE layer 0 (down Q6_K) decode: 90.3 us/token
+MoE layer 5 (down Q4_K) decode: 87.3 us/token
