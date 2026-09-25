@@ -57,12 +57,25 @@ __device__ void moe_router_op(const MoeRouterParams& p, unsigned first, unsigned
   const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
   const unsigned n_waves = gridDim.x * (kBlock / kWave);
   const float* x = p.x + lane * 32;
-  for (unsigned r = first + wave; r < first + count; r += n_waves) {
+  auto load4 = [&](unsigned row_i, uint4(&v)[4]) {
     const uint4* row =
-        reinterpret_cast<const uint4*>(p.w + std::size_t{r} * moe::kHidden + lane * 32);
-    const uint4 v[4] = {row[0], row[1], row[2], row[3]};
-    float acc = moe_detail::router_lane_dot(v, x);
-    acc = wave_sum(acc);
+        reinterpret_cast<const uint4*>(p.w + std::size_t{row_i} * moe::kHidden + lane * 32);
+    v[0] = row[0], v[1] = row[1], v[2] = row[2], v[3] = row[3];
+  };
+  unsigned r = first + wave;
+  if (r < first + count) {
+    uint4 v[4];
+    load4(r, v);
+    for (unsigned nxt = r + n_waves; nxt < first + count; nxt += n_waves) {
+      uint4 v2[4];
+      load4(nxt, v2);
+      const float acc = wave_sum(moe_detail::router_lane_dot(v, x));
+      if (lane == kWave - 1)
+        p.logits[r] = acc;
+      v[0] = v2[0], v[1] = v2[1], v[2] = v2[2], v[3] = v2[3];
+      r = nxt;
+    }
+    const float acc = wave_sum(moe_detail::router_lane_dot(v, x));
     if (lane == kWave - 1)
       p.logits[r] = acc;
   }
@@ -120,7 +133,7 @@ __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigne
   const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
   const unsigned n_waves = gridDim.x * (kBlock / kWave);
   const SlotAct<ActFormat::Fp16> act = load_slot<ActFormat::Fp16>(p.x, lane);
-  for (unsigned r = first + wave; r < first + count; r += n_waves) {
+  auto rows = [&](unsigned r) {
     const unsigned slot = r / moe::kFf, row = r % moe::kFf;
     const std::uint8_t* gate =
         slot < moe::kTopK ? p.gate_exps + (std::size_t(sid[slot]) * moe::kFf + row) * kRowBytes
@@ -128,11 +141,24 @@ __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigne
     const std::uint8_t* up = slot < moe::kTopK
                                  ? p.up_exps + (std::size_t(sid[slot]) * moe::kFf + row) * kRowBytes
                                  : p.up_sh + row * kRowBytes;
-    const SlotW gw = load_w(gate, lane), uw = load_w(up, lane);
-    float g = wave_sum(slot_dot<ActFormat::Fp16>(gw, lane, act));
-    float u = wave_sum(slot_dot<ActFormat::Fp16>(uw, lane, act));
+    return std::pair<const std::uint8_t*, const std::uint8_t*>{gate, up};
+  };
+  auto emit = [&](unsigned r, const SlotW& gw, const SlotW& uw) {
+    const float g = wave_sum(slot_dot<ActFormat::Fp16>(gw, lane, act));
+    const float u = wave_sum(slot_dot<ActFormat::Fp16>(uw, lane, act));
     if (lane == kWave - 1)
       p.h[r] = g / (1.0f + expf(-g)) * u;
+  };
+  unsigned r = first + wave;
+  if (r < first + count) {
+    SlotW gw = load_w(rows(r).first, lane), uw = load_w(rows(r).second, lane);
+    for (unsigned nxt = r + n_waves; nxt < first + count; nxt += n_waves) {
+      const auto p2 = rows(nxt);
+      const SlotW g2 = load_w(p2.first, lane), u2 = load_w(p2.second, lane);
+      emit(r, gw, uw);
+      gw = g2, uw = u2, r = nxt;
+    }
+    emit(r, gw, uw);
   }
 }
 
