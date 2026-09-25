@@ -142,10 +142,7 @@ void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned
       const kernels::AddRmsNormParams post{s.chunk_h.data(), s.chunk_mixer.data(),
                                            l.post_attention_norm.data(), s.chunk_xn.data(), m.eps};
       kernels::add_rmsnorm_kernel<kHidden, kBlock><<<c, kBlock, 0, stream>>>(post, c);
-      for (unsigned t = 0; t < c; ++t) {
-        moe_decode(l.moe, s.moe_scratch, s.chunk_xn.data() + std::size_t{t} * kHidden,
-                   s.chunk_moe.data() + std::size_t{t} * kHidden, stream);
-      }
+      moe_prefill(l.moe, s.moe_prefill, s.chunk_xn.data(), s.chunk_moe.data(), c, stream);
     }
     s.pos += c;
     if (c0 + c == n) {
