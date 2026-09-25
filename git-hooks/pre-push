@@ -65,7 +65,7 @@ fi
 
 # --- C++ / HIP (clang-format) ----------------------------------------------
 if [[ -f .clang-format ]]; then
-    mapfile -t cxx < <(git ls-files -- '*.h' '*.hpp' '*.cpp' '*.cc' '*.hip')
+    mapfile -t cxx < <(git ls-files -- '*.h' '*.hpp' '*.cpp' '*.cc' '*.hip' ':(exclude)third_party/**')
     if [[ ${#cxx[@]} -gt 0 ]]; then
         command -v clang-format >/dev/null 2>&1 \
             || { red "pre-push: clang-format not found (pip install --user clang-format==18.1.8)"; exit 1; }
