@@ -7,30 +7,28 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m3b-deltanet` (PR open against `main`)
-- Last work commit: `dbdc7c7` @ 2026-09-25
+- Branch: `ai-written/m3c-attention` (PR open against `main`)
+- Last work commit: `472100b` @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-26 00:05 JST
-- Background: `hf download` of `Ornith-1.5-35B-Q8_0.gguf` then `-BF16.gguf` into `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/` (~6 MB/s). Completion is appended to `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
+- Last session: 2026-09-26 00:40 JST
+- Background: `hf download` of `Ornith-1.5-35B-Q8_0.gguf` then `-BF16.gguf` into `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/` (~6 MB/s; 33 GB done at 00:38). Completion is appended to `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
 
 ## Status
 
-ready-for-review (M3b complete: DeltaNet decode matches golden layer 0 at 2.96e-4; `ctest --preset default` 9/9 green)
+ready-for-review (M3c complete: attention decode matches golden layer 3 at 4.62e-4; split-K verified to 5000 positions; `ctest --preset default` 11/11 green)
 
 ## Next action
 
-After the M3b PR is merged, branch `ai-written/m3c-attention` from `main` and build the gated full-attention decode path for one layer, test-first against `layer3.mixer_out` (and `layer3.mixer_core` for the pre-`o_proj` value), token by token:
-- q+gate projection (`attn_q`, 2048 -> 8192: per head 256 q then 256 gate), k / v (2048 -> 512 each; `attn_v` may be Q6_K);
-- per-head RMSNorm of q and k (`attn_q_norm`, `attn_k_norm`, GGUF stores 1 + w);
-- partial interleaved MRoPE (64 of 256 dims, sections [11, 11, 10], theta 1e7; text positions are identical on all 3 axes);
-- KV cache (FP16, ADR_002 D9) append + GQA decode attention (16 q heads, 2 KV heads);
-- output gate `sigmoid(gate)`, then `attn_output` (4096 -> 2048).
-Read `Qwen3_5MoeAttention` and the rotary embedding code first.
+After the M3c PR is merged, branch `ai-written/m3d-moe` from `main` and build the MoE block decode path, test-first against golden `layer{0,3}.moe_in` -> `moe_out` and the router outputs (`router.0` logits, `router.1` weights, `router.2` expert ids):
+- router: F32 2048 -> 256 (store BF16, lossless per `docs/research/ornith-q4km-gguf.md`), top-8 selection and weights exactly as `Qwen3_5MoeTopKRouter` (read it first: softmax before/after top-k, renormalisation);
+- routed experts: gate/up Q4_K 2048 -> 512 per expert, SiLU(gate) * up, down 512 -> 2048 (Q4_K or Q6_K; needs a K = 512 GEMV, 16 lanes per row);
+- shared expert (same shapes) scaled by sigmoid(ffn_gate_inp_shexp . x);
+- a fused launch over the 8 selected experts.
 
 ## Verification
 
-- M3b (this branch): `ctest --preset default` passes; `build/bench/bench_deltanet` reports ~100 us/token (`bench/deltanet/results/`).
-- M3c exit: 17 tokens decoded one at a time reproduce `layer3.mixer_out` within a stated, measured-justified tolerance.
+- M3c (this branch): `ctest --preset default` passes; `build/bench/bench_attention` reproduces `bench/attention/results/2026-09-26-run2-splitk.txt`.
+- M3d exit: selected expert ids equal golden `router.2` for every token; `moe_out` within a measured-justified tolerance.
 
 ## Context pointers
 
@@ -57,12 +55,13 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - `StrReplace` against files that the pre-commit hook has since reformatted fails silently for the non-matching parts. Re-read the file after a commit before editing it.
 - M3b error hunt: assumed the 2e-3 DeltaNet error came from the FP16 1024-offset cancellation; switching to subnormal nibbles did not change the failing rows. The real cause was the Q4_K min term using exact activation sums (ADR_004 amendment). Isolate a stage with dumped intermediates vs an FP64 reference before fixing.
 - Python-driven multi-line `str.replace` on kernel files silently skips blocks that clang-format reflowed (hit again in `q6k_gemv.hpp`: function renamed but body unchanged). Grep for the old body after editing.
+- Attention decode with one workgroup per query head and per-thread K rows: correct but 0.41 us per context token (`bench/attention/results/2026-09-26-run1.txt`). Replaced by split-K.
 - Issuing a file edit and the command that uses it in the same parallel tool batch: the command can run before the edit lands (seen with `make_golden.py`). Run dependent steps sequentially.
 - A persistent shell running `set -e` exited on the first failing command and killed the agent shell session. Run throwaway tests in a `( … )` subshell instead.
 
 ## Open questions for user
 
-- Merge the M3b PR.
+- Merge the M3c PR.
 
 ## Session log
 
@@ -73,4 +72,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-25 (M1b): On `ai-written/m1-golden`, built the golden harness (pinned `.venv`: torch 2.14.0+cpu, transformers 5.17.0, gguf 0.19.0). It inverts llama.cpp's converter rewrites (documented in `docs/research/ornith-q4km-gguf.md`), materialises one layer at a time (8.5 GB peak), and records layer 0 (DeltaNet) and layer 3 (full attention) for a 17-token prompt. Teacher-forced llama.cpp continuation through all 40 layers: 8/8, and 0/8 with the V-head reorder disabled. Golden output regenerates byte-identically. C++ dequantised embeddings equal the golden input bit for bit. Merged as #4.
 - 2026-09-25 (M2): On `ai-written/m2-gemv`, built the Q4_K decode GEMV in INT8 and FP16 activation variants with rigorous per-row error bounds, the lossless Q4_K r1 repack, DPP reductions and rows-per-wave. v1 FP16 was instruction-bound (63%); v2 reaches 83% (FP16) / 87% (INT8) of 797 GB/s on a 141 MB launch. On decode-sized 4.7 MB launches both take ~16–17 µs because of a ~7–9 µs per-launch fixed cost. ADR_004 selects FP16 (21–37× lower error, 4–12% slower). Started the Q8_0/BF16 downloads for ADR_003 D18. Merged as #5.
 - 2026-09-25 (M3a): User approved the M3a–M3e breakdown. On `ai-written/m3a-norm-embed-q6k`: fused add+RMSNorm (golden post-attention norm within bound, residual bit-exact), Q4_K r1 embedding lookup (bit-exact with the golden input), Q6_K r1 row layout (lossless) and Q6_K FP16 GEMV (within 7% of bound). LM head 417 MB at 713 GB/s (89.5%); 13.8 MB DeltaNet qkv at 27.6 us, consistent with the ~8 us per-launch fixed cost. DPP reductions moved to `kernels/wave.hpp`. Merged as #6.
-- 2026-09-26 (M3b): On `ai-written/m3b-deltanet`, built the Gated DeltaNet decode step (conv ping-pong state, delta rule in registers, gated norm) and the `src/engine` HIP library (weight upload/repack, GEMV dispatch, DeltaNet layer). The first run gave 2.0e-3 vs golden; stage-by-stage comparison with an FP64 reference traced it to the `ssm_out` GEMV. Fixed the Q4_K min-term rounding inconsistency and replaced the 1024-biased FP16 nibbles with exact subnormals (ADR_004 amendment). The layer now matches the FP16-rounding prediction (2.96e-4); the GEMVs got more accurate and slightly faster. One DeltaNet layer takes ~100 us/token, dominated by the fixed cost of 7 small launches (rocprof breakdown in `bench/deltanet/results/`).
+- 2026-09-26 (M3b): On `ai-written/m3b-deltanet`, built the Gated DeltaNet decode step (conv ping-pong state, delta rule in registers, gated norm) and the `src/engine` HIP library (weight upload/repack, GEMV dispatch, DeltaNet layer). The first run gave 2.0e-3 vs golden; stage-by-stage comparison with an FP64 reference traced it to the `ssm_out` GEMV. Fixed the Q4_K min-term rounding inconsistency and replaced the 1024-biased FP16 nibbles with exact subnormals (ADR_004 amendment). The layer now matches the FP16-rounding prediction (2.96e-4); the GEMVs got more accurate and slightly faster. One DeltaNet layer takes ~100 us/token, dominated by the fixed cost of 7 small launches (rocprof breakdown in `bench/deltanet/results/`). Merged as #7.
+- 2026-09-26 (M3c): On `ai-written/m3c-attention`, built gated full-attention decode: per-head q/k norm + partial NEOX RoPE + FP16 KV append, then attention. The first version (one workgroup per query head) was correct but scaled at 0.41 us per context token (1.8 ms/layer at 4k). Replaced it with split-K flash decoding (8 query heads per KV-head workgroup, online softmax over 32-position sub-chunks, merge kernel): 177 us at 4k, 334 us at 16k. Golden layer 3 error 4.62e-4, exactly the FP64 prediction for FP16 GEMV inputs + FP16 KV; split-K vs FP64 <= 2e-6 up to 5000 positions.
