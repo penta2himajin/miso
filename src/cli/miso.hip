@@ -89,21 +89,21 @@ int main(int argc, char** argv) {
   for (auto& e : done)
     MISO_HIP_CHECK(hipEventCreateWithFlags(&e, hipEventDisableTiming));
 
-  // Step k (k = 0 is the last prompt position) produces generated token k into pred[n + k - 1].
+  // ingest writes generated token 0 at pred[n - 1]. Step k >= 1 consumes pred[pos - 1].
   const unsigned n = static_cast<unsigned>(ids.size());
   auto enqueue = [&](unsigned k) {
     const unsigned pos = s.pos;
-    miso::decode_step(model, s, k == 0 ? s.tokens.data() + pos : s.pred.data() + pos - 1, nullptr);
+    miso::decode_step(model, s, s.pred.data() + pos - 1, nullptr);
     MISO_HIP_CHECK(hipMemcpyAsync(host_pred + k, s.pred.data() + pos, sizeof(int),
                                   hipMemcpyDeviceToHost, nullptr));
     MISO_HIP_CHECK(hipEventRecord(done[k], nullptr));
   };
 
-  const auto t_prefill = Clock::now();
-  miso::prefill(model, s, s.tokens.data(), n - 1, miso::Session::kMaxChunk, nullptr);
-  enqueue(0);
-  MISO_HIP_CHECK(hipEventSynchronize(done[0]));
-  const double prefill_s = seconds_since(t_prefill);
+  const auto t_prompt = Clock::now();
+  miso::ingest(model, s, s.tokens.data(), n, nullptr);
+  MISO_HIP_CHECK(hipMemcpy(host_pred, s.pred.data() + n - 1, sizeof(int), hipMemcpyDeviceToHost));
+  MISO_HIP_CHECK(hipDeviceSynchronize());
+  const double ttft = seconds_since(t_prompt);
 
   const auto t_gen = Clock::now();
   std::string pending;
@@ -111,7 +111,8 @@ int main(int argc, char** argv) {
   for (unsigned k = 0; k < max_new; ++k) {
     if (k + 1 < max_new)
       enqueue(k + 1);  // keep one step in flight while k is printed
-    MISO_HIP_CHECK(hipEventSynchronize(done[k]));
+    if (k > 0)
+      MISO_HIP_CHECK(hipEventSynchronize(done[k]));
     const int id = host_pred[k];
     ++generated;
     if (id == tok.eos_id() || id == 248044)
@@ -126,10 +127,10 @@ int main(int argc, char** argv) {
   std::fwrite(pending.data(), 1, pending.size(), stdout);
   std::printf("\n");
   const double gen_s = seconds_since(t_gen);
-  std::fprintf(
-      stderr,
-      "[miso] prefill %u tokens: %.2f s (%.1f tok/s); generated %u tokens: %.2f s (%.1f tok/s)\n",
-      n, prefill_s, n / prefill_s, generated, gen_s, generated / gen_s);
+  std::fprintf(stderr,
+               "[miso] TTFT %.3f s (%u prompt tokens, %.1f tok/s); generated %u tokens: %.2f s "
+               "(%.1f tok/s)\n",
+               ttft, n, n / ttft, generated, gen_s, generated / gen_s);
   MISO_HIP_CHECK(hipHostFree(host_pred));
   return 0;
 }

@@ -100,3 +100,42 @@ TEST_CASE("prefill matches token-by-token decode (oracle)" *
     }
   }
 }
+
+TEST_CASE("ingest uses decode below the measured threshold and prefill at it" *
+          doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
+  const auto& m = model();
+  const auto toks = prompt_tokens();
+  auto run = [&](unsigned n, auto&& go) {
+    miso::Session s(m, 64);
+    MISO_HIP_CHECK(hipMemcpy(s.tokens.data(), toks.data(), n * 4, hipMemcpyHostToDevice));
+    go(s);
+    MISO_HIP_CHECK(hipDeviceSynchronize());
+    return s;
+  };
+  {
+    constexpr unsigned n = 4;
+    REQUIRE(n < miso::kPrefillMinTokens);
+    auto dec = run(n, [&](miso::Session& s) {
+      for (unsigned t = 0; t < n; ++t)
+        miso::decode_step(m, s, s.tokens.data() + t, nullptr);
+    });
+    auto got = run(n, [&](miso::Session& s) { miso::ingest(m, s, s.tokens.data(), n, nullptr); });
+    const auto d = miso::test::compare(got, dec);
+    CHECK(d.same_pos);
+    CHECK(d.same_pred);
+    CHECK(d.max() == 0.0);
+  }
+  {
+    constexpr unsigned n = 8;
+    REQUIRE(n >= miso::kPrefillMinTokens);
+    REQUIRE(toks.size() >= n);
+    auto pre = run(n, [&](miso::Session& s) {
+      miso::prefill(m, s, s.tokens.data(), n, miso::Session::kMaxChunk, nullptr);
+    });
+    auto got = run(n, [&](miso::Session& s) { miso::ingest(m, s, s.tokens.data(), n, nullptr); });
+    const auto d = miso::test::compare(got, pre);
+    CHECK(d.same_pos);
+    CHECK(d.same_pred);
+    CHECK(d.max() == 0.0);
+  }
+}
