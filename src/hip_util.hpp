@@ -26,9 +26,17 @@ class DeviceBuffer {
   explicit DeviceBuffer(const std::vector<T>& host) : DeviceBuffer(host.size()) {
     hip_check(hipMemcpy(p_, host.data(), n_ * sizeof(T), hipMemcpyHostToDevice), "hipMemcpy H2D");
   }
+  DeviceBuffer(DeviceBuffer&& o) noexcept : p_(o.p_), n_(o.n_) {
+    o.p_ = nullptr;
+    o.n_ = 0;
+  }
   DeviceBuffer(const DeviceBuffer&) = delete;
   DeviceBuffer& operator=(const DeviceBuffer&) = delete;
-  ~DeviceBuffer() { (void)hipFree(p_); }
+  DeviceBuffer& operator=(DeviceBuffer&&) = delete;
+  ~DeviceBuffer() {
+    if (p_ != nullptr)
+      (void)hipFree(p_);
+  }
 
   T* data() const { return p_; }
   std::size_t size() const { return n_; }

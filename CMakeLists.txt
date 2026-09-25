@@ -76,3 +76,4 @@ target_include_directories(doctest SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_
 
 enable_testing()
 add_subdirectory(tests)
+add_subdirectory(bench)
