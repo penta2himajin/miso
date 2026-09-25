@@ -81,9 +81,9 @@ std::vector<float> run_gpu(const Case& c, const std::vector<float>& x, unsigned 
   return dy.to_host();
 }
 
-// Checks |y - W x| <= sum_k |W_ik| e_k + K * 2^-23 * sum_k |W_ik x_k| (+ FP16 offset term) per row.
-// The FP16 variant accumulates (1024 + q) * x in FP32 and subtracts 1024 * sum(x) per 16-element
-// lane chain, adding at most 16 * 2^-24 * sum_k (1039 * d * sc_k) |x_k|.
+// Checks |y - W x| <= sum_k |W_ik| e_k + K * 2^-23 * sum_k |W_ik x_k| (+ FP16 chain term) per row.
+// The FP16 variant accumulates q * x (q <= 15) over 16-element lane chains in FP32 before scaling,
+// adding at most 16 * 2^-24 * sum_k (15 * d * sc_k) |x_k|.
 template <ActFormat A, unsigned K, int R = 1>
 void check(const Case& c, const std::vector<float>& x, unsigned grid) {
   REQUIRE(c.k == K);
@@ -98,7 +98,7 @@ void check(const Case& c, const std::vector<float>& x, unsigned grid) {
       mag += std::fabs(double{w[k]} * x[k]);
       bound += std::fabs(double{w[k]}) * e[k];
       if (A == ActFormat::Fp16)
-        bound += 0x1p-20 * 1039.0 * c.ds[std::size_t{r} * K + k] * std::fabs(x[k]);
+        bound += 0x1p-20 * 15.0 * c.ds[std::size_t{r} * K + k] * std::fabs(x[k]);
     }
     bound += K * 0x1p-23 * mag;
     const double err = std::fabs(y[r] - ref);
@@ -156,6 +156,33 @@ TEST_CASE("Q4_K GEMV on real projections with a real activation" *
   }
   SUBCASE("attn_gate 2048 -> 4096, fp16, 4 rows per wave, grid not dividing N") {
     check<ActFormat::Fp16, 2048, 4>(load(m, "blk.0.attn_gate.weight"), x2048, 37);
+  }
+  // The real input of each output projection (golden `mixer_core`, 17 tokens). Its outputs cancel
+  // by ~10x, which exposes accumulation error that normalised inputs hide.
+  const auto* core0 = g.find_tensor("layer0.mixer_core");
+  const auto* core3 = g.find_tensor("layer3.mixer_core");
+  REQUIRE(core0 != nullptr);
+  REQUIRE(core3 != nullptr);
+  const auto* c0 = reinterpret_cast<const float*>(g.tensor_data(*core0).data());
+  const auto* c3 = reinterpret_cast<const float*>(g.tensor_data(*core3).data());
+  SUBCASE("ssm_out 4096 -> 2048 on the real DeltaNet output, all 17 tokens") {
+    const Case c = load(m, "blk.0.ssm_out.weight");
+    for (unsigned t = 0; t < 17; ++t) {
+      CAPTURE(t);
+      // HF groups V heads by K head (h = 2 kh + r); GGUF tiles them (h = 16 r + kh).
+      std::vector<float> x(4096);
+      for (unsigned kh = 0; kh < 16; ++kh)
+        for (unsigned r = 0; r < 2; ++r)
+          std::memcpy(&x[(16 * r + kh) * 128], c0 + t * 4096 + (2 * kh + r) * 128, 128 * 4);
+      check<ActFormat::Fp16, 4096>(c, x, 240);
+    }
+  }
+  SUBCASE("attn_output 4096 -> 2048 on the real attention output, all 17 tokens") {
+    const Case c = load(m, "blk.3.attn_output.weight");
+    for (unsigned t = 0; t < 17; ++t) {
+      CAPTURE(t);
+      check<ActFormat::Fp16, 4096>(c, std::vector<float>(c3 + t * 4096, c3 + (t + 1) * 4096), 240);
+    }
   }
   std::vector<float> x4096(x2048);
   x4096.insert(x4096.end(), xs + 2048, xs + 4096);  // two tokens back to back

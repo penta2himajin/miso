@@ -28,11 +28,10 @@ namespace q6k_detail {
 
 using gemv::half2_t;
 
-// (1024 + q6, 1024 + q6') for the two elements at bits [s, s+4) / [s+16, s+20) of `ql` and
-// [t, t+2) / [t+16, t+18) of `qh`; q6 = q + 32 is the unsigned 6-bit code. Exact in FP16.
-__device__ inline half2_t q6_1024(unsigned ql, int s, unsigned qh, int t) {
-  const unsigned bits = ((ql >> s) & 0x000F000Fu) | (((qh >> t) & 0x00030003u) << 4) | 0x64006400u;
-  return __builtin_bit_cast(half2_t, bits);
+// (q6 2^-24, q6' 2^-24) as FP16 subnormals for the two elements at bits [s, s+4) / [s+16, s+20) of
+// `ql` and [t, t+2) / [t+16, t+18) of `qh`; q6 = q + 32 is the unsigned 6-bit code. Exact.
+__device__ inline half2_t q6_sub(unsigned ql, int s, unsigned qh, int t) {
+  return __builtin_bit_cast(half2_t, ((ql >> s) & 0x000F000Fu) | (((qh >> t) & 0x00030003u) << 4));
 }
 
 struct SlotAct {
@@ -62,15 +61,15 @@ __device__ inline float slot_dot(const SlotW& w, int slot, const SlotAct& a) {
   const unsigned qh[4] = {w.qh.x, w.qh.y, w.qh.z, w.qh.w};
   const float sc_lo = static_cast<float>(static_cast<std::int8_t>(w.sc.x >> (8 * (i & 3))));
   const float sc_hi = static_cast<float>(static_cast<std::int8_t>(w.sc.y >> (8 * (i & 3))));
-  float lo = -1056.0f * a.lo.s16, hi = -1056.0f * a.hi.s16;
+  float lo = -32.0f * 0x1p-24f * a.lo.s16, hi = -32.0f * 0x1p-24f * a.hi.s16;
 #pragma unroll
   for (int k = 0; k < 4; ++k) {
-    lo = __builtin_amdgcn_fdot2(q6_1024(ql[k], 0, qh[k], t_lo), a.lo.a[k], lo, false);
-    lo = __builtin_amdgcn_fdot2(q6_1024(ql[k], 8, qh[k], t_lo + 8), a.lo.b[k], lo, false);
-    hi = __builtin_amdgcn_fdot2(q6_1024(ql[k], 4, qh[k], t_hi), a.hi.a[k], hi, false);
-    hi = __builtin_amdgcn_fdot2(q6_1024(ql[k], 12, qh[k], t_hi + 8), a.hi.b[k], hi, false);
+    lo = __builtin_amdgcn_fdot2(q6_sub(ql[k], 0, qh[k], t_lo), a.lo.a[k], lo, false);
+    lo = __builtin_amdgcn_fdot2(q6_sub(ql[k], 8, qh[k], t_lo + 8), a.lo.b[k], lo, false);
+    hi = __builtin_amdgcn_fdot2(q6_sub(ql[k], 4, qh[k], t_hi), a.hi.a[k], hi, false);
+    hi = __builtin_amdgcn_fdot2(q6_sub(ql[k], 12, qh[k], t_hi + 8), a.hi.b[k], hi, false);
   }
-  return gemv::fp16_bits(w.d) * (sc_lo * lo + sc_hi * hi);
+  return gemv::fp16_bits(w.d) * 0x1p24f * (sc_lo * lo + sc_hi * hi);
 }
 
 }  // namespace q6k_detail

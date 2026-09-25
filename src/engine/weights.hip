@@ -1,0 +1,81 @@
+#include "engine/weights.hpp"
+
+#include <cstring>
+#include <stdexcept>
+#include <vector>
+
+#include "q4k_gemv.hpp"
+#include "q6k_gemv.hpp"
+#include "repack.hpp"
+
+namespace miso {
+
+namespace {
+
+const gguf::TensorInfo& tensor(const gguf::File& f, const std::string& name) {
+  const auto* t = f.find_tensor(name);
+  if (t == nullptr)
+    throw std::runtime_error("missing tensor " + name);
+  return *t;
+}
+
+DeviceBuffer<std::uint8_t> upload_bytes(const std::vector<std::byte>& b) {
+  DeviceBuffer<std::uint8_t> d(b.size());
+  MISO_HIP_CHECK(hipMemcpy(d.data(), b.data(), b.size(), hipMemcpyHostToDevice));
+  return d;
+}
+
+constexpr int kBlock = 256;
+constexpr unsigned kGrid = 240;
+
+}  // namespace
+
+QMatrix upload_qmatrix(const gguf::File& f, const std::string& name) {
+  const auto& t = tensor(f, name);
+  const auto src = f.tensor_data(t);
+  const unsigned k = static_cast<unsigned>(t.dims[0]);
+  const unsigned n = static_cast<unsigned>(t.n_elements() / k);
+  std::vector<std::byte> dst;
+  if (t.type == gguf::GgmlType::Q4_K) {
+    dst.resize(src.size());
+    repack_q4k(src, dst);
+  } else if (t.type == gguf::GgmlType::Q6_K) {
+    dst.resize(std::size_t{n} * q6k_r1_row_bytes(k));
+    repack_q6k(src, k, dst);
+  } else {
+    throw std::runtime_error(name + ": unsupported matrix type " + gguf::traits(t.type).name);
+  }
+  return {upload_bytes(dst), t.type, n, k};
+}
+
+DeviceBuffer<float> upload_f32(const gguf::File& f, const std::string& name) {
+  const auto& t = tensor(f, name);
+  if (t.type != gguf::GgmlType::F32)
+    throw std::runtime_error(name + " is not F32");
+  const auto src = f.tensor_data(t);
+  DeviceBuffer<float> d(t.n_elements());
+  MISO_HIP_CHECK(hipMemcpy(d.data(), src.data(), src.size(), hipMemcpyHostToDevice));
+  return d;
+}
+
+void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream) {
+  using kernels::ActFormat;
+  if (w.type == gguf::GgmlType::Q4_K) {
+    const kernels::Q4kGemvParams p{w.data.data(), x, y, w.n};
+    if (w.k == 2048) {
+      kernels::q4k_gemv_kernel<ActFormat::Fp16, 2048, kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+    } else if (w.k == 4096) {
+      kernels::q4k_gemv_kernel<ActFormat::Fp16, 4096, kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+    } else {
+      throw std::runtime_error("gemv: no Q4_K kernel for K = " + std::to_string(w.k));
+    }
+  } else if (w.type == gguf::GgmlType::Q6_K && w.k == 2048) {
+    const kernels::Q6kGemvParams p{w.data.data(), x, y, w.n};
+    kernels::q6k_gemv_kernel<2048, kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+  } else {
+    throw std::runtime_error("gemv: no kernel for this type / K = " + std::to_string(w.k));
+  }
+  MISO_HIP_CHECK(hipGetLastError());
+}
+
+}  // namespace miso

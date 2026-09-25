@@ -7,31 +7,30 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m3a-norm-embed-q6k` (PR open against `main`)
-- Last work commit: `da8d1b1` @ 2026-09-25
+- Branch: `ai-written/m3b-deltanet` (PR open against `main`)
+- Last work commit: `dbdc7c7` @ 2026-09-25
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-25 23:35 JST
-- Background: `hf download` of `Ornith-1.5-35B-Q8_0.gguf` then `-BF16.gguf` into `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/` (~6 MB/s; 17 GB done at 23:33). Completion is appended to `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
+- Last session: 2026-09-26 00:05 JST
+- Background: `hf download` of `Ornith-1.5-35B-Q8_0.gguf` then `-BF16.gguf` into `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/` (~6 MB/s). Completion is appended to `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
 
 ## Status
 
-ready-for-review (M3a complete: add+RMSNorm, Q4_K embedding, Q6_K r1 + GEMV; `ctest --preset default` 8/8 green)
+ready-for-review (M3b complete: DeltaNet decode matches golden layer 0 at 2.96e-4; `ctest --preset default` 9/9 green)
 
 ## Next action
 
-After the M3a PR is merged, branch `ai-written/m3b-deltanet` from `main` and build the Gated DeltaNet decode path for one layer, test-first against `layer0.mixer_out` fed token by token:
-- attn_norm (existing `add_rmsnorm`, delta = nullptr);
-- in-projections qkv (Q6_K in layer 0), z / alpha / beta (Q4_K), in one fused launch where possible;
-- causal conv1d state update + SiLU;
-- gated delta rule recurrent update with FP32 state (V heads in GGUF tiled order: V head h uses K head h % 16);
-- gated RMSNorm (`ssm_norm`, SiLU(z) gate);
-- `ssm_out`.
-Read `transformers` `Qwen3_5MoeGatedDeltaNet` (recurrent path) for the exact math before writing the test.
+After the M3b PR is merged, branch `ai-written/m3c-attention` from `main` and build the gated full-attention decode path for one layer, test-first against `layer3.mixer_out` (and `layer3.mixer_core` for the pre-`o_proj` value), token by token:
+- q+gate projection (`attn_q`, 2048 -> 8192: per head 256 q then 256 gate), k / v (2048 -> 512 each; `attn_v` may be Q6_K);
+- per-head RMSNorm of q and k (`attn_q_norm`, `attn_k_norm`, GGUF stores 1 + w);
+- partial interleaved MRoPE (64 of 256 dims, sections [11, 11, 10], theta 1e7; text positions are identical on all 3 axes);
+- KV cache (FP16, ADR_002 D9) append + GQA decode attention (16 q heads, 2 KV heads);
+- output gate `sigmoid(gate)`, then `attn_output` (4096 -> 2048).
+Read `Qwen3_5MoeAttention` and the rotary embedding code first.
 
 ## Verification
 
-- M3a (this branch): `ctest --preset default` passes; `build/bench/bench_q6k_gemv` reproduces `bench/gemv/results/2026-09-25-q6k-run1.txt`.
-- M3b exit: 17 tokens decoded one at a time reproduce `layer0.mixer_out` within a stated tolerance; the recurrent state after token t is the only carried state.
+- M3b (this branch): `ctest --preset default` passes; `build/bench/bench_deltanet` reports ~100 us/token (`bench/deltanet/results/`).
+- M3c exit: 17 tokens decoded one at a time reproduce `layer3.mixer_out` within a stated, measured-justified tolerance.
 
 ## Context pointers
 
@@ -56,12 +55,14 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - GEMV rows-per-wave to hide per-row latency on small launches: no gain (16.6–17.7 µs for 4.72 MB at R = 1…8). The small-launch cost is a per-launch fixed cost (~7–9 µs), not row serialisation (`bench/gemv/results/2026-09-25-run5-scaling.txt`).
 - A data-dependent `break` in the rows loop, and `g < 2 ? h.y : …` member selection, made the compiler move arrays to LDS / scratch (visible in the kernel resource report). Keep indices constant and select computed values.
 - `StrReplace` against files that the pre-commit hook has since reformatted fails silently for the non-matching parts. Re-read the file after a commit before editing it.
+- M3b error hunt: assumed the 2e-3 DeltaNet error came from the FP16 1024-offset cancellation; switching to subnormal nibbles did not change the failing rows. The real cause was the Q4_K min term using exact activation sums (ADR_004 amendment). Isolate a stage with dumped intermediates vs an FP64 reference before fixing.
+- Python-driven multi-line `str.replace` on kernel files silently skips blocks that clang-format reflowed (hit again in `q6k_gemv.hpp`: function renamed but body unchanged). Grep for the old body after editing.
 - Issuing a file edit and the command that uses it in the same parallel tool batch: the command can run before the edit lands (seen with `make_golden.py`). Run dependent steps sequentially.
 - A persistent shell running `set -e` exited on the first failing command and killed the agent shell session. Run throwaway tests in a `( … )` subshell instead.
 
 ## Open questions for user
 
-- Merge the M3a PR.
+- Merge the M3b PR.
 
 ## Session log
 
@@ -71,4 +72,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-25 (M1a): On `ai-written/m1-gguf`, added the mmap GGUF v3 reader and F32/F16/BF16/Q4_K/Q6_K CPU dequantisation, bit-exact with gguf-py on real model blocks; the C++ tensor table matches gguf-py for all 753 tensors. A Q4_K scale-index mutation is caught. Allowing FMA contraction did not change results, because Q4_K products (11-bit d × 6-bit scale × 4-bit q) are exact in FP32; `-ffp-contract=off` stays as a guard for other formats. Merged as #3.
 - 2026-09-25 (M1b): On `ai-written/m1-golden`, built the golden harness (pinned `.venv`: torch 2.14.0+cpu, transformers 5.17.0, gguf 0.19.0). It inverts llama.cpp's converter rewrites (documented in `docs/research/ornith-q4km-gguf.md`), materialises one layer at a time (8.5 GB peak), and records layer 0 (DeltaNet) and layer 3 (full attention) for a 17-token prompt. Teacher-forced llama.cpp continuation through all 40 layers: 8/8, and 0/8 with the V-head reorder disabled. Golden output regenerates byte-identically. C++ dequantised embeddings equal the golden input bit for bit. Merged as #4.
 - 2026-09-25 (M2): On `ai-written/m2-gemv`, built the Q4_K decode GEMV in INT8 and FP16 activation variants with rigorous per-row error bounds, the lossless Q4_K r1 repack, DPP reductions and rows-per-wave. v1 FP16 was instruction-bound (63%); v2 reaches 83% (FP16) / 87% (INT8) of 797 GB/s on a 141 MB launch. On decode-sized 4.7 MB launches both take ~16–17 µs because of a ~7–9 µs per-launch fixed cost. ADR_004 selects FP16 (21–37× lower error, 4–12% slower). Started the Q8_0/BF16 downloads for ADR_003 D18. Merged as #5.
-- 2026-09-25 (M3a): User approved the M3a–M3e breakdown. On `ai-written/m3a-norm-embed-q6k`: fused add+RMSNorm (golden post-attention norm within bound, residual bit-exact), Q4_K r1 embedding lookup (bit-exact with the golden input), Q6_K r1 row layout (lossless) and Q6_K FP16 GEMV (within 7% of bound). LM head 417 MB at 713 GB/s (89.5%); 13.8 MB DeltaNet qkv at 27.6 us, consistent with the ~8 us per-launch fixed cost. DPP reductions moved to `kernels/wave.hpp`.
+- 2026-09-25 (M3a): User approved the M3a–M3e breakdown. On `ai-written/m3a-norm-embed-q6k`: fused add+RMSNorm (golden post-attention norm within bound, residual bit-exact), Q4_K r1 embedding lookup (bit-exact with the golden input), Q6_K r1 row layout (lossless) and Q6_K FP16 GEMV (within 7% of bound). LM head 417 MB at 713 GB/s (89.5%); 13.8 MB DeltaNet qkv at 27.6 us, consistent with the ~8 us per-launch fixed cost. DPP reductions moved to `kernels/wave.hpp`. Merged as #6.
+- 2026-09-26 (M3b): On `ai-written/m3b-deltanet`, built the Gated DeltaNet decode step (conv ping-pong state, delta rule in registers, gated norm) and the `src/engine` HIP library (weight upload/repack, GEMV dispatch, DeltaNet layer). The first run gave 2.0e-3 vs golden; stage-by-stage comparison with an FP64 reference traced it to the `ssm_out` GEMV. Fixed the Q4_K min-term rounding inconsistency and replaced the 1024-biased FP16 nibbles with exact subnormals (ADR_004 amendment). The layer now matches the FP16-rounding prediction (2.96e-4); the GEMVs got more accurate and slightly faster. One DeltaNet layer takes ~100 us/token, dominated by the fixed cost of 7 small launches (rocprof breakdown in `bench/deltanet/results/`).

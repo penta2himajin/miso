@@ -11,3 +11,5 @@ endfunction()
 
 miso_bench(bench_q4k_gemv gemv/bench_q4k_gemv.hip)
 miso_bench(bench_q6k_gemv gemv/bench_q6k_gemv.hip)
+miso_bench(bench_deltanet deltanet/bench_deltanet.hip)
+target_link_libraries(bench_deltanet PRIVATE miso_engine)

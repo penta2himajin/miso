@@ -1,0 +1,1 @@
+DeltaNet layer 0 decode: 100.5 us/token (1000 tokens back to back)

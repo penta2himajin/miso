@@ -51,9 +51,11 @@ __device__ inline Scales r1_scales(const uint4& h, int g) {
           static_cast<float>((v >> 12) & 63u), static_cast<float>((v >> 18) & 63u)};
 }
 
-// Nibble pair (bits [s, s+4) and [s+16, s+20)) as FP16 (1024 + q, 1024 + q'), exact.
-__device__ inline half2_t nibbles_1024(unsigned w, int s) {
-  return __builtin_bit_cast(half2_t, ((w >> s) & 0x000F000Fu) | 0x64006400u);
+// Nibble pair (bits [s, s+4) and [s+16, s+20)) as FP16 subnormals (q 2^-24, q' 2^-24), exact.
+// Unlike a biased (1024 + q) encoding, products stay proportional to q x, so the FP32 chain has
+// no offset to cancel (that cancellation cost ~2e-3 relative error on real activations).
+__device__ inline half2_t nibbles_sub(unsigned w, int s) {
+  return __builtin_bit_cast(half2_t, (w >> s) & 0x000F000Fu);
 }
 
 // Activations of one slot, already converted.
@@ -70,7 +72,6 @@ template <>
 struct SlotAct<ActFormat::Fp16> {
   half2_t a_lo[4], b_lo[4], a_hi[4], b_hi[4];  // (x[4c], x[4c+2]) and (x[4c+1], x[4c+3])
   float s_lo, s_hi;
-  float o_lo, o_hi;  // 1024 * sum of the FP16-rounded activations: offset of nibbles_1024
 };
 
 __device__ inline void load16(const float* p, float* v) {
@@ -100,10 +101,11 @@ __device__ inline SlotAct<A> load_slot(const float* x, int slot) {
   float lo[16], hi[16];
   load16(lo_p, lo);
   load16(lo_p + 32, hi);
+  // s_lo / s_hi feed the dmin * m term and must be sums of the *converted* activations: with exact
+  // sums, the q term's rounding error scales with d * sc * q instead of |W| = |d sc q - dmin m|,
+  // which broke the error bound on rows where the two terms cancel.
   SlotAct<A> s;
   s.s_lo = s.s_hi = 0;
-  for (int t = 0; t < 16; ++t)
-    s.s_lo += lo[t], s.s_hi += hi[t];
   if constexpr (A == ActFormat::Int8) {
     // A sub-block's 32 activations are split between this lane and lane ^ 1.
     float m_lo = 0, m_hi = 0;
@@ -117,19 +119,23 @@ __device__ inline SlotAct<A> load_slot(const float* x, int slot) {
       s.q_lo[c] = pack_int8(lo + 4 * c, inv_lo);
       s.q_hi[c] = pack_int8(hi + 4 * c, inv_hi);
     }
+    int q_lo = 0, q_hi = 0;
+    for (int c = 0; c < 4; ++c) {
+      q_lo = __builtin_amdgcn_sdot4(static_cast<int>(s.q_lo[c]), 0x01010101, q_lo, false);
+      q_hi = __builtin_amdgcn_sdot4(static_cast<int>(s.q_hi[c]), 0x01010101, q_hi, false);
+    }
+    s.s_lo = s.d_lo * static_cast<float>(q_lo), s.s_hi = s.d_hi * static_cast<float>(q_hi);
   } else {
-    s.o_lo = s.o_hi = 0;
     for (int c = 0; c < 4; ++c) {
       s.a_lo[c] = to_half2(lo[4 * c], lo[4 * c + 2]);
       s.b_lo[c] = to_half2(lo[4 * c + 1], lo[4 * c + 3]);
       s.a_hi[c] = to_half2(hi[4 * c], hi[4 * c + 2]);
       s.b_hi[c] = to_half2(hi[4 * c + 1], hi[4 * c + 3]);
-      s.o_lo += static_cast<float>(s.a_lo[c].x) + static_cast<float>(s.a_lo[c].y) +
+      s.s_lo += static_cast<float>(s.a_lo[c].x) + static_cast<float>(s.a_lo[c].y) +
                 static_cast<float>(s.b_lo[c].x) + static_cast<float>(s.b_lo[c].y);
-      s.o_hi += static_cast<float>(s.a_hi[c].x) + static_cast<float>(s.a_hi[c].y) +
+      s.s_hi += static_cast<float>(s.a_hi[c].x) + static_cast<float>(s.a_hi[c].y) +
                 static_cast<float>(s.b_hi[c].x) + static_cast<float>(s.b_hi[c].y);
     }
-    s.o_lo *= 1024.0f, s.o_hi *= 1024.0f;
   }
   return s;
 }
@@ -166,14 +172,14 @@ __device__ inline float slot_dot(const SlotW& w, int slot, const SlotAct<A>& s) 
                 sc.sc1 * s.d_hi * static_cast<float>(hi)) -
            mins;
   } else {
-    float lo = -s.o_lo, hi = -s.o_hi;
+    float lo = 0, hi = 0;
     for (int c = 0; c < 4; ++c) {
-      lo = __builtin_amdgcn_fdot2(nibbles_1024(qw[c], 0), s.a_lo[c], lo, false);
-      lo = __builtin_amdgcn_fdot2(nibbles_1024(qw[c], 8), s.b_lo[c], lo, false);
-      hi = __builtin_amdgcn_fdot2(nibbles_1024(qw[c], 4), s.a_hi[c], hi, false);
-      hi = __builtin_amdgcn_fdot2(nibbles_1024(qw[c], 12), s.b_hi[c], hi, false);
+      lo = __builtin_amdgcn_fdot2(nibbles_sub(qw[c], 0), s.a_lo[c], lo, false);
+      lo = __builtin_amdgcn_fdot2(nibbles_sub(qw[c], 8), s.b_lo[c], lo, false);
+      hi = __builtin_amdgcn_fdot2(nibbles_sub(qw[c], 4), s.a_hi[c], hi, false);
+      hi = __builtin_amdgcn_fdot2(nibbles_sub(qw[c], 12), s.b_hi[c], hi, false);
     }
-    return d * (sc.sc0 * lo + sc.sc1 * hi) - mins;
+    return d * 0x1p24f * (sc.sc0 * lo + sc.sc1 * hi) - mins;
   }
 }
 

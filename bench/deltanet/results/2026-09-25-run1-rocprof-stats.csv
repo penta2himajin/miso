@@ -1,0 +1,7 @@
+"Name","Calls","TotalDurationNs","AverageNs","Percentage"
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 1>(miso::kernels::Q4kGemvParams) [clone .kd]",3600,31596729,8776,29.004143725930494
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]",1200,28807056,24005,26.443369898983164
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 1>(miso::kernels::Q4kGemvParams) [clone .kd]",1200,24605628,20504,22.586678860928284
+"void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams) [clone .kd]",1200,13601888,11334,12.485821380308362
+"void miso::kernels::add_rmsnorm_kernel<2048u, 256>(miso::kernels::AddRmsNormParams, unsigned int) [clone .kd]",1200,10307530,8589,9.461773134153866
+"__amd_rocclr_fillBufferAligned.kd",3,19841,6613,0.01821299969582886

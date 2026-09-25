@@ -57,8 +57,9 @@ Case load(const File& f, const std::string& name, unsigned max_rows = ~0u) {
   return c;
 }
 
-// |y - W x| <= sum |W| e + K 2^-23 sum |W x| + 2^-20 sum 1087 |d sc| |x| for every row, where e is
-// the FP16 activation rounding and the last term covers the (1024 + q6) offset cancellation.
+// |y - W x| <= sum |W| e + K 2^-23 sum |W x| + 2^-20 sum 95 |d sc| |x| for every row, where e is
+// the FP16 activation rounding and the last term covers the q6 <= 63 chain and its 32 * sum(x)
+// offset.
 template <unsigned K, int R = 1>
 void check(const Case& c, const std::vector<float>& x, unsigned grid) {
   REQUIRE(c.k == K);
@@ -76,7 +77,7 @@ void check(const Case& c, const std::vector<float>& x, unsigned grid) {
       ref += double{c.wf[i]} * x[k];
       mag += std::fabs(double{c.wf[i]} * x[k]);
       bound += std::fabs(double{c.wf[i]}) * (std::fabs(x[k]) * 0x1p-11 + 0x1p-25) +
-               0x1p-20 * 1087.0 * c.ds[i] * std::fabs(x[k]);
+               0x1p-20 * 95.0 * c.ds[i] * std::fabs(x[k]);
     }
     bound += K * 0x1p-23 * mag;
     const double err = std::fabs(y[r] - ref);
