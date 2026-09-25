@@ -24,18 +24,24 @@ docs/         # research/, decisions/ (ADRs), handoff/
 # Hooks: pre-commit formats staged C++/HIP, pre-push checks formatting.
 git config core.hooksPath git-hooks
 
-# clang-format pinned to 18.1.8 (matches ROCm 6.3 clang 18).
-python3 -m pip install --user clang-format==18.1.8
+# clang-format pinned to 18.1.8 (matches ROCm 6.3 clang 18); Ninja (required generator).
+python3 -m pip install --user clang-format==18.1.8 ninja==1.11.1.1
 
-# On this host hipcc picks GCC 12 without libstdc++-12-dev; pass the GCC 11 install dir.
+# Ad-hoc hipcc outside CMake: this host's clang picks GCC 12 without libstdc++-12-dev.
 export HIPFLAGS="--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11"
 ```
 
-ROCm 6.3.x is required (ADR_001). The `gguf-py` package used by `tools/` lives in the local llama.cpp checkout: `PYTHONPATH=/home/penta/llm-mi50/src/llama.cpp/gguf-py`.
+ROCm 6.3.x is required (ADR_001). CMake auto-detects the GCC install dir (`MISO_GCC_INSTALL_DIR`). The `gguf-py` package used by `tools/` lives in the local llama.cpp checkout: `PYTHONPATH=/home/penta/llm-mi50/src/llama.cpp/gguf-py`.
 
 ## Build & Test
 
-The build is scaffolded in milestone M0 (ADR_003 D14). Until then, the measurement code builds as documented in `bench/mi50/README.md`.
+```bash
+cmake --preset default          # Ninja, Release, gfx906, build/
+cmake --build --preset default  # also prints per-kernel VGPR/SGPR/LDS/scratch/occupancy
+ctest --preset default          # runs on the MI50
+```
+
+Per-kernel resource reports are written to `build/kernel-resources/<target>.txt` (`tools/kernel_resources.py`). The Makefile generator is rejected: CMake 3.22 does not track HIP header dependencies with it.
 
 ## Development Principles
 
