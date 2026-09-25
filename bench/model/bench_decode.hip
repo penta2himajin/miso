@@ -32,6 +32,24 @@ int main(int argc, char** argv) {
   hipEvent_t a, b;
   MISO_HIP_CHECK(hipEventCreate(&a));
   MISO_HIP_CHECK(hipEventCreate(&b));
+  {
+    // pp512: a 512-token prompt (the golden tokens repeated) through prefill, as llama-bench does.
+    std::vector<int> pp(512);
+    for (std::size_t i = 0; i < pp.size(); ++i)
+      pp[i] = prompt[i % prompt.size()];
+    for (int round = 0; round < 2; ++round) {
+      miso::Session sp(model, 520);
+      MISO_HIP_CHECK(hipMemcpy(sp.tokens.data(), pp.data(), pp.size() * 4, hipMemcpyHostToDevice));
+      MISO_HIP_CHECK(hipEventRecord(a));
+      miso::prefill(model, sp, sp.tokens.data(), 512, miso::Session::kMaxChunk, nullptr);
+      MISO_HIP_CHECK(hipEventRecord(b));
+      MISO_HIP_CHECK(hipEventSynchronize(b));
+      float ms;
+      MISO_HIP_CHECK(hipEventElapsedTime(&ms, a, b));
+      std::printf("%s: pp512 %.1f ms, %.1f tok/s\n", round ? "measured" : "warm-up", ms,
+                  512e3 / ms);
+    }
+  }
   for (int round = 0; round < 2; ++round) {  // round 0 warms up clocks
     const unsigned start = s.pos;
     MISO_HIP_CHECK(hipEventRecord(a));

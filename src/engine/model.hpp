@@ -54,11 +54,22 @@ struct Session {
   DeviceBuffer<int> argmax_i{kArgmaxParts};
   DeviceBuffer<int> tokens, pred;  // [max_ctx]: caller-provided inputs, argmax at each position
 
+  // Prefill chunk buffers: [kMaxChunk][2048] residuals, mixer outputs, normed inputs, MoE outputs.
+  static constexpr unsigned kMaxChunk = 512;
+  DeviceBuffer<float> chunk_h{kMaxChunk * 2048}, chunk_mixer{kMaxChunk * 2048};
+  DeviceBuffer<float> chunk_xn{kMaxChunk * 2048}, chunk_moe{kMaxChunk * 2048};
+
   static constexpr unsigned kArgmaxParts = 240;
 };
 
 // Runs the token at device address `token` at position s.pos and writes the argmax of the
 // next-token logits to s.pred[s.pos]; then advances s.pos.
 void decode_step(const Model& m, Session& s, const int* token, hipStream_t stream);
+
+// Ingests n tokens (device array) at positions s.pos .. s.pos + n - 1, layer by layer over chunks
+// of at most max_chunk (<= Session::kMaxChunk) tokens; writes the argmax after the last token to
+// s.pred[s.pos + n - 1] and advances s.pos by n. Leaves the same state as n decode_steps.
+void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned max_chunk,
+             hipStream_t stream);
 
 }  // namespace miso

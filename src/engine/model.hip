@@ -1,5 +1,6 @@
 #include "engine/model.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 #include <string>
@@ -74,6 +75,24 @@ Session::Session(const Model& m, unsigned n) : max_ctx(n), logits(m.vocab), toke
   }
 }
 
+namespace {
+
+// Final norm of h + delta, LM head and argmax; the argmax goes to s.pred[pos].
+void head_argmax(const Model& m, Session& s, float* h, const float* delta, unsigned pos,
+                 hipStream_t stream) {
+  const kernels::AddRmsNormParams final_norm{h, delta, m.output_norm.data(), s.xn.data(), m.eps};
+  kernels::add_rmsnorm_kernel<kHidden, kBlock><<<1, kBlock, 0, stream>>>(final_norm, 1);
+  gemv(m.lm_head, s.xn.data(), s.logits.data(), stream);
+  const kernels::ArgmaxParams ap{s.logits.data(),       m.vocab,
+                                 s.argmax_v.data(),     s.argmax_i.data(),
+                                 Session::kArgmaxParts, s.pred.data() + pos};
+  kernels::argmax_partial_kernel<kBlock><<<Session::kArgmaxParts, kBlock, 0, stream>>>(ap);
+  kernels::argmax_final_kernel<kBlock><<<1, kBlock, 0, stream>>>(ap);
+  MISO_HIP_CHECK(hipGetLastError());
+}
+
+}  // namespace
+
 void decode_step(const Model& m, Session& s, const int* token, hipStream_t stream) {
   if (s.pos >= s.max_ctx)
     throw std::runtime_error("decode_step: context is full");
@@ -96,17 +115,49 @@ void decode_step(const Model& m, Session& s, const int* token, hipStream_t strea
     moe_decode(l.moe, s.moe_scratch, s.xn.data(), s.moe_out.data(), stream);
   }
 
-  const kernels::AddRmsNormParams final_norm{s.h.data(), s.moe_out.data(), m.output_norm.data(),
-                                             s.xn.data(), m.eps};
-  kernels::add_rmsnorm_kernel<kHidden, kBlock><<<1, kBlock, 0, stream>>>(final_norm, 1);
-  gemv(m.lm_head, s.xn.data(), s.logits.data(), stream);
-  const kernels::ArgmaxParams ap{s.logits.data(),       m.vocab,
-                                 s.argmax_v.data(),     s.argmax_i.data(),
-                                 Session::kArgmaxParts, s.pred.data() + s.pos};
-  kernels::argmax_partial_kernel<kBlock><<<Session::kArgmaxParts, kBlock, 0, stream>>>(ap);
-  kernels::argmax_final_kernel<kBlock><<<1, kBlock, 0, stream>>>(ap);
-  MISO_HIP_CHECK(hipGetLastError());
+  head_argmax(m, s, s.h.data(), s.moe_out.data(), s.pos, stream);
   ++s.pos;
+}
+
+void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned max_chunk,
+             hipStream_t stream) {
+  if (max_chunk == 0 || max_chunk > Session::kMaxChunk)
+    throw std::runtime_error("prefill: bad chunk size");
+  if (s.pos + n > s.max_ctx)
+    throw std::runtime_error("prefill: context is full");
+  for (unsigned c0 = 0; c0 < n; c0 += max_chunk) {
+    const unsigned c = std::min(max_chunk, n - c0);
+    const kernels::EmbedParams ep{m.embed.data(), tokens + c0, s.chunk_h.data()};
+    kernels::embed_q4k_kernel<kHidden, kBlock><<<c, kBlock, 0, stream>>>(ep, c);
+    for (std::size_t i = 0; i < m.layers.size(); ++i) {
+      const auto& l = m.layers[i];
+      // Per-token mixer kernels for now (M4a): tokens run in order, so the recurrent state and
+      // the KV cache advance exactly as in decode.
+      for (unsigned t = 0; t < c; ++t) {
+        float* h = s.chunk_h.data() + std::size_t{t} * kHidden;
+        const float* delta = i == 0 ? nullptr : s.chunk_moe.data() + std::size_t{t} * kHidden;
+        float* y = s.chunk_mixer.data() + std::size_t{t} * kHidden;
+        if (l.deltanet) {
+          deltanet_decode(*l.deltanet, *s.deltanet[i], s.dn_scratch, h, delta, y, m.eps, stream);
+        } else {
+          attention_decode(*l.attention, *s.kv[i], s.attn_scratch, m.rope, h, delta, y, m.eps,
+                           stream);
+        }
+      }
+      const kernels::AddRmsNormParams post{s.chunk_h.data(), s.chunk_mixer.data(),
+                                           l.post_attention_norm.data(), s.chunk_xn.data(), m.eps};
+      kernels::add_rmsnorm_kernel<kHidden, kBlock><<<c, kBlock, 0, stream>>>(post, c);
+      for (unsigned t = 0; t < c; ++t) {
+        moe_decode(l.moe, s.moe_scratch, s.chunk_xn.data() + std::size_t{t} * kHidden,
+                   s.chunk_moe.data() + std::size_t{t} * kHidden, stream);
+      }
+    }
+    s.pos += c;
+    if (c0 + c == n) {
+      const std::size_t last = std::size_t{c - 1} * kHidden;
+      head_argmax(m, s, s.chunk_h.data() + last, s.chunk_moe.data() + last, s.pos - 1, stream);
+    }
+  }
 }
 
 }  // namespace miso
