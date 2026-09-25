@@ -1,6 +1,6 @@
 # Decode GEMV benchmarks
 
-`bench_q4k_gemv` (built by `cmake --build --preset default`) measures the Q4_K decode GEMV of `kernels/q4k_gemv.hpp` on real Ornith projections:
+`bench_q4k_gemv` and `bench_q6k_gemv` (built by `cmake --build --preset default`) measures the Q4_K decode GEMV of `kernels/q4k_gemv.hpp` on real Ornith projections:
 
 - accuracy of each activation format against an FP64 reference;
 - per-launch time over layer-rotated weights, so every launch reads L2-cold data as in decode;
@@ -19,5 +19,6 @@
 | `results/2026-09-25-run3-rows.txt` | rows-per-wave with LDS/scratch spill (superseded; see ADR_004) |
 | `results/2026-09-25-run4-rows.txt` | rows-per-wave, no spills; `run4-smi.csv` clock log |
 | `results/2026-09-25-run5-scaling.txt` | launch-size scaling |
+| `results/2026-09-25-q6k-run1.txt` | Q6_K r1 GEMV: layer-rotated DeltaNet qkv (13.8 MB) and LM head (417 MB); `-smi.csv` clock log |
 
 Decision and analysis: `docs/decisions/ADR_004-decode-gemv-activation-format.md`.

@@ -10,3 +10,4 @@ function(miso_bench name)
 endfunction()
 
 miso_bench(bench_q4k_gemv gemv/bench_q4k_gemv.hip)
+miso_bench(bench_q6k_gemv gemv/bench_q6k_gemv.hip)

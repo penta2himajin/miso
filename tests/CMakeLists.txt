@@ -22,6 +22,10 @@ miso_gpu_test(test_device test_device.hip)
 miso_gpu_test(test_axpy test_axpy.hip)
 miso_gpu_test(test_q4k_gemv test_q4k_gemv.hip)
 target_compile_definitions(test_q4k_gemv PRIVATE ${MISO_TEST_DEFINITIONS})
+miso_gpu_test(test_q6k_gemv test_q6k_gemv.hip)
+target_compile_definitions(test_q6k_gemv PRIVATE ${MISO_TEST_DEFINITIONS})
+miso_gpu_test(test_norm_embed test_norm_embed.hip)
+target_compile_definitions(test_norm_embed PRIVATE ${MISO_TEST_DEFINITIONS})
 
 # miso_cpu_test(<name> <sources...>): a host-only doctest executable.
 function(miso_cpu_test name)
