@@ -63,4 +63,14 @@ fi
 # Add per-repo commands below. Example:
 #     run "markdownlint" markdownlint '**/*.md'
 
+# --- C++ / HIP (clang-format) ----------------------------------------------
+if [[ -f .clang-format ]]; then
+    mapfile -t cxx < <(git ls-files -- '*.h' '*.hpp' '*.cpp' '*.cc' '*.hip')
+    if [[ ${#cxx[@]} -gt 0 ]]; then
+        command -v clang-format >/dev/null 2>&1 \
+            || { red "pre-push: clang-format not found (pip install --user clang-format==18.1.8)"; exit 1; }
+        run "clang-format --dry-run" clang-format --dry-run -Werror "${cxx[@]}"
+    fi
+fi
+
 green "pre-push: all checks passed."

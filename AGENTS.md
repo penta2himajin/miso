@@ -1,63 +1,63 @@
-# <Project Name>
+# miso
 
 ## Overview
 
-<!-- One to three paragraphs describing the project's purpose, target domain, and distinguishing characteristics. If detailed specs live under docs/, reference them with @docs/<file>.md. -->
+A from-scratch inference engine for **Ornith-1.5-35B-A3B** (`qwen3_5_moe`: 30 Gated DeltaNet + 10 gated full-attention layers, 256-expert top-8 MoE) on a single **AMD Instinct MI50 32 GB (gfx906)**, written in C++20 + HIP on ROCm 6.3.x. Weights come from the Q4_K_M GGUF, repacked at load time. Prefill and decode use separate kernel families.
+
+Hardware facts: @docs/research/mi50.md. Model file facts: @docs/research/ornith-q4km-gguf.md. Settled decisions: `docs/decisions/ADR_*.md`.
 
 ## Project Structure
 
-<!-- Directory layout with the role of each. Make explicit the boundary between source code, documentation, and generated artifacts. -->
-
 ```
-src/         # ...
-docs/        # ...
-tests/       # ...
+src/          # host code: GGUF reader, weight repack, tokenizer, scheduling, CLI
+kernels/      # device code: operators as __device__ functions + thin __global__ wrappers
+tests/        # CTest / doctest tests and golden-file fixtures
+bench/        # microbenchmarks and raw results (bench/<topic>/results/)
+tools/        # offline Python scripts (inventory, golden generation, quality evaluation)
+third_party/  # vendored test-only code (doctest)
+docs/         # research/, decisions/ (ADRs), handoff/
 ```
 
 ## Development Setup
 
-<!-- Required toolchain pins, bootstrap commands, external dependencies (DB, MCP servers). -->
-
 ```bash
-# example
-cargo install ...
+# Hooks: pre-commit formats staged C++/HIP, pre-push checks formatting.
+git config core.hooksPath git-hooks
 
-# Pre-push hook (format / lint / clippy).
-cp git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+# clang-format pinned to 18.1.8 (matches ROCm 6.3 clang 18).
+python3 -m pip install --user clang-format==18.1.8
+
+# On this host hipcc picks GCC 12 without libstdc++-12-dev; pass the GCC 11 install dir.
+export HIPFLAGS="--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11"
 ```
+
+ROCm 6.3.x is required (ADR_001). The `gguf-py` package used by `tools/` lives in the local llama.cpp checkout: `PYTHONPATH=/home/penta/llm-mi50/src/llama.cpp/gguf-py`.
 
 ## Build & Test
 
-<!-- Canonical verification commands. Must be runnable without prior setup so agents can self-verify. -->
-
-```bash
-cargo build --workspace
-cargo test  --workspace
-```
+The build is scaffolded in milestone M0 (ADR_003 D14). Until then, the measurement code builds as documented in `bench/mi50/README.md`.
 
 ## Development Principles
 
-<!-- Project-specific additions only. Do not restate the common rules below. Examples:
-- "All features touching target-adjacent columns must be registered in LEAK_FEATURES."
-- "Public API changes require an ADR in docs/decisions/." -->
+- Report performance numbers with the protocol of ADR_002 D12 (clock / temperature / power logged, raw results committed).
+- Hot kernels have their emitted ISA inspected; claims about instruction selection cite the ISA.
 
 ## Architectural Boundaries
 
-<!-- Structural invariants that, if violated, break the design. Examples:
-- "core crate stays domain-agnostic."
-- "Generated code under gen/ is never hand-edited."
-- "Layer X must not depend on layer Y." -->
+- `kernels/` never includes host-only headers from `src/`. Operators are `__device__` functions; `__global__` kernels are thin wrappers (ADR_001, "D4 → megakernel").
+- Weight repacking is a pure, deterministic function of GGUF bytes (ADR_001, "D5 → offline internal format").
+- Runtime dependencies are the HIP runtime only. Adding one requires an ADR (ADR_001 D1).
 
 ## Prohibitions
 
-<!-- Numbered list of "do not" rules, written so each is verifiable. Do not duplicate the common prohibitions below. -->
-
-1. ...
-2. ...
+1. Do not use MFMA, BF16 dot, packed-FP32 or float global atomic instructions: gfx906 does not have them (docs/research/mi50.md §4).
+2. Do not add vendor BLAS (rocBLAS, hipBLASLt) to the production path; rocBLAS is allowed only as a benchmark reference.
+3. Do not add CI configuration (ADR_003 D17) without explicit instruction.
 
 ## Git Conventions
 
-<!-- Differences from the common rules below. Examples: scoped Conventional Commits like `feat(phase1d):`, mandatory issue links in PR bodies. -->
+- Branches: `ai-written/<topic>`, one per workstream or milestone, delivered by pull request (ADR_003 D19). This replaces the `claude/<topic>` example in the common rules. `main` changes only by merging PRs.
+- Agent-authored commits carry the trailer `Co-authored-by: Cursor Agent <cursoragent@cursor.com>`.
 
 ## Session Handoff
 

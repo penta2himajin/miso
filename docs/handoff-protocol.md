@@ -17,7 +17,7 @@ Protocol for handing off long-running work between agent sessions via files unde
    - **Next action**: granular enough that the next session can begin immediately.
    - **Failed approaches**: record anything tried and abandoned. Skipping this is the most common cause of duplicated effort.
 2. Append this session's outcome to `## Session log` as a single dated paragraph.
-3. Commit (`docs(handoff): …`) and push. The working tree must be clean afterwards, or the dirty state is recorded in the Snapshot.
+3. Commit (`docs(handoff): …`) on the working `ai-written/<topic>` branch and push it (ADR_003 D19). The working tree must be clean afterwards, or the dirty state is recorded in the Snapshot.
 4. Reference the handoff file path in the final message.
 
 ## Receiver procedure (start of session)

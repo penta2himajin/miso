@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Pre-commit hook: format staged C++/HIP files with clang-format and re-stage them.
+#
+# Install with `git config core.hooksPath git-hooks` (see git-hooks/README.md).
+# Files that also have unstaged changes are refused rather than formatted,
+# because re-staging them would silently commit the unstaged hunks.
+
+set -euo pipefail
+
+red() { printf '\033[31m%s\033[0m\n' "$*" >&2; }
+
+mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR -- \
+  '*.h' '*.hpp' '*.cpp' '*.cc' '*.hip')
+[[ ${#files[@]} -eq 0 ]] && exit 0
+
+if ! command -v clang-format >/dev/null 2>&1; then
+  red "pre-commit: clang-format not found. Install: python3 -m pip install --user clang-format==18.1.8"
+  exit 1
+fi
+
+partial=()
+for f in "${files[@]}"; do
+  git diff --quiet -- "$f" || partial+=("$f")
+done
+if [[ ${#partial[@]} -gt 0 ]]; then
+  red "pre-commit: these files have unstaged changes; stage or stash them before committing:"
+  printf '  %s\n' "${partial[@]}" >&2
+  exit 1
+fi
+
+clang-format -i "${files[@]}"
+git add -- "${files[@]}"
