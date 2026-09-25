@@ -7,23 +7,24 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/roadmap` (PR open against `main`)
-- Last work commit: roadmap commit on this branch @ 2026-09-26
+- Branch: `ai-written/m4a-prefill-harness` (PR open against `main`)
+- Last work commit: M4a commit on this branch @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-26 02:35 JST
-- Background: `Ornith-1.5-35B-BF16.gguf` downloading (26 of 71 GB at 02:30, ~6 MB/s); Q8_0 done and verified. Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
+- Last session: 2026-09-26 00:30 JST
+- Background: `Ornith-1.5-35B-BF16.gguf` downloading (36 of 71 GB at 00:25); Q8_0 done and verified. Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`. When it finishes, check its SHA256 against the etag in `.cache/huggingface/download/*.metadata`.
 
 ## Status
 
-ready-for-review (roadmap after M3: `docs/roadmap.md`, ADR_005)
+ready-for-review (M4a: prefill session API + oracle harness)
 
 ## Next action
 
-After the roadmap PR is merged, branch `ai-written/m4a-prefill-harness` from `main` and start M4a (`docs/roadmap.md`): a batched `prefill(tokens[T])` session API, first backed by the per-token kernels, plus an oracle harness. The harness compares final hidden state, logits, KV cache and DeltaNet state of prefill against token-by-token decode.
+After the M4a PR is merged, branch `ai-written/m4b-gemm` from `main` and start M4b (`docs/roadmap.md`): Q4_K / Q6_K dense GEMM for prefill (weights dequantised to FP16 in LDS tiles, `v_dot2_f32_f16`), with CPU-reference tests and a TFLOP/s report at T = 64 / 512 / 2048. Then wire it into `prefill()` for the dense projections and compare against the M4a oracle (`tests/test_prefill.hip`) with a tolerance instead of bit equality.
 
 ## Verification
 
-- M4a exit: the harness runs in `ctest`; the first prefill implementation is bit-equal to the decode path on the golden prompt.
+- M4a (done): `test_prefill` compares logits, KV cache, conv and recurrent state, position and prediction of `prefill()` against token-by-token decode; bit-equal for chunk sizes 25 (whole prompt), 7 and 1. Baseline pp512 = 123.3 tok/s (`bench/model/results/2026-09-26-run2-prefill-baseline.txt`).
+- M4b exit: CPU-reference GEMM tests; TFLOP/s against the 25.4 TFLOP/s dot2 peak.
 
 ## Context pointers
 
@@ -56,7 +57,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the roadmap PR.
+- Merge the M4a PR.
 
 ## Session log
 
@@ -73,3 +74,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M3e-1): On `ai-written/m3e-e2e`, assembled the full model (`src/engine/model.*`): device-side tokens and predictions (no host round trip per token), two-stage argmax, residual adds fused into the mixers' input norms. End to end, it reproduces llama.cpp's greedy continuation of the golden prompt 8/8, both teacher-forced and free-running. Decode runs at 108.9 tok/s (9.19 ms/token, ctx ~273-529), 1.9x llama.cpp's 57.2 and past ADR_002 D12 stage 1. Model load takes 27.6 s (single-threaded repack plus PCIe 3.0 x4). Merged as #10.
 - 2026-09-26 (M3e-2): On `ai-written/m3e-tokenizer`, built the byte-level BPE tokenizer from GGUF metadata with generated Unicode tables (NFC, categories), the chat template and the `miso` CLI (streaming, one step in flight). Found that the HF regex engine matches nothing for `\p{M}` in the qwen35 split pattern; reproducing that brought 250/261 to 261/261 exact matches (`docs/research/ornith-q4km-gguf.md`). The CLI answers a Japanese chat prompt coherently at 119 tok/s and reproduces llama.cpp's continuation. M3 is complete. Merged as #11.
 - 2026-09-26 (roadmap): User chose the order a -> c -> b after M3: M4 prefill, then M6 quality evaluation, then M7 decode optimisation, then M5 MTP. Wrote `docs/roadmap.md` with per-step exit criteria and ADR_005.
+- 2026-09-26 (M4a): Roadmap merged as #12. On `ai-written/m4a-prefill-harness`, added the layer-major chunked `prefill()` (multi-token embedding and add+RMSNorm, per-token mixer and MoE kernels for now) and the oracle harness `tests/session_compare.hpp` + `tests/test_prefill.hip`. Prefill is bit-equal to decode for chunk sizes 25, 7 and 1, and one decode step after prefill also agrees. A mutation (dropping the MoE delta for token 0) is caught with 0.58-1.16 relative diffs. The CLI now prefills the prompt. Baseline pp512 = 123.3 tok/s (per-token kernels), the M4 starting point against llama.cpp's 921.5.

@@ -100,8 +100,7 @@ int main(int argc, char** argv) {
   };
 
   const auto t_prefill = Clock::now();
-  for (unsigned t = 0; t + 1 < n; ++t)
-    miso::decode_step(model, s, s.tokens.data() + t, nullptr);
+  miso::prefill(model, s, s.tokens.data(), n - 1, miso::Session::kMaxChunk, nullptr);
   enqueue(0);
   MISO_HIP_CHECK(hipEventSynchronize(done[0]));
   const double prefill_s = seconds_since(t_prefill);
