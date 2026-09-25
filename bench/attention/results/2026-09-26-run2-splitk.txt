@@ -1,0 +1,4 @@
+attention layer 3 decode at ctx    16:    112.6 us/token
+attention layer 3 decode at ctx  1024:    115.5 us/token
+attention layer 3 decode at ctx  4096:    177.2 us/token
+attention layer 3 decode at ctx 16384:    333.7 us/token
