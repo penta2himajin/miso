@@ -7,29 +7,29 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m3e-tokenizer` (PR open against `main`)
-- Last work commit: `fd87999` @ 2026-09-26
+- Branch: `ai-written/roadmap` (PR open against `main`)
+- Last work commit: roadmap commit on this branch @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-26 02:20 JST
-- Background: `Ornith-1.5-35B-Q8_0.gguf` downloaded and verified. `Ornith-1.5-35B-BF16.gguf` still downloading (~6 MB/s). Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
+- Last session: 2026-09-26 02:35 JST
+- Background: `Ornith-1.5-35B-BF16.gguf` downloading (26 of 71 GB at 02:30, ~6 MB/s); Q8_0 done and verified. Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
 
 ## Status
 
-ready-for-review. **M3 complete** (ADR_003 D14 exit met): the `miso` CLI generates coherent text, layer outputs are within tolerance of golden, and decode runs at 109-119 tok/s against 57.2. `ctest --preset default` 15/15 green in 62 s.
+ready-for-review (roadmap after M3: `docs/roadmap.md`, ADR_005)
 
 ## Next action
 
-After the M3e-2 PR is merged, agree the next step with the user (see Open questions). ADR_003's plan is M4 (prefill kernels), then M5 (MTP). Decode optimisation toward ADR_002 D12 stages 2-3 and the D18 quality evaluation are also ready to start.
+After the roadmap PR is merged, branch `ai-written/m4a-prefill-harness` from `main` and start M4a (`docs/roadmap.md`): a batched `prefill(tokens[T])` session API, first backed by the per-token kernels, plus an oracle harness. The harness compares final hidden state, logits, KV cache and DeltaNet state of prefill against token-by-token decode.
 
 ## Verification
 
-- M3e-2 (this branch): `ctest --preset default` passes, including `test_tokenizer` (261/261 cases equal HF) and `cli_golden_prompt`; `./build/miso --no-think -n 200 "..."` produces coherent text.
+- M4a exit: the harness runs in `ctest`; the first prefill implementation is bit-equal to the decode path on the golden prompt.
 
 ## Context pointers
 
 - Hardware facts: `docs/research/mi50.md` (§1 summary, §5 measurements, §8 implications)
 - Model file facts: `docs/research/ornith-q4km-gguf.md`
-- Decisions: `docs/decisions/ADR_001` … `ADR_004`
+- Decisions: `docs/decisions/ADR_001` … `ADR_005`; plan: `docs/roadmap.md`
 - Baseline to beat: llama.cpp 57.2 tok/s tg64, 921.5 tok/s pp512 (`/home/penta/llm-mi50/NOTES-ubuntu.md`)
 - Input GGUF: `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf` (SHA256 `42739874…d41f`)
 - Local llama.cpp with `gguf-py` and `llama-quantize`: `/home/penta/llm-mi50/src/llama.cpp` (`d81aef1`, build in `build-hip/`)
@@ -56,11 +56,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M3e-2 PR.
-- Choose what follows M3:
-  - (a) M4 prefill kernels (ADR_003 order): prompt ingestion currently runs through decode at ~109 tok/s, vs llama.cpp pp512 921.5;
-  - (b) decode optimisation (fuse small launches, MoE prologues, K = 4096 GEMV, attention score loop) toward D12 stage 2 (>= 115, now 109-119) and stage 3 (>= 190);
-  - (c) D18 quality evaluation (Q8_0 is ready; BF16 is still downloading) to settle the pure-Q4_K candidate.
+- Merge the roadmap PR.
 
 ## Session log
 
@@ -75,4 +71,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M3c): On `ai-written/m3c-attention`, built gated full-attention decode: per-head q/k norm + partial NEOX RoPE + FP16 KV append, then attention. The first version (one workgroup per query head) was correct but scaled at 0.41 us per context token (1.8 ms/layer at 4k). Replaced it with split-K flash decoding (8 query heads per KV-head workgroup, online softmax over 32-position sub-chunks, merge kernel): 177 us at 4k, 334 us at 16k. Golden layer 3 error 4.62e-4, exactly the FP64 prediction for FP16 GEMV inputs + FP16 KV; split-K vs FP64 <= 2e-6 up to 5000 positions. Merged as #8.
 - 2026-09-26 (M3d): On `ai-written/m3d-moe`, built the MoE decode path in 3 launches: BF16 router (+ shared gate row), fused gate/up for 8 routed + shared experts with top-8 re-derived per workgroup, fused down + weighting (16 lanes per K = 512 row, Q4_K and Q6_K). Expert ids match golden for all 34 token-layers, output error equals the FP64 prediction (3.6e-4 / 3.9e-4). ~103 us/token per layer; gate/up (47 us) and down (39-44 us) are slowed by per-workgroup redundant top-k and SiLU prologues, candidates for the performance phase. Q8_0 download finished. Merged as #9.
 - 2026-09-26 (M3e-1): On `ai-written/m3e-e2e`, assembled the full model (`src/engine/model.*`): device-side tokens and predictions (no host round trip per token), two-stage argmax, residual adds fused into the mixers' input norms. End to end, it reproduces llama.cpp's greedy continuation of the golden prompt 8/8, both teacher-forced and free-running. Decode runs at 108.9 tok/s (9.19 ms/token, ctx ~273-529), 1.9x llama.cpp's 57.2 and past ADR_002 D12 stage 1. Model load takes 27.6 s (single-threaded repack plus PCIe 3.0 x4). Merged as #10.
-- 2026-09-26 (M3e-2): On `ai-written/m3e-tokenizer`, built the byte-level BPE tokenizer from GGUF metadata with generated Unicode tables (NFC, categories), the chat template and the `miso` CLI (streaming, one step in flight). Found that the HF regex engine matches nothing for `\p{M}` in the qwen35 split pattern; reproducing that brought 250/261 to 261/261 exact matches (`docs/research/ornith-q4km-gguf.md`). The CLI answers a Japanese chat prompt coherently at 119 tok/s and reproduces llama.cpp's continuation. M3 is complete.
+- 2026-09-26 (M3e-2): On `ai-written/m3e-tokenizer`, built the byte-level BPE tokenizer from GGUF metadata with generated Unicode tables (NFC, categories), the chat template and the `miso` CLI (streaming, one step in flight). Found that the HF regex engine matches nothing for `\p{M}` in the qwen35 split pattern; reproducing that brought 250/261 to 261/261 exact matches (`docs/research/ornith-q4km-gguf.md`). The CLI answers a Japanese chat prompt coherently at 119 tok/s and reproduces llama.cpp's continuation. M3 is complete. Merged as #11.
+- 2026-09-26 (roadmap): User chose the order a -> c -> b after M3: M4 prefill, then M6 quality evaluation, then M7 decode optimisation, then M5 MTP. Wrote `docs/roadmap.md` with per-step exit criteria and ADR_005.
