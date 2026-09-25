@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Inventory an Ornith / qwen35moe GGUF: tensor types, per-token decode bytes, BF16-exact F32 tensors.
 
-Usage: PYTHONPATH=<llama.cpp>/gguf-py tools/gguf_inventory.py <model.gguf>
+Usage: .venv/bin/python tools/gguf_inventory.py <model.gguf>
 """
 import collections
 import re

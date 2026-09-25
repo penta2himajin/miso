@@ -36,6 +36,21 @@ llama.cpp names DeltaNet tensors `ssm_*` (`ssm.state_size = 128`, `ssm.group_cou
 
 The engine must therefore implement Q4_K and Q6_K dequantisation for every GEMV/GEMM family, plus F32/BF16 small tensors.
 
+## Layout rewrites by the llama.cpp converter
+
+The GGUF is not a plain re-encoding of the HF checkpoint. llama.cpp's converter (`conversion/qwen.py`, `Qwen3NextModel` and `_LinearAttentionVReorderBase`) rewrites these tensors, and kernels that consume GGUF tensors directly must use the GGUF convention:
+
+| Tensor | GGUF convention | HF convention |
+|---|---|---|
+| `attn_norm`, `post_attention_norm`, `attn_q_norm`, `attn_k_norm`, `output_norm` | stores `1 + w`; apply as `x · w_gguf` | stores `w`; applies `x · (1 + w)` |
+| `ssm_norm` (gated RMSNorm) | unchanged | unchanged |
+| `ssm_a` | `-exp(A_log)` | `A_log` |
+| `ssm_conv1d` | `[8192, 4]` | `[8192, 1, 4]` |
+| DeltaNet V heads (V rows of `attn_qkv`, `attn_gate`, `ssm_alpha`, `ssm_beta`, `ssm_a`, `ssm_dt`, V channels of `ssm_conv1d`, columns of `ssm_out`) | **tiled**: V head `h` pairs with K head `h % 16` | grouped: V head `h` pairs with K head `h / 2` |
+| Routed experts | separate `ffn_gate_exps` / `ffn_up_exps` | fused `gate_up_proj` `[E, 2·I, H]` |
+
+`tools/golden/ornith_ref.py` inverts these rewrites for the reference. The mapping is validated by teacher-forcing llama.cpp's continuation through all 40 layers (8/8 agreement; 0/8 with the V-head reorder disabled). See `tests/golden/README.md`.
+
 ## Decode bytes per token (40 main layers, batch 1)
 
 | Category | MB / token | Share |

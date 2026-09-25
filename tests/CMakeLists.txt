@@ -23,9 +23,11 @@ function(miso_cpu_test name)
   target_link_libraries(${name} PRIVATE doctest miso_host)
   target_compile_definitions(${name} PRIVATE
     MISO_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
+    MISO_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/golden"
     MISO_ORNITH_GGUF="${MISO_ORNITH_GGUF}")
   miso_warnings(${name})
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
 miso_cpu_test(test_gguf test_gguf.cpp)
+miso_cpu_test(test_golden test_golden.cpp)
