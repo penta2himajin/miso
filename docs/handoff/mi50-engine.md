@@ -7,24 +7,23 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/adr-003-tooling` (PR open against `main`)
-- Last work commit: `b6a52b3` @ 2026-09-25
+- Branch: `ai-written/m0-scaffold` (PR open against `main`)
+- Last work commit: `16a4bc3` @ 2026-09-25
 - Working tree: clean after the handoff commit
-- Last session: 2026-09-25 21:55 JST
+- Last session: 2026-09-25 22:10 JST
 
 ## Status
 
-ready-for-review (design decisions complete; no engine code yet)
+ready-for-review (M0 complete: `ctest --preset default` 2/2 green on the MI50)
 
 ## Next action
 
-After the ADR_003 PR is merged, branch `ai-written/m0-scaffold` from `main` and build milestone M0 (ADR_003 D14): CMake + CTest + vendored doctest, a HIP smoke test, and per-kernel VGPR/LDS reporting.
+After the M0 PR is merged, branch `ai-written/m1-gguf` from `main` and start M1 (ADR_003 D14) with a failing test: a C++ GGUF reader that lists the 753 tensors of the Q4_K_M file with the same names, types, shapes and offsets as `gguf-py`.
 
 ## Verification
 
-- `cmake -S . -B build && cmake --build build && ctest --test-dir build` passes on the MI50 host.
-- The build prints (or writes) VGPR / LDS usage for every kernel target.
-- `git push` passes the pre-push clang-format check.
+- M0 (this branch): `cmake --preset default && cmake --build --preset default && ctest --preset default` passes; the build prints the kernel resource table and writes `build/kernel-resources/*.txt`.
+- M1 exit: CPU Q4_K dequantisation matches `gguf-py` bit-exactly; golden files exist for one layer of each type.
 
 ## Context pointers
 
@@ -44,13 +43,16 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19). Pending by measu
 - First cache-sweep microbenchmark: grid stride was a multiple of 2^18, so windows ≤256 KiB re-read one address per thread and overstated L1/L2 bandwidth. Fixed by per-block streaming (`bench/mi50/microbench.hip` `k_sweep`).
 - `hipcc` without flags fails with `'cmath' file not found`: clang picks GCC 12 but only `libstdc++-11-dev` is installed. Use `--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11`.
 
+- CMake 3.22 "Unix Makefiles" with HIP sources: the legacy dependency scanner resolved `#include "axpy.hpp"` only relative to `tests/`, so editing a kernel header did not rebuild the test and a deliberately broken kernel still "passed". Ninja (compiler depfiles) is now required and the Makefile generator is rejected in `CMakeLists.txt`.
+- Agent shell `cd` persists between commands: a `cd /tmp` in one probe made the next download land in `/tmp/third_party`. Use absolute paths or `( cd … )` subshells.
 - A persistent shell running `set -e` exited on the first failing command and killed the agent shell session. Run throwaway tests in a `( … )` subshell instead.
 
 ## Open questions for user
 
-- Merge the ADR_003 PR, and confirm starting M0.
+- Merge the M0 PR.
 
 ## Session log
 
 - 2026-09-25: Measured MI50 (`docs/research/mi50.md`), inventoried the Q4_K_M GGUF, recorded ADR_001 (language, kernels, prefill/decode split, decode execution, weight source, verification) and ADR_002 (build/test, scope, numerics, tokenizer/API, reference weights, benchmarks, repo ops). Found no published all-Q4_K Ornith GGUF; a pure file can be made with `llama-quantize --pure` from the BF16 GGUF (+13% decode floor, lower precision). Created the public GitHub remote and moved handoff to `docs/handoff/`.
-- 2026-09-25 (later): Recorded ADR_003 (decode-first milestones M0–M5, source layout, clang-format 18.1.8 via pre-commit + pre-push check, no CI, Q8_0-based KL evaluation, `ai-written/<topic>` branches with PRs). Added the hooks, reformatted `bench/`, filled the project sections of `AGENTS.md`. Opened the PR from `ai-written/adr-003-tooling`.
+- 2026-09-25 (later): Recorded ADR_003 (decode-first milestones M0–M5, source layout, clang-format 18.1.8 via pre-commit + pre-push check, no CI, Q8_0-based KL evaluation, `ai-written/<topic>` branches with PRs). Added the hooks, reformatted `bench/`, filled the project sections of `AGENTS.md`. Opened the PR from `ai-written/adr-003-tooling` (merged as #1).
+- 2026-09-25 (M0): Built the scaffold on `ai-written/m0-scaffold`: CMake Ninja preset with GCC auto-detection, vendored doctest 2.4.12, `miso_kernels`/`miso_host` include boundary, post-build kernel resource report from code-object metadata, smoke operator `axpy` in the `__device__` op + thin wrapper pattern. Tests green; a mutation of `axpy_op` is caught (999 failed assertions). Found and fixed stale HIP header dependencies under the Makefile generator.
