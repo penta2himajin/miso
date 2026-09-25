@@ -61,11 +61,11 @@ cargo test  --workspace
 
 ## Session Handoff
 
-Long-running workstreams use GitHub issues for cross-session continuity. See `docs/handoff-protocol.md` for the full protocol.
+Long-running workstreams use files under `docs/handoff/` for cross-session continuity (ADR_002 D13). See `docs/handoff-protocol.md` for the full protocol.
 
-- Label: `session-handoff`
-- One issue per workstream (not per session)
-- On session start, read the relevant handoff issue and confirm the **Next action** with the user before executing.
+- One file per workstream: `docs/handoff/<workstream>.md` (template: `docs/handoff/_template.md`)
+- Commit and push the handoff update at the end of every session
+- On session start, read the relevant handoff file and confirm the **Next action** with the user before executing.
 
 ## Internationalisation
 
@@ -106,7 +106,7 @@ Base decisions on observed data, not assumptions. Before optimising, claiming a 
 
 - **Always ready for review.** Open PRs in the "ready" state, never as drafts. Draft PRs do not fire review-requested events and slow the loop.
 - **Auto-subscribe after creating a PR.** Immediately after the PR is created, subscribe to its activity without asking the user. Rationale: the user explicitly opted into the "agent opens and watches its own PRs" workflow at the template level, so the per-PR confirmation is noise. Unsubscribe only when the user says to stop, when the PR merges, or when it is closed unmerged.
-- **One PR per workstream**, matching the handoff issue. Reference the issue with `Closes #N` per `.github/PULL_REQUEST_TEMPLATE.md`.
+- **One PR per workstream**, matching the handoff file. Link the handoff file in the PR body.
 
 ### Stream Idle Timeout Mitigation
 

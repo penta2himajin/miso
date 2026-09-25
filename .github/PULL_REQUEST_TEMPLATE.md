@@ -2,10 +2,10 @@
 
 <!-- One paragraph: what changed and why. -->
 
-## Related issue
+## Related workstream
 
-<!-- Link any handoff issue with Closes. Multiple issues allowed. -->
-Closes #
+<!-- Link the handoff file (docs/handoff/<workstream>.md) and any related issues. -->
+Handoff: `docs/handoff/`
 
 ## Verification
 
