@@ -8,7 +8,7 @@ Writes into tests/fixtures/:
   ornith-q4km-tensors.tsv  name, type, dims (GGUF order), absolute offset, bytes for every tensor
                          of the model GGUF
 
-Usage: PYTHONPATH=<llama.cpp>/gguf-py tools/make_test_fixtures.py <Ornith-1.5-35B-Q4_K_M.gguf>
+Usage: .venv/bin/python tools/make_test_fixtures.py <Ornith-1.5-35B-Q4_K_M.gguf>
 """
 import os
 import sys

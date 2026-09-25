@@ -31,7 +31,13 @@ python3 -m pip install --user clang-format==18.1.8 ninja==1.11.1.1
 export HIPFLAGS="--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11"
 ```
 
-ROCm 6.3.x is required (ADR_001). CMake auto-detects the GCC install dir (`MISO_GCC_INSTALL_DIR`). The `gguf-py` package used by `tools/` lives in the local llama.cpp checkout: `PYTHONPATH=/home/penta/llm-mi50/src/llama.cpp/gguf-py`.
+ROCm 6.3.x is required (ADR_001). CMake auto-detects the GCC install dir (`MISO_GCC_INSTALL_DIR`).
+
+Python tools (fixtures, golden outputs, inventories) run in a git-ignored venv with pinned packages:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt
+```
 
 ## Build & Test
 
