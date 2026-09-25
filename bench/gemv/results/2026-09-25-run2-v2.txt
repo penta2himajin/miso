@@ -1,0 +1,51 @@
+# 30 / 30 / 10 layers; 4.72 / 4.72 / 9.44 MB per layer
+tall attn_gate.weight  int8  N=122880  141.6 MB grid   240:    244.6 us   578.6 GB/s   72.6%
+tall attn_gate.weight  int8  N=122880  141.6 MB grid   480:    207.4 us   682.7 GB/s   85.7%
+tall attn_gate.weight  int8  N=122880  141.6 MB grid   960:    215.5 us   656.8 GB/s   82.4%
+tall attn_gate.weight  int8  N=122880  141.6 MB grid  1920:    215.2 us   657.8 GB/s   82.5%
+tall attn_gate.weight  fp16  N=122880  141.6 MB grid   240:    249.8 us   566.8 GB/s   71.1%
+tall attn_gate.weight  fp16  N=122880  141.6 MB grid   480:    248.8 us   569.0 GB/s   71.4%
+tall attn_gate.weight  fp16  N=122880  141.6 MB grid   960:    216.5 us   653.9 GB/s   82.0%
+tall attn_gate.weight  fp16  N=122880  141.6 MB grid  1920:    223.5 us   633.3 GB/s   79.5%
+attn_gate.weight       int8  K=2048 N=4096   rel.err max 2.93e-03 rms 1.15e-03
+    grid    60:   18.79 us/launch   251.1 GB/s   31.5% of 797
+    grid   120:   17.00 us/launch   277.5 GB/s   34.8% of 797
+    grid   240:   19.19 us/launch   245.9 GB/s   30.8% of 797
+    grid   480:   18.32 us/launch   257.5 GB/s   32.3% of 797
+    grid   960:   29.23 us/launch   161.4 GB/s   20.3% of 797
+    grid  1024:   28.66 us/launch   164.6 GB/s   20.7% of 797
+attn_gate.weight       fp16  K=2048 N=4096   rel.err max 9.73e-05 rms 3.72e-05
+    grid    60:   20.06 us/launch   235.2 GB/s   29.5% of 797
+    grid   120:   16.39 us/launch   287.9 GB/s   36.1% of 797
+    grid   240:   17.39 us/launch   271.3 GB/s   34.0% of 797
+    grid   480:   18.91 us/launch   249.6 GB/s   31.3% of 797
+    grid   960:   27.69 us/launch   170.4 GB/s   21.4% of 797
+    grid  1024:   29.08 us/launch   162.2 GB/s   20.4% of 797
+ssm_out.weight         int8  K=4096 N=2048   rel.err max 1.96e-03 rms 5.61e-04
+    grid    60:   17.95 us/launch   262.9 GB/s   33.0% of 797
+    grid   120:   17.77 us/launch   265.6 GB/s   33.3% of 797
+    grid   240:   23.83 us/launch   198.0 GB/s   24.8% of 797
+    grid   480:   34.05 us/launch   138.6 GB/s   17.4% of 797
+    grid   960:   52.65 us/launch    89.6 GB/s   11.2% of 797
+    grid   512:   36.39 us/launch   129.7 GB/s   16.3% of 797
+ssm_out.weight         fp16  K=4096 N=2048   rel.err max 9.28e-05 rms 1.54e-05
+    grid    60:   17.32 us/launch   272.4 GB/s   34.2% of 797
+    grid   120:   17.81 us/launch   264.9 GB/s   33.2% of 797
+    grid   240:   19.77 us/launch   238.7 GB/s   30.0% of 797
+    grid   480:   29.12 us/launch   162.0 GB/s   20.3% of 797
+    grid   960:   33.12 us/launch   142.5 GB/s   17.9% of 797
+    grid   512:   31.34 us/launch   150.5 GB/s   18.9% of 797
+attn_q.weight          int8  K=2048 N=8192   rel.err max 3.25e-03 rms 1.06e-03
+    grid    60:   28.90 us/launch   326.6 GB/s   41.0% of 797
+    grid   120:   23.21 us/launch   406.6 GB/s   51.0% of 797
+    grid   240:   21.30 us/launch   443.1 GB/s   55.6% of 797
+    grid   480:   24.38 us/launch   387.0 GB/s   48.6% of 797
+    grid   960:   32.04 us/launch   294.6 GB/s   37.0% of 797
+    grid  2048:   52.64 us/launch   179.3 GB/s   22.5% of 797
+attn_q.weight          fp16  K=2048 N=8192   rel.err max 8.78e-05 rms 3.53e-05
+    grid    60:   31.43 us/launch   300.3 GB/s   37.7% of 797
+    grid   120:   23.49 us/launch   401.8 GB/s   50.4% of 797
+    grid   240:   22.56 us/launch   418.3 GB/s   52.5% of 797
+    grid   480:   24.25 us/launch   389.2 GB/s   48.8% of 797
+    grid   960:   32.54 us/launch   290.0 GB/s   36.4% of 797
+    grid  2048:   52.77 us/launch   178.8 GB/s   22.4% of 797
