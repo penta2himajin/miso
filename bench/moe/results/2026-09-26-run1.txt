@@ -1,0 +1,2 @@
+MoE layer 0 (down Q6_K) decode: 103.6 us/token
+MoE layer 5 (down Q4_K) decode: 102.2 us/token
