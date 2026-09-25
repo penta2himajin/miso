@@ -8,7 +8,7 @@ Current-state sections (everything above "Session log") are overwritten each ses
 ## Snapshot
 
 - Branch: `ai-written/m7a-moe-decode` (PR open against `main`)
-- Last work commit: `99e847f` (fused MoE gate/up, down grid 120)
+- Last work commit: `fcedde7` (gate/up grid 120, overlapped weight loads)
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
@@ -19,13 +19,13 @@ ready-for-review (M7a: fused MoE decode)
 
 ## Next action
 
-After the M7a PR is merged, branch `ai-written/m7b-fused-gemv` from `main` and start M7b (`docs/roadmap.md`: fuse DeltaNet norm + qkv/z/a/b into one GEMV, and attention q/k/v likewise). Decode is 113.0 tok/s; stage 2 is 115.
+After the M7a PR is merged, branch `ai-written/m7b-fused-gemv` from `main` and start M7b (`docs/roadmap.md`: fuse DeltaNet norm + qkv/z/a/b into one GEMV, and attention q/k/v likewise). Decode is 114.1 tok/s; stage 2 is 115.
 
 ## Verification
 
 - `test_moe`: routing unchanged. Layer 0 / 3 output error 3.58e-4 / 3.86e-4, the same FP16-rounding bound as before.
-- MoE decode: layer 0 (Q6_K down) 103.6 → 90.3 us, layer 5 (Q4_K down) 102.2 → 87.3 us (`bench/moe/results/2026-09-26-run3-decode.txt`). Down grid sweep: 60 = 94/93, 120 = 90/87, 180 = 102/88, 240 = 102/95 us.
-- End to end: 8.85 ms/token, 113.0 tok/s. pp512 1396 tok/s. sclk 1725 MHz, junction 55 °C, 155 W (`bench/model/results/2026-09-26-run8-moe-decode.txt`, `-smi.csv`). First generated ids unchanged.
+- MoE decode: layer 0 (Q6_K down) 103.6 → 88.4 us, layer 5 (Q4_K down) 102.2 → 85.2 us (`bench/moe/results/2026-09-26-run3-decode.txt`). gate/up grid: 80=94/91, 120=88/85, 160=89/86, 240=90/87 us.
+- End to end: 8.76 ms/token, 114.1 tok/s. pp512 1398 tok/s. sclk 1725 MHz, junction 54 °C, 148 W (`bench/model/results/2026-09-26-run8-moe-decode.txt`, `-smi.csv`). First generated ids unchanged.
 
 ## Context pointers
 
@@ -84,4 +84,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M4c): M4e merged as #15. On `ai-written/m4c-flash-attn`, prefill attention is one causal flash kernel per chunk: 4 query tokens share each staged 32-key sub-chunk, online softmax per row, gate applied in the same launch. RoPE and the KV append are the decode prep, batched over the chunk. FP64 error <= 2e-6. pp512 went from 1014.2 to 1397.5 tok/s.
 - 2026-09-26 (M4d): M4c merged as #16. On `ai-written/m4d-deltanet`, the chunk-64 gated delta rule plus batched conv matches the decode recurrence (conv bit-exact, output and state within 5e-7). It spills 214 times and, wired into prefill, measured pp512 at 387.8 tok/s, so the shipping path stays on the register recurrence at 1397.5.
 - 2026-09-26 (M4f): M4d merged as #17. On `ai-written/m4f-dispatch`, measured decode vs prefill from 1 to 512 tokens. Prefill wins from 8 tokens (75 vs 57 ms). `ingest` uses that split; the CLI reports TTFT. pp512 is 1392 tok/s. M4 is complete.
-- 2026-09-26 (M7a): User paused M6 (PR #19 left as a draft) and asked for speed. On `ai-written/m7a-moe-decode`, fused `SiLU(gate)*up` and cut the down grid from 240 to 120. MoE layers 90.3 / 87.3 us. Decode 113.0 tok/s, from about 103. A separate top-8 kernel was slower.
+- 2026-09-26 (M7a): User paused M6 (PR #19 left as a draft) and asked for speed. On `ai-written/m7a-moe-decode`, fused `SiLU(gate)*up`, cut the down and gate/up grids to 120, and overlapped gate/up weight loads. MoE layers 88.4 / 85.2 us. Decode 114.1 tok/s. Contiguous row walks and a separate top-8 kernel were slower.
