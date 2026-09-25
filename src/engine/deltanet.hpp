@@ -52,7 +52,8 @@ void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch&
                      const float* delta, float* y, float eps, hipStream_t stream);
 
 // The same for n consecutive tokens ([n][2048] arrays): projections as prefill GEMMs, the
-// recurrence token by token.
+// recurrence token by token in one launch. The chunked form (kernels/deltanet_chunk.hpp) matches
+// this recurrence but is slower on gfx906, so prefill does not use it.
 void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefillScratch& sc,
                       float* h, const float* delta, float* y, unsigned n, float eps,
                       hipStream_t stream);

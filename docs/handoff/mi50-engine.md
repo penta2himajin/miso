@@ -7,28 +7,26 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m4c-flash-attn` (PR open against `main`)
-- Last work commit: M4c handoff on this branch @ 2026-09-26
+- Branch: `ai-written/m4d-deltanet` (PR open against `main`)
+- Last work commit: `0407a8b` (chunked delta rule, not on the prefill path)
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
 - Last session: 2026-09-26 JST
-- Background: BF16 GGUF download finished and its SHA256 matches the Hugging Face etag (`044d7f8b…a42b`).
+- Background: BF16 GGUF SHA256 matches the Hugging Face etag (`044d7f8b…a42b`).
 
 ## Status
 
-ready-for-review (M4c: causal flash attention over a prefill chunk)
+ready-for-review (M4d: chunked delta rule measured, prefill stays on the register recurrence)
 
 ## Next action
 
-After the M4c PR is merged, branch `ai-written/m4d-deltanet` from `main` and start M4d (`docs/roadmap.md`: chunked gated delta rule, chunk 64, plus batched conv). Compare against the decode recurrence, state included. pp512 is 1397.5 tok/s; M4f still sets the decode/prefill dispatch threshold and reports TTFT.
+After the M4d PR is merged, branch `ai-written/m4f-dispatch` from `main` and start M4f (`docs/roadmap.md`: set the decode/prefill dispatch threshold by measurement; CLI reports TTFT). Exit: pp512 stays above 921.5 tok/s (current shipping path is 1397.5). End-to-end golden and CLI tests still pass.
 
 ## Verification
 
-- M4c (done), `ctest --preset default` 17/17:
-  - `test_attn_splitk`: prefill attention vs FP64, causal, relative L2 <= 2.0e-6 for (pos0, n) = (0, 1), (0, 3), (0, 4), (0, 5), (0, 33), (40, 17), (0, 128).
-  - Golden layer 3 prefill (one chunk and 10+7) is unchanged at 4.63e-4.
-  - `test_prefill`: chunk sizes 25 / 7 / 1 stay bit-identical to each other. Against decode: logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4.
-- pp512 = 1397.5 tok/s (366.4 ms), from 1014.2 after M4e. Decode in the same run: 102.6 tok/s. sclk 1725 MHz, junction 57 °C (`bench/model/results/2026-09-26-run5-flash-attn.txt`, `-smi.csv`).
-- `attn_prefill_kernel`: 108 VGPR, 53760 B LDS, 144 B scratch, occupancy 1 (`build/kernel-resources/test_attn_splitk.txt`).
+- `test_deltanet_chunk`: chunked conv + delta rule vs `deltanet_seq_kernel` for n = 1, 7, 64, 65, 128. Conv relative L2 is 0. Output <= 4.1e-7, state <= 5.0e-7.
+- `test_prefill` (seq path, unchanged): chunk sizes 25 / 7 / 1 stay bit-identical. Against decode: logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4.
+- Shipping pp512 remains 1397.5 tok/s (`bench/model/results/2026-09-26-run5-flash-attn.txt`). The chunk kernel, when wired in, measured 387.8 tok/s (`bench/model/results/2026-09-26-run6-chunk-deltanet.txt`, `-smi.csv`).
+- `deltanet_chunk_kernel`: 256 VGPR, 49936 B LDS, 860 B scratch, 214 spills, occupancy 1 (`build/kernel-resources/test_deltanet_chunk.txt`).
 
 ## Context pointers
 
@@ -59,10 +57,11 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - Issuing a file edit and the command that uses it in the same parallel tool batch: the command can run before the edit lands (seen with `make_golden.py`). Run dependent steps sequentially.
 - Prefill GEMM with the next stage prefetched into registers and no occupancy hint: VGPRs rose to 132, so only 1 workgroup fit per CU and it ran slower. Capping VGPRs at 128 fixed it, but a fully unrolled Q6_K loop then spilled to scratch (16% of peak). Check the kernel resource report after every tiling change (`bench/gemm/README.md`).
 - A persistent shell running `set -e` exited on the first failing command and killed the agent shell session. Run throwaway tests in a `( … )` subshell instead.
+- Chunked gated delta rule (chunk 64) matches the register recurrence to ~5e-7, but holding the chunk in the kernel spills (256 VGPR, 214 spills). Wired into prefill it dropped pp512 from 1397.5 to 387.8 tok/s. Prefill keeps `deltanet_seq_kernel`. Do not switch without a new measurement that beats 1397.5 (`bench/model/results/2026-09-26-run6-chunk-deltanet.txt`).
 
 ## Open questions for user
 
-- Merge the M4c PR.
+- Merge the M4d PR.
 
 ## Session log
 
@@ -83,3 +82,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M4b): M4a merged as #13. On `ai-written/m4b-gemm`, built the prefill GEMM (`kernels/qgemm.hpp`). Weights are expanded once per workgroup into LDS as exact FP16 integers (Q4_K `q*sc`; Q6_K `q-32`, scaled per 16-group because `|sc|` reaches 128 and 2.3% of `(q-32)*sc` products are not FP16-exact). It computes with `v_dot2_f32_f16` over 64x64 tiles and reaches ~51% of peak at T >= 512. Wired into `deltanet_prefill` / `attention_prefill` for all dense projections. Prefill is as accurate as decode against the golden layers, and the oracle now uses a justified 2e-3 tolerance plus bit-equality across chunk sizes. pp512 went from 123.3 to 200.7 tok/s; the profile shows the per-token MoE is 80% of prefill.
 - 2026-09-26 (M4e): M4b merged as #14. On `ai-written/m4e-moe-prefill`, MoE prefill batches the decode router dot product (routing bit-identical), counting-sorts the 9 assignments per token into tasks of 16, and runs grouped gate/up and down GEMMs that stage activations in LDS. The shared expert is expert 256. The DeltaNet prefill recurrence is one launch per layer (head state in registers), bit-identical to per-token steps. pp512 went from 200.7 to 1014.2 tok/s, past llama.cpp's 921.5. The oracle tolerance widened to 1e-2 / 5e-2 because a top-8 near-tie can route differently; this prompt does not.
 - 2026-09-26 (M4c): M4e merged as #15. On `ai-written/m4c-flash-attn`, prefill attention is one causal flash kernel per chunk: 4 query tokens share each staged 32-key sub-chunk, online softmax per row, gate applied in the same launch. RoPE and the KV append are the decode prep, batched over the chunk. FP64 error <= 2e-6. pp512 went from 1014.2 to 1397.5 tok/s.
+- 2026-09-26 (M4d): M4c merged as #16. On `ai-written/m4d-deltanet`, the chunk-64 gated delta rule plus batched conv matches the decode recurrence (conv bit-exact, output and state within 5e-7). It spills 214 times and, wired into prefill, measured pp512 at 387.8 tok/s, so the shipping path stays on the register recurrence at 1397.5.

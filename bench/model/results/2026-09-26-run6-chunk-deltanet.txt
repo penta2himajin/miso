@@ -1,0 +1,8 @@
+# Chunked delta rule wired into prefill (not adopted). Same bench as run5 otherwise.
+# deltanet_chunk_kernel: 256 VGPR, 49936 B LDS, 860 B scratch, 214 spills, occupancy 1.
+model load: 27.2 s
+warm-up: pp512 1322.0 ms, 387.3 tok/s
+measured: pp512 1320.4 ms, 387.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 9.39 ms/token, 106.5 tok/s
+measured: 256 tokens at ctx 273..529: 9.42 ms/token, 106.2 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

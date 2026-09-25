@@ -21,7 +21,7 @@ Goal: ingest prompts with compute-bound kernels. The decode path is the correctn
 | M4a | Batched session API `prefill(tokens[T])` in chunks, with multi-token embedding / RMSNorm; an oracle test harness comparing final hidden state, logits, KV cache and DeltaNet state against the decode path | Harness in place; prefill (initially through per-token kernels) is bit-equal to decode |
 | M4b | Q4_K / Q6_K dense GEMM (weights dequantised to FP16 in LDS tiles, `v_dot2_f32_f16` / `v_pk_fma_f16`) for all dense projections | CPU-reference tests; TFLOP/s reported against the 25.4 TFLOP/s dot2 peak at T = 64 / 512 / 2048 |
 | M4c | Causal flash attention over a prompt chunk (LDS tiles), batched RoPE and KV write | vs decode path; vs FP64 reference for long T |
-| M4d | Chunked gated delta rule (chunk 64) for DeltaNet, plus batched conv | vs decode recurrence, state included |
+| M4d | Chunked gated delta rule (chunk 64) for DeltaNet, plus batched conv | vs decode recurrence, state included. Measured slower than the register recurrence (pp512 387.8 vs 1397.5 tok/s); prefill keeps the single-pass recurrence |
 | M4e | MoE prefill: batched router / top-k, tokens grouped by expert, grouped GEMM | Routing identical to decode path; output within tolerance |
 | M4f | Integrate; set the decode/prefill dispatch threshold by measurement; CLI uses prefill; TTFT reported | **pp512 > 921.5 tok/s** (beat llama.cpp); end-to-end golden and CLI tests still pass |
 
