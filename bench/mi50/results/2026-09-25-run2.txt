@@ -1,0 +1,30 @@
+# device: AMD Radeon Graphics (gfx906:sramecc+:xnack-) CUs=60 clock=1725000kHz memclk=1000000kHz busw=4096bit L2=8388608B LDS/block=65536B regs/block=65536
+hbm blocks/CU=4   read   796.9 GB/s  write   623.3 GB/s  copy   705.7 GB/s
+hbm blocks/CU=8   read   772.0 GB/s  write   582.9 GB/s  copy   709.6 GB/s
+hbm blocks/CU=16  read   762.3 GB/s  write   578.0 GB/s  copy   700.0 GB/s
+hbm blocks/CU=32  read   762.1 GB/s  write   579.0 GB/s  copy   700.5 GB/s
+sweep ws=      16 KiB    5749.6 GB/s
+sweep ws=      32 KiB    3396.8 GB/s
+sweep ws=      64 KiB    1998.1 GB/s
+sweep ws=     128 KiB    1752.9 GB/s
+sweep ws=     256 KiB    1705.8 GB/s
+sweep ws=     512 KiB    1722.2 GB/s
+sweep ws=    1024 KiB    1681.7 GB/s
+sweep ws=    2048 KiB    1694.7 GB/s
+sweep ws=    4096 KiB    1679.3 GB/s
+sweep ws=    8192 KiB    1560.5 GB/s
+sweep ws=   16384 KiB    1293.9 GB/s
+sweep ws=   32768 KiB    1083.2 GB/s
+sweep ws=   65536 KiB     873.3 GB/s
+sweep ws=  131072 KiB     796.7 GB/s
+sweep ws=  262144 KiB     776.8 GB/s
+lds ds_read_b128               11992.3 GB/s
+peak fp32 fma             12.71 TFLOP/s
+peak v_pk_fma_f16         25.92 TFLOP/s
+peak v_dot2_f32_f16       25.45 TFLOP/s
+peak v_dot4_i32_i8        51.09 TOP/s
+peak v_dot8_i32_i4       102.41 TOP/s
+pcie pinned H2D   3.05 GB/s  D2H   3.28 GB/s  pageable H2D   3.05 GB/s
+launch back-to-back (stream)    1.25 us/kernel
+hipGraph 400 empty kernels     1.60 us/kernel (638.7 us/graph)
+launch+sync round trip         16.00 us

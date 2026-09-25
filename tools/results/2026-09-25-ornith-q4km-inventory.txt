@@ -1,0 +1,68 @@
+## tensors
+blk.N.attn_gate.weight                   Q4_K  x 30     135.0 MiB
+blk.N.attn_k.weight                      Q4_K  x 11       6.2 MiB
+blk.N.attn_k_norm.weight                 F32   x 11       0.0 MiB
+blk.N.attn_norm.weight                   F32   x 41       0.3 MiB
+blk.N.attn_output.weight                 Q4_K  x 11      49.5 MiB
+blk.N.attn_q.weight                      Q4_K  x 11      99.0 MiB
+blk.N.attn_q_norm.weight                 F32   x 11       0.0 MiB
+blk.N.attn_qkv.weight                    Q4_K  x 16     144.0 MiB
+blk.N.attn_qkv.weight                    Q6_K  x 14     183.8 MiB
+blk.N.attn_v.weight                      Q4_K  x  4       2.2 MiB
+blk.N.attn_v.weight                      Q6_K  x  7       5.7 MiB
+blk.N.ffn_down_exps.weight               Q4_K  x 20    2880.0 MiB
+blk.N.ffn_down_exps.weight               Q6_K  x 21    4410.0 MiB
+blk.N.ffn_down_shexp.weight              Q4_K  x 20      11.2 MiB
+blk.N.ffn_down_shexp.weight              Q6_K  x 21      17.2 MiB
+blk.N.ffn_gate_exps.weight               Q4_K  x 41    5904.0 MiB
+blk.N.ffn_gate_inp.weight                F32   x 41      82.0 MiB
+blk.N.ffn_gate_inp_shexp.weight          F32   x 41       0.3 MiB
+blk.N.ffn_gate_shexp.weight              Q4_K  x 41      23.1 MiB
+blk.N.ffn_up_exps.weight                 Q4_K  x 41    5904.0 MiB
+blk.N.ffn_up_shexp.weight                Q4_K  x 41      23.1 MiB
+blk.N.nextn.eh_proj.weight               Q4_K  x  1       4.5 MiB
+blk.N.nextn.enorm.weight                 F32   x  1       0.0 MiB
+blk.N.nextn.hnorm.weight                 F32   x  1       0.0 MiB
+blk.N.nextn.shared_head_norm.weight      F32   x  1       0.0 MiB
+blk.N.post_attention_norm.weight         F32   x 41       0.3 MiB
+blk.N.ssm_a                              F32   x 30       0.0 MiB
+blk.N.ssm_alpha.weight                   Q4_K  x 30       1.1 MiB
+blk.N.ssm_beta.weight                    Q4_K  x 30       1.1 MiB
+blk.N.ssm_conv1d.weight                  F32   x 30       3.8 MiB
+blk.N.ssm_dt.bias                        F32   x 30       0.0 MiB
+blk.N.ssm_norm.weight                    F32   x 30       0.0 MiB
+blk.N.ssm_out.weight                     Q4_K  x 30     135.0 MiB
+output.weight                            Q6_K  x  1     397.9 MiB
+output_norm.weight                       F32   x  1       0.0 MiB
+token_embd.weight                        Q4_K  x  1     272.8 MiB
+total 20.21 GiB
+
+## decode bytes per token (main 40 layers)
+attention + deltanet + norms      788.6 MB  39.9%
+routed experts (8/256)            609.5 MB  30.8%
+lm head                           417.2 MB  21.1%
+router                             84.2 MB   4.3%
+shared expert                      76.2 MB   3.9%
+mtp layer                          40.8 MB 
+embedding (1 row)                   0.0 MB   0.0%
+weights 1975.7 MB, deltanet state r/w 125.8 MB
+ctx      0: 2.102 GB -> floor  379.3 tok/s
+ctx   4096: 2.185 GB -> floor  364.7 tok/s
+ctx  32768: 2.773 GB -> floor  287.5 tok/s
+ctx 131072: 4.786 GB -> floor  166.5 tok/s
+
+## F32 tensors exactly representable in BF16
+blk.N.attn_k_norm.weight                 0/11
+blk.N.attn_norm.weight                   0/41
+blk.N.attn_q_norm.weight                 0/11
+blk.N.ffn_gate_inp.weight                41/41
+blk.N.ffn_gate_inp_shexp.weight          41/41
+blk.N.nextn.enorm.weight                 0/1
+blk.N.nextn.hnorm.weight                 0/1
+blk.N.nextn.shared_head_norm.weight      0/1
+blk.N.post_attention_norm.weight         0/41
+blk.N.ssm_a                              0/30
+blk.N.ssm_conv1d.weight                  30/30
+blk.N.ssm_dt.bias                        30/30
+blk.N.ssm_norm.weight                    30/30
+output_norm.weight                       0/1

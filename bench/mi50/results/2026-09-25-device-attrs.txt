@@ -1,0 +1,15 @@
+virtual_memory_management    0
+cooperative_launch           1
+managed_memory               1
+pageable_memory_access       0
+concurrent_kernels           1
+concurrent_managed_access    1
+max_registers_per_block      65536
+max_shared_mem_per_block     65536
+max_shared_mem_per_cu        65536
+max_threads_per_cu           2560
+l2_cache_size_reported       8388608
+wall_clock_rate_khz          25000
+async_engine_count           8
+host_native_atomic           0
+memory_pools_supported       1

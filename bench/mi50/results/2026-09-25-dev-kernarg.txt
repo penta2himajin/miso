@@ -1,0 +1,3 @@
+launch back-to-back (stream)    1.25 us/kernel
+hipGraph 400 empty kernels     1.65 us/kernel (658.9 us/graph)
+launch+sync round trip         16.00 us
