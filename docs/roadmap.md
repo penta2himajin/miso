@@ -25,6 +25,8 @@ Goal: ingest prompts with compute-bound kernels. The decode path is the correctn
 | M4e | MoE prefill: batched router / top-k, tokens grouped by expert, grouped GEMM | Routing identical to decode path; output within tolerance |
 | M4f | Integrate; set the decode/prefill dispatch threshold by measurement; CLI uses prefill; TTFT reported | **pp512 > 921.5 tok/s** (beat llama.cpp); end-to-end golden and CLI tests still pass |
 
+Order after M4b (user decision, 2026-09-26): **M4e, then M4c, then M4d**. After M4b, pp512 takes 2.55 s. The per-token MoE takes ~2.05 s of that (80%), attention ~0.15 s, the DeltaNet recurrence ~0.17 s and the dense GEMMs ~0.12 s (`bench/model/results/2026-09-26-run3-rocprof-stats.csv`).
+
 ## Phase c — M6: quality evaluation (ADR_003 D18, resolves ADR_002 D9)
 
 Goal: decide between the current Q4_K_M and a pure-Q4_K file on measured quality and speed.

@@ -19,7 +19,7 @@ ready-for-review (M4b: prefill GEMM, wired into `prefill()` for all dense mixer 
 
 ## Next action
 
-After the M4b PR is merged, confirm the next step with the user. The roadmap order is M4c (flash attention), then M4d (chunked delta rule), then M4e (grouped MoE). Measurement argues for M4e first: in pp512 (2.55 s), the per-token MoE takes ~2.05 s (80%), while attention takes ~0.15 s, the DeltaNet recurrence ~0.17 s and the GEMMs ~0.12 s (`bench/model/results/2026-09-26-run3-rocprof-stats.csv`). The 555 ms budget for 921.5 tok/s cannot be met without M4e.
+After the M4b PR is merged, branch `ai-written/m4e-moe-prefill` from `main` and start M4e (user chose it before M4c / M4d; `docs/roadmap.md`). M4e is the MoE prefill: batched router and top-k over the chunk, tokens grouped by expert, and a grouped GEMM over the qgemm tiles for gate/up and down (Q4_K, plus Q6_K down in 21 layers). The shared expert becomes a dense GEMM. Exit: routing is identical to the decode path, and the output is within tolerance of it (`tests/test_prefill.hip` oracle, `test_moe` golden). The per-token MoE is ~2.05 s of the 2.55 s pp512.
 
 ## Verification
 
@@ -64,7 +64,6 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 ## Open questions for user
 
 - Merge the M4b PR.
-- Next step order: M4e (MoE prefill) before M4c / M4d, as the profile suggests, or keep the roadmap order?
 
 ## Session log
 
