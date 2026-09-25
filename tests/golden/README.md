@@ -9,6 +9,7 @@
 - Per recorded layer `layer{i}.*` (dims `[2048, 17]` unless noted):
   - `in`, `out`: layer input and output.
   - `mixer_out`: Gated DeltaNet (layer 0) or gated full attention (layer 3) output, before the residual add.
+  - `mixer_core` `[4096, 17]`: input of the mixer's output projection (`out_proj` / `o_proj`), in HF head order. Layer 0's V heads are grouped by K head; the GGUF tiles them.
   - `moe_in`: post-attention RMSNorm output; `moe_out`: sparse MoE block output (routed + shared), before the residual add.
   - `router.0` `[256, 17]` router logits; `router.1` / `router.2` `[8, 17]` top-8 routing weights and expert indices, as returned by `Qwen3_5MoeTopKRouter`.
 

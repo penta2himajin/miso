@@ -9,7 +9,8 @@ Hardware facts: @docs/research/mi50.md. Model file facts: @docs/research/ornith-
 ## Project Structure
 
 ```
-src/          # host code: GGUF reader, weight repack, tokenizer, scheduling, CLI
+src/          # host code: GGUF reader, weight repack, tokenizer, CLI (C++)
+src/engine/   # host code that owns device weights/state and launches kernels (HIP)
 kernels/      # device code: operators as __device__ functions + thin __global__ wrappers
 tests/        # CTest / doctest tests and golden-file fixtures
 bench/        # microbenchmarks and raw results (bench/<topic>/results/)
