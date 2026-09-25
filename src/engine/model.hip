@@ -131,18 +131,13 @@ void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned
     kernels::embed_q4k_kernel<kHidden, kBlock><<<c, kBlock, 0, stream>>>(ep, c);
     for (std::size_t i = 0; i < m.layers.size(); ++i) {
       const auto& l = m.layers[i];
-      // Per-token mixer kernels for now (M4a): tokens run in order, so the recurrent state and
-      // the KV cache advance exactly as in decode.
-      for (unsigned t = 0; t < c; ++t) {
-        float* h = s.chunk_h.data() + std::size_t{t} * kHidden;
-        const float* delta = i == 0 ? nullptr : s.chunk_moe.data() + std::size_t{t} * kHidden;
-        float* y = s.chunk_mixer.data() + std::size_t{t} * kHidden;
-        if (l.deltanet) {
-          deltanet_decode(*l.deltanet, *s.deltanet[i], s.dn_scratch, h, delta, y, m.eps, stream);
-        } else {
-          attention_decode(*l.attention, *s.kv[i], s.attn_scratch, m.rope, h, delta, y, m.eps,
-                           stream);
-        }
+      const float* delta = i == 0 ? nullptr : s.chunk_moe.data();
+      if (l.deltanet) {
+        deltanet_prefill(*l.deltanet, *s.deltanet[i], s.dn_prefill, s.chunk_h.data(), delta,
+                         s.chunk_mixer.data(), c, m.eps, stream);
+      } else {
+        attention_prefill(*l.attention, *s.kv[i], s.attn_scratch, s.attn_prefill, m.rope,
+                          s.chunk_h.data(), delta, s.chunk_mixer.data(), c, m.eps, stream);
       }
       const kernels::AddRmsNormParams post{s.chunk_h.data(), s.chunk_mixer.data(),
                                            l.post_attention_norm.data(), s.chunk_xn.data(), m.eps};

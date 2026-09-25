@@ -41,10 +41,29 @@ struct AttentionScratch {
   DeviceBuffer<float> part_o{2 * kMaxSplits * 8 * 256};
 };
 
+// Chunk buffers of the prefill path, for up to max_tok tokens.
+struct AttentionPrefillScratch {
+  explicit AttentionPrefillScratch(unsigned max_tok)
+      : in(max_tok, 4096),
+        xn(max_tok * 2048),
+        qg(max_tok * 8192),
+        k(max_tok * 512),
+        v(max_tok * 512),
+        core(max_tok * 4096) {}
+  GemmInput in;
+  DeviceBuffer<float> xn, qg, k, v, core;
+};
+
 // h += delta (if delta != nullptr), then y = Attention(RMSNorm(h)) for the token at position
 // cache.len, which is appended to the cache.
 void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionScratch& sc,
                       const RopeConfig& rope, float* h, const float* delta, float* y, float eps,
                       hipStream_t stream);
+
+// The same for n consecutive tokens ([n][2048] arrays): projections as prefill GEMMs, attention
+// token by token (causal, each token sees the cache up to itself).
+void attention_prefill(const AttentionLayer& w, AttentionCache& cache, AttentionScratch& sc,
+                       AttentionPrefillScratch& ps, const RopeConfig& rope, float* h,
+                       const float* delta, float* y, unsigned n, float eps, hipStream_t stream);
 
 }  // namespace miso

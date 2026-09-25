@@ -66,4 +66,53 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
   gemv(w.o, sc.core.data(), y, stream);
 }
 
+void attention_prefill(const AttentionLayer& w, AttentionCache& cache, AttentionScratch& sc,
+                       AttentionPrefillScratch& ps, const RopeConfig& rope, float* h,
+                       const float* delta, float* y, unsigned n, float eps, hipStream_t stream) {
+  using kernels::attn::half_t;
+  constexpr int kBlock = 256;
+  if (cache.len + n > cache.max_ctx)
+    throw std::runtime_error("attention_prefill: KV cache is full");
+  const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), ps.xn.data(), eps};
+  kernels::add_rmsnorm_kernel<2048, kBlock><<<n, kBlock, 0, stream>>>(norm, n);
+  gemm_input(ps.xn.data(), 2048, n, ps.in, stream);
+  gemm(w.q, ps.in, ps.qg.data(), 8192, stream);
+  gemm(w.k, ps.in, ps.k.data(), 512, stream);
+  gemm(w.v, ps.in, ps.v.data(), 512, stream);
+  auto* kc = reinterpret_cast<half_t*>(cache.k.data());
+  auto* vc = reinterpret_cast<half_t*>(cache.v.data());
+  for (unsigned t = 0; t < n; ++t) {
+    float* qg = ps.qg.data() + std::size_t{t} * 8192;
+    const kernels::AttnPrepParams prep{qg,
+                                       ps.k.data() + std::size_t{t} * 512,
+                                       ps.v.data() + std::size_t{t} * 512,
+                                       w.q_norm.data(),
+                                       w.k_norm.data(),
+                                       rope.inv_freq.data(),
+                                       kc,
+                                       vc,
+                                       sc.q.data(),
+                                       cache.len,
+                                       cache.max_ctx,
+                                       eps};
+    kernels::attn_prep_kernel<kBlock><<<18, kBlock, 0, stream>>>(prep);
+    ++cache.len;
+    const unsigned n_splits = kernels::attn_n_splits(cache.len, AttentionScratch::kMaxSplits);
+    const kernels::AttnSplitParams split{
+        sc.q.data(),   kc,      vc, sc.part_m.data(), sc.part_l.data(), sc.part_o.data(), cache.len,
+        cache.max_ctx, n_splits};
+    kernels::attn_split_kernel<kBlock><<<dim3(n_splits, 2), kBlock, 0, stream>>>(split);
+    const kernels::AttnCombineParams comb{sc.part_m.data(),
+                                          sc.part_l.data(),
+                                          sc.part_o.data(),
+                                          qg,
+                                          ps.core.data() + std::size_t{t} * 4096,
+                                          n_splits};
+    kernels::attn_combine_kernel<kBlock><<<16, kBlock, 0, stream>>>(comb);
+  }
+  MISO_HIP_CHECK(hipGetLastError());
+  gemm_input(ps.core.data(), 4096, n, ps.in, stream);
+  gemm(w.o, ps.in, y, 2048, stream);
+}
+
 }  // namespace miso

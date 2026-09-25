@@ -32,9 +32,29 @@ struct DeltaNetScratch {
   DeviceBuffer<float> xn{2048}, qkv{8192}, z{4096}, a{32}, b{32}, o{4096};
 };
 
+// Chunk buffers of the prefill path, for up to max_tok tokens.
+struct DeltaNetPrefillScratch {
+  explicit DeltaNetPrefillScratch(unsigned max_tok)
+      : in(max_tok, 4096),
+        xn(max_tok * 2048),
+        qkv(max_tok * 8192),
+        z(max_tok * 4096),
+        a(max_tok * 32),
+        b(max_tok * 32),
+        o(max_tok * 4096) {}
+  GemmInput in;
+  DeviceBuffer<float> xn, qkv, z, a, b, o;
+};
+
 // h += delta (if delta != nullptr), then y = DeltaNet(RMSNorm(h)) for one token. h, delta and y are
 // device pointers to 2048 floats.
 void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch& sc, float* h,
                      const float* delta, float* y, float eps, hipStream_t stream);
+
+// The same for n consecutive tokens ([n][2048] arrays): projections as prefill GEMMs, the
+// recurrence token by token.
+void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefillScratch& sc,
+                      float* h, const float* delta, float* y, unsigned n, float eps,
+                      hipStream_t stream);
 
 }  // namespace miso

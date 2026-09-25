@@ -7,24 +7,29 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m4a-prefill-harness` (PR open against `main`)
-- Last work commit: M4a commit on this branch @ 2026-09-26
+- Branch: `ai-written/m4b-gemm` (PR open against `main`)
+- Last work commit: M4b commit on this branch @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-26 00:30 JST
+- Last session: 2026-09-26 JST
 - Background: `Ornith-1.5-35B-BF16.gguf` downloading (36 of 71 GB at 00:25); Q8_0 done and verified. Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`. When it finishes, check its SHA256 against the etag in `.cache/huggingface/download/*.metadata`.
 
 ## Status
 
-ready-for-review (M4a: prefill session API + oracle harness)
+ready-for-review (M4b: prefill GEMM, wired into `prefill()` for all dense mixer projections)
 
 ## Next action
 
-After the M4a PR is merged, branch `ai-written/m4b-gemm` from `main` and start M4b (`docs/roadmap.md`): Q4_K / Q6_K dense GEMM for prefill (weights dequantised to FP16 in LDS tiles, `v_dot2_f32_f16`), with CPU-reference tests and a TFLOP/s report at T = 64 / 512 / 2048. Then wire it into `prefill()` for the dense projections and compare against the M4a oracle (`tests/test_prefill.hip`) with a tolerance instead of bit equality.
+After the M4b PR is merged, confirm the next step with the user. The roadmap order is M4c (flash attention), then M4d (chunked delta rule), then M4e (grouped MoE). Measurement argues for M4e first: in pp512 (2.55 s), the per-token MoE takes ~2.05 s (80%), while attention takes ~0.15 s, the DeltaNet recurrence ~0.17 s and the GEMMs ~0.12 s (`bench/model/results/2026-09-26-run3-rocprof-stats.csv`). The 555 ms budget for 921.5 tok/s cannot be met without M4e.
 
 ## Verification
 
-- M4a (done): `test_prefill` compares logits, KV cache, conv and recurrent state, position and prediction of `prefill()` against token-by-token decode; bit-equal for chunk sizes 25 (whole prompt), 7 and 1. Baseline pp512 = 123.3 tok/s (`bench/model/results/2026-09-26-run2-prefill-baseline.txt`).
-- M4b exit: CPU-reference GEMM tests; TFLOP/s against the 25.4 TFLOP/s dot2 peak.
+- M4b (done):
+  - `test_qgemm` checks the activation prep bit-exactly. It also checks Q4_K / Q6_K GEMMs on real projections (fixture, attn_gate, ssm_alpha with N = 32, attn_qkv, ssm_out, attn_v; token tails, short grids, row stride) against FP64 within an FP32-accumulation bound.
+  - Golden layer tests for `deltanet_prefill` / `attention_prefill` (one chunk and 10 + 7) match decode accuracy: 2.96e-4 / 4.63e-4.
+  - `test_prefill` holds prefill to 2e-3 relative L2 of decode (measured at most 1.0e-3) and requires chunk sizes 25 / 7 / 1 to be bit-identical to each other.
+  - Mutations (Q4_K min term, Q6_K qh shift, K offset, conv parity) are all caught.
+- GEMM: 12.3–13.1 TFLOP/s (48.6–51.7% of the 25.4 dot2 peak) at T = 512–2048 for N >= 4096; 20–31% at T = 64 (`bench/gemm/`).
+- pp512 = 200.7 tok/s (from 123.3); decode unchanged at 108.5 tok/s.
 
 ## Context pointers
 
@@ -53,11 +58,13 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - Python-driven multi-line `str.replace` on kernel files silently skips blocks that clang-format reflowed (hit again in `q6k_gemv.hpp`: function renamed but body unchanged). Grep for the old body after editing.
 - Attention decode with one workgroup per query head and per-thread K rows: correct but 0.41 us per context token (`bench/attention/results/2026-09-26-run1.txt`). Replaced by split-K.
 - Issuing a file edit and the command that uses it in the same parallel tool batch: the command can run before the edit lands (seen with `make_golden.py`). Run dependent steps sequentially.
+- Prefill GEMM with the next stage prefetched into registers and no occupancy hint: VGPRs rose to 132, so only 1 workgroup fit per CU and it ran slower. Capping VGPRs at 128 fixed it, but a fully unrolled Q6_K loop then spilled to scratch (16% of peak). Check the kernel resource report after every tiling change (`bench/gemm/README.md`).
 - A persistent shell running `set -e` exited on the first failing command and killed the agent shell session. Run throwaway tests in a `( … )` subshell instead.
 
 ## Open questions for user
 
-- Merge the M4a PR.
+- Merge the M4b PR.
+- Next step order: M4e (MoE prefill) before M4c / M4d, as the profile suggests, or keep the roadmap order?
 
 ## Session log
 
@@ -75,3 +82,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M3e-2): On `ai-written/m3e-tokenizer`, built the byte-level BPE tokenizer from GGUF metadata with generated Unicode tables (NFC, categories), the chat template and the `miso` CLI (streaming, one step in flight). Found that the HF regex engine matches nothing for `\p{M}` in the qwen35 split pattern; reproducing that brought 250/261 to 261/261 exact matches (`docs/research/ornith-q4km-gguf.md`). The CLI answers a Japanese chat prompt coherently at 119 tok/s and reproduces llama.cpp's continuation. M3 is complete. Merged as #11.
 - 2026-09-26 (roadmap): User chose the order a -> c -> b after M3: M4 prefill, then M6 quality evaluation, then M7 decode optimisation, then M5 MTP. Wrote `docs/roadmap.md` with per-step exit criteria and ADR_005.
 - 2026-09-26 (M4a): Roadmap merged as #12. On `ai-written/m4a-prefill-harness`, added the layer-major chunked `prefill()` (multi-token embedding and add+RMSNorm, per-token mixer and MoE kernels for now) and the oracle harness `tests/session_compare.hpp` + `tests/test_prefill.hip`. Prefill is bit-equal to decode for chunk sizes 25, 7 and 1, and one decode step after prefill also agrees. A mutation (dropping the MoE delta for token 0) is caught with 0.58-1.16 relative diffs. The CLI now prefills the prompt. Baseline pp512 = 123.3 tok/s (per-token kernels), the M4 starting point against llama.cpp's 921.5.
+- 2026-09-26 (M4b): M4a merged as #13. On `ai-written/m4b-gemm`, built the prefill GEMM (`kernels/qgemm.hpp`). Weights are expanded once per workgroup into LDS as exact FP16 integers (Q4_K `q*sc`; Q6_K `q-32`, scaled per 16-group because `|sc|` reaches 128 and 2.3% of `(q-32)*sc` products are not FP16-exact). It computes with `v_dot2_f32_f16` over 64x64 tiles and reaches ~51% of peak at T >= 512. Wired into `deltanet_prefill` / `attention_prefill` for all dense projections. Prefill is as accurate as decode against the golden layers, and the oracle now uses a justified 2e-3 tolerance plus bit-equality across chunk sizes. pp512 went from 123.3 to 200.7 tok/s; the profile shows the per-token MoE is 80% of prefill.

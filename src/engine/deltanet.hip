@@ -51,4 +51,37 @@ void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch&
   gemv(w.out, sc.o.data(), y, stream);
 }
 
+void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefillScratch& sc,
+                      float* h, const float* delta, float* y, unsigned n, float eps,
+                      hipStream_t stream) {
+  constexpr int kBlock = 256;
+  const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
+  kernels::add_rmsnorm_kernel<2048, kBlock><<<n, kBlock, 0, stream>>>(norm, n);
+  gemm_input(sc.xn.data(), 2048, n, sc.in, stream);
+  gemm(w.qkv, sc.in, sc.qkv.data(), 8192, stream);
+  gemm(w.z, sc.in, sc.z.data(), 4096, stream);
+  gemm(w.a, sc.in, sc.a.data(), 32, stream);
+  gemm(w.b, sc.in, sc.b.data(), 32, stream);
+  for (unsigned t = 0; t < n; ++t) {
+    const kernels::DeltaNetStepParams step{sc.qkv.data() + std::size_t{t} * 8192,
+                                           sc.z.data() + std::size_t{t} * 4096,
+                                           sc.a.data() + std::size_t{t} * 32,
+                                           sc.b.data() + std::size_t{t} * 32,
+                                           w.conv_w.data(),
+                                           st.conv[st.parity].data(),
+                                           st.conv[1 - st.parity].data(),
+                                           w.ssm_a.data(),
+                                           w.dt_bias.data(),
+                                           w.ssm_norm.data(),
+                                           st.s.data(),
+                                           sc.o.data() + std::size_t{t} * 4096,
+                                           eps};
+    kernels::deltanet_step_kernel<kBlock><<<32, kBlock, 0, stream>>>(step);
+    st.parity = 1 - st.parity;
+  }
+  MISO_HIP_CHECK(hipGetLastError());
+  gemm_input(sc.o.data(), 4096, n, sc.in, stream);
+  gemm(w.out, sc.in, y, 2048, stream);
+}
+
 }  // namespace miso

@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include <hip/hip_runtime.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <filesystem>
@@ -63,4 +64,43 @@ TEST_CASE("Gated DeltaNet decode reproduces golden layer 0 token by token" *
     CHECK(rel <= 1e-3);
   }
   MESSAGE("max relative L2 error over " << n_tok << " tokens = " << worst);
+}
+
+// The prefill form (projections as GEMMs over the chunk) must meet the same golden bound, also when
+// the prompt arrives in two chunks that continue the recurrent state.
+TEST_CASE("Gated DeltaNet prefill reproduces golden layer 0" *
+          doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
+  const File m = File::open(MISO_ORNITH_GGUF);
+  const File g = File::open(std::string(MISO_GOLDEN_DIR) + "/ornith-layers.gguf");
+  const auto in = golden_f32(g, "layer0.in"), want = golden_f32(g, "layer0.mixer_out");
+  const unsigned n_tok = static_cast<unsigned>(in.size() / kHidden);
+
+  const auto layer = miso::DeltaNetLayer::load(m, 0);
+  const float eps = static_cast<float>(m.get<double>("qwen35moe.attention.layer_norm_rms_epsilon"));
+  for (unsigned first_chunk : {n_tok, 10u}) {
+    CAPTURE(first_chunk);
+    miso::DeltaNetState state;
+    miso::DeltaNetPrefillScratch scratch(n_tok);
+    miso::DeviceBuffer<float> h(in), y(in.size());
+    for (unsigned t0 = 0; t0 < n_tok; t0 += first_chunk) {
+      const unsigned c = std::min(first_chunk, n_tok - t0);
+      miso::deltanet_prefill(layer, state, scratch, h.data() + t0 * kHidden, nullptr,
+                             y.data() + t0 * kHidden, c, eps, nullptr);
+    }
+    MISO_HIP_CHECK(hipDeviceSynchronize());
+    const auto got = y.to_host();
+    double worst = 0;
+    for (unsigned t = 0; t < n_tok; ++t) {
+      CAPTURE(t);
+      double num = 0, den = 0;
+      for (unsigned i = 0; i < kHidden; ++i) {
+        const double d = double{got[t * kHidden + i]} - want[t * kHidden + i];
+        num += d * d, den += double{want[t * kHidden + i]} * want[t * kHidden + i];
+      }
+      const double rel = std::sqrt(num / den);
+      worst = std::max(worst, rel);
+      CHECK(rel <= 1e-3);
+    }
+    MESSAGE("max relative L2 error over " << n_tok << " tokens = " << worst);
+  }
 }

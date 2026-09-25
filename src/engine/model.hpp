@@ -58,6 +58,8 @@ struct Session {
   static constexpr unsigned kMaxChunk = 512;
   DeviceBuffer<float> chunk_h{kMaxChunk * 2048}, chunk_mixer{kMaxChunk * 2048};
   DeviceBuffer<float> chunk_xn{kMaxChunk * 2048}, chunk_moe{kMaxChunk * 2048};
+  DeltaNetPrefillScratch dn_prefill{kMaxChunk};
+  AttentionPrefillScratch attn_prefill{kMaxChunk};
 
   static constexpr unsigned kArgmaxParts = 240;
 };
