@@ -64,7 +64,7 @@ add_library(miso_kernels INTERFACE)
 target_include_directories(miso_kernels INTERFACE ${PROJECT_SOURCE_DIR}/kernels)
 
 # Host code.
-add_library(miso_host STATIC src/gguf.cpp src/dequant.cpp src/repack.cpp)
+add_library(miso_host STATIC src/gguf.cpp src/dequant.cpp src/repack.cpp src/unicode.cpp src/tokenizer.cpp)
 target_include_directories(miso_host PUBLIC ${PROJECT_SOURCE_DIR}/src)
 # gguf-py rounds mul and sub separately. For Q4_K/Q6_K the products are exact, so contraction
 # does not change results today, but it would for formats with inexact products.
@@ -78,6 +78,15 @@ miso_warnings(miso_engine)
 
 add_library(doctest INTERFACE)
 target_include_directories(doctest SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_party)
+
+set(MISO_ORNITH_GGUF
+    "/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf"
+    CACHE FILEPATH "Ornith Q4_K_M GGUF: default model path; tests that need it are skipped when absent")
+
+add_executable(miso src/cli/miso.hip)
+target_link_libraries(miso PRIVATE miso_engine)
+target_compile_definitions(miso PRIVATE MISO_ORNITH_GGUF="${MISO_ORNITH_GGUF}")
+miso_warnings(miso)
 
 enable_testing()
 add_subdirectory(tests)
