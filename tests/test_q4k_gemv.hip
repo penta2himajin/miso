@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <filesystem>
 #include <random>
 #include <string>
@@ -12,6 +13,7 @@
 #include "gguf.hpp"
 #include "hip_util.hpp"
 #include "q4k_gemv.hpp"
+#include "repack.hpp"
 
 using miso::gguf::File;
 using miso::kernels::ActFormat;
@@ -21,8 +23,9 @@ namespace {
 constexpr int kBlock = 256;
 
 struct Case {
-  std::vector<std::uint8_t> w;  // raw Q4_K rows
-  std::vector<float> wf;        // CPU-dequantised rows
+  std::vector<std::uint8_t> w;  // Q4_K r1 rows (what the kernel consumes)
+  std::vector<float> wf;        // CPU-dequantised rows (from the original GGUF bytes)
+  std::vector<float> ds;        // d * sc of each element's sub-block
   unsigned n = 0, k = 0;
 };
 
@@ -34,10 +37,23 @@ Case load(const File& f, const std::string& name) {
   c.k = static_cast<unsigned>(t->dims[0]);
   c.n = static_cast<unsigned>(t->n_elements() / c.k);
   const auto bytes = f.tensor_data(*t);
-  c.w.assign(reinterpret_cast<const std::uint8_t*>(bytes.data()),
-             reinterpret_cast<const std::uint8_t*>(bytes.data()) + bytes.size());
   c.wf.resize(t->n_elements());
   miso::dequantize(t->type, bytes, c.wf);
+  std::vector<std::byte> r1(bytes.size());
+  miso::repack_q4k(bytes, r1);
+  c.w.resize(r1.size());
+  std::memcpy(c.w.data(), r1.data(), r1.size());
+  c.ds.resize(t->n_elements());
+  for (std::size_t b = 0; b < bytes.size() / miso::kQ4kBlockBytes; ++b) {
+    const std::byte* blk = bytes.data() + b * miso::kQ4kBlockBytes;
+    std::uint16_t dbits;
+    std::memcpy(&dbits, blk, 2);
+    for (int j = 0; j < 8; ++j) {
+      std::uint8_t sc, m;
+      miso::q4k_scale_min(blk, j, sc, m);
+      std::fill_n(&c.ds[b * 256 + 32 * j], 32, miso::fp16_to_f32(dbits) * sc);
+    }
+  }
   return c;
 }
 
@@ -55,21 +71,23 @@ std::vector<double> act_error(ActFormat a, const std::vector<float>& x) {
   return e;
 }
 
-template <ActFormat A, unsigned K>
+template <ActFormat A, unsigned K, int R>
 std::vector<float> run_gpu(const Case& c, const std::vector<float>& x, unsigned grid) {
   miso::DeviceBuffer<std::uint8_t> dw(c.w);
   miso::DeviceBuffer<float> dx(x), dy(std::vector<float>(c.n, -1.0f));
   miso::kernels::Q4kGemvParams p{dw.data(), dx.data(), dy.data(), c.n};
-  miso::kernels::q4k_gemv_kernel<A, K, kBlock><<<grid, kBlock>>>(p);
+  miso::kernels::q4k_gemv_kernel<A, K, kBlock, R><<<grid, kBlock>>>(p);
   MISO_HIP_CHECK(hipGetLastError());
   return dy.to_host();
 }
 
-// Checks |y - W x| <= sum_k |W_ik| e_k + K * 2^-23 * sum_k |W_ik x_k| for every row.
-template <ActFormat A, unsigned K>
+// Checks |y - W x| <= sum_k |W_ik| e_k + K * 2^-23 * sum_k |W_ik x_k| (+ FP16 offset term) per row.
+// The FP16 variant accumulates (1024 + q) * x in FP32 and subtracts 1024 * sum(x) per 16-element
+// lane chain, adding at most 16 * 2^-24 * sum_k (1039 * d * sc_k) |x_k|.
+template <ActFormat A, unsigned K, int R = 1>
 void check(const Case& c, const std::vector<float>& x, unsigned grid) {
   REQUIRE(c.k == K);
-  const auto y = run_gpu<A, K>(c, x, grid);
+  const auto y = run_gpu<A, K, R>(c, x, grid);
   const auto e = act_error(A, x);
   double worst = 0;
   for (unsigned r = 0; r < c.n; ++r) {
@@ -79,6 +97,8 @@ void check(const Case& c, const std::vector<float>& x, unsigned grid) {
       ref += double{w[k]} * x[k];
       mag += std::fabs(double{w[k]} * x[k]);
       bound += std::fabs(double{w[k]}) * e[k];
+      if (A == ActFormat::Fp16)
+        bound += 0x1p-20 * 1039.0 * c.ds[std::size_t{r} * K + k] * std::fabs(x[k]);
     }
     bound += K * 0x1p-23 * mag;
     const double err = std::fabs(y[r] - ref);
@@ -133,6 +153,9 @@ TEST_CASE("Q4_K GEMV on real projections with a real activation" *
   }
   SUBCASE("attn_gate 2048 -> 4096, fp16") {
     check<ActFormat::Fp16, 2048>(load(m, "blk.0.attn_gate.weight"), x2048, 240);
+  }
+  SUBCASE("attn_gate 2048 -> 4096, fp16, 4 rows per wave, grid not dividing N") {
+    check<ActFormat::Fp16, 2048, 4>(load(m, "blk.0.attn_gate.weight"), x2048, 37);
   }
   std::vector<float> x4096(x2048);
   x4096.insert(x4096.end(), xs + 2048, xs + 4096);  // two tokens back to back

@@ -23,6 +23,8 @@ float bits_to_f32(std::uint32_t b) {
   return f;
 }
 
+}  // namespace
+
 float fp16_to_f32(std::uint16_t h) {
   const std::uint32_t sign = static_cast<std::uint32_t>(h & 0x8000u) << 16;
   const std::uint32_t exp = (h >> 10) & 0x1Fu;
@@ -36,17 +38,18 @@ float fp16_to_f32(std::uint16_t h) {
   return bits_to_f32(sign | ((exp + 112) << 23) | (mant << 13));
 }
 
+namespace {
+
 constexpr int kQK = 256;
 
 // Q4_K block: f16 d, f16 dmin, 12 bytes of packed 6-bit scales/mins, 128 bytes of nibbles.
 void dequant_q4_k(const std::byte* b, float* y) {
   const float d = fp16_to_f32(load_u16(b));
   const float dmin = fp16_to_f32(load_u16(b + 2));
-  const auto* s = reinterpret_cast<const std::uint8_t*>(b + 4);
   const auto* qs = reinterpret_cast<const std::uint8_t*>(b + 16);
   for (int j = 0; j < 8; ++j) {
-    const int sc = j < 4 ? s[j] & 0x3F : (s[j + 4] & 0x0F) | ((s[j - 4] >> 2) & 0x30);
-    const int m = j < 4 ? s[j + 4] & 0x3F : (s[j + 4] >> 4) | ((s[j] >> 2) & 0x30);
+    std::uint8_t sc, m;
+    q4k_scale_min(b, j, sc, m);
     const float dj = d * static_cast<float>(sc);
     const float mj = dmin * static_cast<float>(m);
     const int g = j / 2, shift = 4 * (j % 2);
@@ -73,6 +76,12 @@ void dequant_q6_k(const std::byte* b, float* y) {
 }
 
 }  // namespace
+
+void q4k_scale_min(const std::byte* block, int j, std::uint8_t& sc, std::uint8_t& m) {
+  const auto* s = reinterpret_cast<const std::uint8_t*>(block + 4);
+  sc = j < 4 ? s[j] & 0x3F : (s[j + 4] & 0x0F) | ((s[j - 4] >> 2) & 0x30);
+  m = j < 4 ? s[j + 4] & 0x3F : (s[j + 4] >> 4) | ((s[j] >> 2) & 0x30);
+}
 
 void dequantize(GgmlType type, std::span<const std::byte> src, std::span<float> dst) {
   const auto& tr = gguf::traits(type);

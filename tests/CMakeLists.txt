@@ -34,3 +34,4 @@ endfunction()
 
 miso_cpu_test(test_gguf test_gguf.cpp)
 miso_cpu_test(test_golden test_golden.cpp)
+miso_cpu_test(test_repack test_repack.cpp)
