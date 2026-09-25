@@ -1,7 +1,7 @@
-# After fused MoE gate/up and a 120-workgroup down kernel. sclk 1725 MHz, junction 55 C, 155 W.
-model load: 35.8 s
-warm-up: pp512 366.9 ms, 1395.4 tok/s
-measured: pp512 366.7 ms, 1396.2 tok/s
-warm-up: 256 tokens at ctx 17..273: 8.83 ms/token, 113.3 tok/s
-measured: 256 tokens at ctx 273..529: 8.85 ms/token, 113.0 tok/s
+# After gate/up grid 120 + overlapped loads. sclk 1725 MHz, junction 54 C, 148 W.
+model load: 25.5 s
+warm-up: pp512 366.8 ms, 1395.7 tok/s
+measured: pp512 366.2 ms, 1398.1 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.74 ms/token, 114.5 tok/s
+measured: 256 tokens at ctx 273..529: 8.76 ms/token, 114.1 tok/s
 first generated ids: 115197 36298 1710 561 6511 314 6124 369

@@ -128,8 +128,9 @@ __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigne
     const std::uint8_t* up = slot < moe::kTopK
                                  ? p.up_exps + (std::size_t(sid[slot]) * moe::kFf + row) * kRowBytes
                                  : p.up_sh + row * kRowBytes;
-    float g = wave_sum(slot_dot<ActFormat::Fp16>(load_w(gate, lane), lane, act));
-    float u = wave_sum(slot_dot<ActFormat::Fp16>(load_w(up, lane), lane, act));
+    const SlotW gw = load_w(gate, lane), uw = load_w(up, lane);
+    float g = wave_sum(slot_dot<ActFormat::Fp16>(gw, lane, act));
+    float u = wave_sum(slot_dot<ActFormat::Fp16>(uw, lane, act));
     if (lane == kWave - 1)
       p.h[r] = g / (1.0f + expf(-g)) * u;
   }
