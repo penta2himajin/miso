@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "moe_decode.hpp"
+#include "moe_prefill.hpp"
 
 namespace miso {
 
@@ -73,6 +74,54 @@ void moe_decode(const MoeLayer& w, MoeScratch& sc, const float* x, float* y, hip
   } else {
     kernels::moe_down_kernel<kernels::QType::Q6K, kBlock><<<240, kBlock, 0, stream>>>(dp);
   }
+  MISO_HIP_CHECK(hipGetLastError());
+}
+
+MoePrefillScratch::MoePrefillScratch(unsigned n)
+    : max_tok(n),
+      in(n, 2048),
+      logits(std::size_t{n} * 257),
+      weights(std::size_t{n} * 9),
+      as(std::size_t{n} * 9 * 32),
+      part(std::size_t{n} * 9 * 2048),
+      ids(std::size_t{n} * 9),
+      order(std::size_t{n} * 9),
+      n_tasks(1),
+      tasks(kernels::moe_max_tasks(n)),
+      ah(std::size_t{n} * 9 * 512) {}
+
+void moe_prefill(const MoeLayer& w, MoePrefillScratch& sc, const float* x, float* y, unsigned n,
+                 hipStream_t stream) {
+  constexpr int kBlock = 256;
+  if (n > sc.max_tok)
+    throw std::runtime_error("moe_prefill: chunk too large");
+  gemm_input(x, 2048, n, sc.in, stream);
+  const kernels::MoeRouterBatchParams rp{w.router.data(), x, sc.logits.data(), n};
+  kernels::moe_router_batch_kernel<kBlock>
+      <<<kernels::moe_router_batch_items(n, kBlock), kBlock, 0, stream>>>(rp);
+  const kernels::MoeTopkBatchParams tp{sc.logits.data(), sc.ids.data(), sc.weights.data(), n};
+  kernels::moe_topk_batch_kernel<kBlock><<<n, kBlock, 0, stream>>>(tp);
+  const kernels::MoeGroupParams gp{sc.ids.data(), sc.order.data(), sc.tasks.data(),
+                                   sc.n_tasks.data(), n};
+  kernels::moe_group_kernel<1024><<<1, 1024, 0, stream>>>(gp);
+  const unsigned max_tasks = kernels::moe_max_tasks(n);
+  const kernels::MoeGateUpGroupedParams up{
+      w.gate_exps.data.data(), w.up_exps.data.data(), w.gate_sh.data.data(), w.up_sh.data.data(),
+      sc.in.xh.data(),         sc.in.xs.data(),       sc.order.data(),       sc.tasks.data(),
+      sc.n_tasks.data(),       sc.ah.data(),          sc.as.data()};
+  kernels::moe_gate_up_grouped_kernel<kBlock><<<2 * max_tasks, kBlock, 0, stream>>>(up);
+  const kernels::MoeDownGroupedParams dp{
+      w.down_exps.data.data(), w.down_sh.data.data(), sc.ah.data(),    sc.as.data(),
+      sc.weights.data(),       sc.order.data(),       sc.tasks.data(), sc.n_tasks.data(),
+      sc.part.data()};
+  if (w.down_exps.type == gguf::GgmlType::Q4_K)
+    kernels::moe_down_grouped_kernel<kernels::QType::Q4K, kBlock>
+        <<<8 * max_tasks, kBlock, 0, stream>>>(dp);
+  else
+    kernels::moe_down_grouped_kernel<kernels::QType::Q6K, kBlock>
+        <<<8 * max_tasks, kBlock, 0, stream>>>(dp);
+  const kernels::MoeCombineParams cp{sc.part.data(), y, n};
+  kernels::moe_combine_kernel<<<(n * 512 + 255) / 256, 256, 0, stream>>>(cp);
   MISO_HIP_CHECK(hipGetLastError());
 }
 

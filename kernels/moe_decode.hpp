@@ -29,6 +29,26 @@ struct MoeRouterParams {
   float* logits;           // [257]
 };
 
+namespace moe_detail {
+
+// A lane's 32 BF16 router weights (4 x uint4) against its 32 activations. The prefill router uses
+// the same function, so both paths produce bit-identical logits and hence identical routing.
+__device__ inline float router_lane_dot(const uint4 (&v)[4], const float* x) {
+  float acc = 0;
+#pragma unroll
+  for (int c = 0; c < 4; ++c) {
+    const unsigned w[4] = {v[c].x, v[c].y, v[c].z, v[c].w};
+#pragma unroll
+    for (int e = 0; e < 4; ++e) {
+      acc += __builtin_bit_cast(float, w[e] << 16) * x[8 * c + 2 * e];
+      acc += __builtin_bit_cast(float, w[e] & 0xFFFF0000u) * x[8 * c + 2 * e + 1];
+    }
+  }
+  return acc;
+}
+
+}  // namespace moe_detail
+
 // Rows [first, first + count) of 257; one wavefront per row, 32 contiguous weights per lane.
 template <int kBlock>
 __device__ void moe_router_op(const MoeRouterParams& p, unsigned first, unsigned count) {
@@ -39,17 +59,8 @@ __device__ void moe_router_op(const MoeRouterParams& p, unsigned first, unsigned
   for (unsigned r = first + wave; r < first + count; r += n_waves) {
     const uint4* row =
         reinterpret_cast<const uint4*>(p.w + std::size_t{r} * moe::kHidden + lane * 32);
-    float acc = 0;
-#pragma unroll
-    for (int c = 0; c < 4; ++c) {
-      const uint4 v = row[c];
-      const unsigned w[4] = {v.x, v.y, v.z, v.w};
-#pragma unroll
-      for (int e = 0; e < 4; ++e) {
-        acc += __builtin_bit_cast(float, w[e] << 16) * x[8 * c + 2 * e];
-        acc += __builtin_bit_cast(float, w[e] & 0xFFFF0000u) * x[8 * c + 2 * e + 1];
-      }
-    }
+    const uint4 v[4] = {row[0], row[1], row[2], row[3]};
+    float acc = moe_detail::router_lane_dot(v, x);
     acc = wave_sum(acc);
     if (lane == kWave - 1)
       p.logits[r] = acc;

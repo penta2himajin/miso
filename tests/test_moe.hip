@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include <hip/hip_runtime.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <filesystem>
@@ -74,5 +75,77 @@ TEST_CASE("MoE decode reproduces golden routing and output for layers 0 and 3" *
     CHECK(worst_w <= 1e-6);
     MESSAGE("layer " << layer << ": max routing weight error " << worst_w
                      << ", max relative L2 error " << worst_out);
+  }
+}
+
+// The prefill form routes the whole chunk at once and runs grouped expert GEMMs. Routing must be
+// bit-identical to decode (same router dot products, same top-k), and every token must meet the
+// decode golden bound. Repeating the prompt 24 times puts up to ~400 assignments on one expert,
+// so experts span several tasks; identical inputs must give bit-identical outputs wherever they
+// land.
+TEST_CASE("MoE prefill routes like decode and reproduces golden output for layers 0 and 3" *
+          doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
+  const File m = File::open(MISO_ORNITH_GGUF);
+  const File g = File::open(std::string(MISO_GOLDEN_DIR) + "/ornith-layers.gguf");
+  for (const int layer : {0, 3}) {
+    CAPTURE(layer);
+    const std::string p = "layer" + std::to_string(layer) + ".";
+    const auto x = golden_f32(g, p + "moe_in"), want = golden_f32(g, p + "moe_out");
+    const auto want_id = golden_f32(g, p + "router.2");
+    const unsigned n_prompt = static_cast<unsigned>(x.size() / kHidden);
+    const auto moe = miso::MoeLayer::load(m, layer);
+    MESSAGE("layer " << layer << " down type "
+                     << (moe.down_exps.type == miso::gguf::GgmlType::Q4_K ? "Q4_K" : "Q6_K"));
+
+    // Decode reference: routing ids and weights per token.
+    miso::MoeScratch sc;
+    miso::DeviceBuffer<float> dx(kHidden), dy(kHidden);
+    std::vector<int> dec_ids;
+    std::vector<float> dec_w;
+    for (unsigned t = 0; t < n_prompt; ++t) {
+      MISO_HIP_CHECK(
+          hipMemcpy(dx.data(), x.data() + t * kHidden, kHidden * 4, hipMemcpyHostToDevice));
+      miso::moe_decode(moe, sc, dx.data(), dy.data(), nullptr);
+      const auto ids = sc.ids.to_host();
+      const auto w = sc.weights.to_host();
+      dec_ids.insert(dec_ids.end(), ids.begin(), ids.end());
+      dec_w.insert(dec_w.end(), w.begin(), w.end());
+    }
+
+    for (const unsigned reps : {1u, 24u}) {
+      CAPTURE(reps);
+      const unsigned n = n_prompt * reps;
+      std::vector<float> xr;
+      for (unsigned r = 0; r < reps; ++r)
+        xr.insert(xr.end(), x.begin(), x.end());
+      miso::MoePrefillScratch ps(n);
+      miso::DeviceBuffer<float> px(xr), py(xr.size());
+      miso::moe_prefill(moe, ps, px.data(), py.data(), n, nullptr);
+      MISO_HIP_CHECK(hipDeviceSynchronize());
+      const auto ids = ps.ids.to_host();
+      const auto w = ps.weights.to_host();
+      const auto y = py.to_host();
+      double worst = 0;
+      for (unsigned t = 0; t < n; ++t) {
+        CAPTURE(t);
+        const unsigned tp = t % n_prompt;
+        for (unsigned k = 0; k < 8; ++k) {
+          CHECK(ids[t * 9 + k] == dec_ids[tp * 8 + k]);
+          CHECK(ids[t * 9 + k] == static_cast<int>(want_id[tp * 8 + k]));
+          CHECK(w[t * 9 + k] == dec_w[tp * 8 + k]);
+        }
+        double num = 0, den = 0;
+        for (unsigned i = 0; i < kHidden; ++i) {
+          const double d = double{y[t * kHidden + i]} - want[tp * kHidden + i];
+          num += d * d, den += double{want[tp * kHidden + i]} * want[tp * kHidden + i];
+        }
+        const double rel = std::sqrt(num / den);
+        worst = std::max(worst, rel);
+        CHECK(rel <= 1e-3);
+        if (t >= n_prompt)
+          CHECK(std::memcmp(&y[t * kHidden], &y[tp * kHidden], kHidden * 4) == 0);
+      }
+      MESSAGE("layer " << layer << " x" << reps << ": max relative L2 error " << worst);
+    }
   }
 }

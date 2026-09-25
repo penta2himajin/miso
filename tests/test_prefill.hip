@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include <hip/hip_runtime.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -34,13 +35,23 @@ std::vector<int> prompt_tokens() {
 }  // namespace
 
 // Prefill (layer-major over chunks) must leave the same state and next-token logits as decoding
-// the prompt token by token, up to the rounding of two FP16-activation paths (ADR_004): each is
-// held to 1e-3 relative L2 per layer against the golden reference (test_deltanet, test_attention,
-// where prefill and decode measure 2.96e-4 / 4.63e-4 alike), so they may differ by up to twice
-// that. The batched GEMMs (M4b) sum in a different order than the decode GEMVs; measured
-// differences after 40 layers are logits 2.8e-4, KV 6.6e-4, conv 5.7e-4, recurrent state 1.0e-3.
-// Logic errors give O(1) differences (dropping one token's MoE delta: 0.58 or more).
-constexpr double kPathTolerance = 2e-3;
+// the prompt token by token, up to the rounding of two FP16-activation paths (ADR_004). Each layer
+// type is held to 1e-3 of the golden reference on its own, and prefill and decode measure alike
+// there: DeltaNet 2.96e-4, attention 4.63e-4, MoE 3.6e-4 / 3.9e-4 with bit-identical routing
+// (test_deltanet, test_attention, test_moe).
+//
+// Over 40 layers the two paths can still route a token differently: a top-8 near-tie is decided
+// by the rounding difference. On this prompt, layer 23 token 3 has its 8th and 9th router logits
+// 5.8e-4 apart, 1e-4 of the logit range and below the FP16 activation error. From there the
+// swapped expert propagates through that token's later layers and, via attention, to later
+// tokens: 27 of 1000 token-layers route differently. Measured differences are logits 3.6e-3,
+// KV 2.4e-2, conv 1.2e-2 and state 1.2e-2. Logic errors give 0.24 or more (wrong K offset, conv
+// parity, a dropped MoE delta).
+constexpr double kLogitsTolerance = 1e-2, kStateTolerance = 5e-2;
+
+bool within(const miso::test::SessionDiff& d) {
+  return d.logits <= kLogitsTolerance && std::max({d.kv, d.conv, d.state}) <= kStateTolerance;
+}
 
 TEST_CASE("prefill matches token-by-token decode (oracle)" *
           doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
@@ -71,7 +82,7 @@ TEST_CASE("prefill matches token-by-token decode (oracle)" *
     MESSAGE("logits " << d.logits << " kv " << d.kv << " conv " << d.conv << " state " << d.state);
     CHECK(d.same_pos);
     CHECK(d.same_pred);
-    CHECK(d.max() <= kPathTolerance);
+    CHECK(within(d));
     // Every token's projections are computed independently of the chunk it lands in.
     if (whole)
       CHECK(miso::test::compare(got, *whole).max() == 0.0);
@@ -80,7 +91,7 @@ TEST_CASE("prefill matches token-by-token decode (oracle)" *
     miso::decode_step(m, got, got.pred.data() + got.pos - 1, nullptr);
     const auto d2 = miso::test::compare(got, want2);
     CHECK(d2.same_pred);
-    CHECK(d2.max() <= kPathTolerance);
+    CHECK(within(d2));
     if (!whole) {
       whole.emplace(m, 64);
       MISO_HIP_CHECK(hipMemcpy(whole->tokens.data(), toks.data(), n * 4, hipMemcpyHostToDevice));
