@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "attention_decode.hpp"
+#include "attention_prefill.hpp"
 #include "rmsnorm.hpp"
 
 namespace miso {
@@ -81,35 +82,17 @@ void attention_prefill(const AttentionLayer& w, AttentionCache& cache, Attention
   gemm(w.v, ps.in, ps.v.data(), 512, stream);
   auto* kc = reinterpret_cast<half_t*>(cache.k.data());
   auto* vc = reinterpret_cast<half_t*>(cache.v.data());
-  for (unsigned t = 0; t < n; ++t) {
-    float* qg = ps.qg.data() + std::size_t{t} * 8192;
-    const kernels::AttnPrepParams prep{qg,
-                                       ps.k.data() + std::size_t{t} * 512,
-                                       ps.v.data() + std::size_t{t} * 512,
-                                       w.q_norm.data(),
-                                       w.k_norm.data(),
-                                       rope.inv_freq.data(),
-                                       kc,
-                                       vc,
-                                       sc.q.data(),
-                                       cache.len,
-                                       cache.max_ctx,
-                                       eps};
-    kernels::attn_prep_kernel<kBlock><<<18, kBlock, 0, stream>>>(prep);
-    ++cache.len;
-    const unsigned n_splits = kernels::attn_n_splits(cache.len, AttentionScratch::kMaxSplits);
-    const kernels::AttnSplitParams split{
-        sc.q.data(),   kc,      vc, sc.part_m.data(), sc.part_l.data(), sc.part_o.data(), cache.len,
-        cache.max_ctx, n_splits};
-    kernels::attn_split_kernel<kBlock><<<dim3(n_splits, 2), kBlock, 0, stream>>>(split);
-    const kernels::AttnCombineParams comb{sc.part_m.data(),
-                                          sc.part_l.data(),
-                                          sc.part_o.data(),
-                                          qg,
-                                          ps.core.data() + std::size_t{t} * 4096,
-                                          n_splits};
-    kernels::attn_combine_kernel<kBlock><<<16, kBlock, 0, stream>>>(comb);
-  }
+  (void)sc;
+  const unsigned pos0 = cache.len;
+  const kernels::AttnPrepBatchParams prep{
+      {ps.qg.data(), ps.k.data(), ps.v.data(), w.q_norm.data(), w.k_norm.data(),
+       rope.inv_freq.data(), kc, vc, ps.q.data(), pos0, cache.max_ctx, eps},
+      n};
+  kernels::attn_prep_batch_kernel<kBlock><<<n * 18, kBlock, 0, stream>>>(prep);
+  cache.len += n;
+  const kernels::AttnPrefillParams ap{ps.q.data(),    ps.qg.data(), kc, vc,
+                                      ps.core.data(), pos0,         n,  cache.max_ctx};
+  kernels::attn_prefill_kernel<kBlock><<<kernels::attn_prefill_items(n), kBlock, 0, stream>>>(ap);
   MISO_HIP_CHECK(hipGetLastError());
   gemm_input(ps.core.data(), 4096, n, ps.in, stream);
   gemm(w.o, ps.in, y, 2048, stream);

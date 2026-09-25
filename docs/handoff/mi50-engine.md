@@ -7,28 +7,28 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m4e-moe-prefill` (PR open against `main`)
-- Last work commit: M4e handoff on this branch @ 2026-09-26
+- Branch: `ai-written/m4c-flash-attn` (PR open against `main`)
+- Last work commit: M4c handoff on this branch @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
 - Last session: 2026-09-26 JST
-- Background: `Ornith-1.5-35B-BF16.gguf` download finished (`dl-miso-quality.log`, exit 0). SHA256 against the Hugging Face etag is still unchecked.
+- Background: BF16 GGUF download finished and its SHA256 matches the Hugging Face etag (`044d7f8b…a42b`).
 
 ## Status
 
-ready-for-review (M4e: batched MoE routing and grouped expert GEMMs; DeltaNet prefill recurrence is one launch per layer)
+ready-for-review (M4c: causal flash attention over a prefill chunk)
 
 ## Next action
 
-After the M4e PR is merged, branch `ai-written/m4c-flash-attn` from `main` and start M4c (`docs/roadmap.md`: causal flash attention over a prompt chunk, batched RoPE and KV write). pp512 is already above the M4f speed bar, so M4c and M4d are headroom; M4f still has to set the decode/prefill dispatch threshold by measurement and report TTFT.
+After the M4c PR is merged, branch `ai-written/m4d-deltanet` from `main` and start M4d (`docs/roadmap.md`: chunked gated delta rule, chunk 64, plus batched conv). Compare against the decode recurrence, state included. pp512 is 1397.5 tok/s; M4f still sets the decode/prefill dispatch threshold and reports TTFT.
 
 ## Verification
 
-- M4e (done), `ctest --preset default` 17/17:
-  - `test_moe`: prefill routing ids and weights are bit-identical to decode and to the golden top-8, for layers 0 (Q6_K down) and 3 (Q4_K down), including the prompt repeated 24 times. Repeated tokens are bit-identical to each other. Output stays within the 1e-3 golden bound.
-  - `test_prefill`: chunk sizes 25 / 7 / 1 are bit-identical to each other. Against decode, tolerances are logits 1e-2 and state 5e-2, because a top-8 near-tie can swap an expert (layer 23 token 3, logits 5.8e-4 apart) and then spread. This run does not flip: logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4. One decode step after prefill agrees. Logic errors still fail (0.24 or more).
-  - DeltaNet prefill recurrence is one launch per layer and bit-identical to the per-token steps.
-- pp512 = 1014.2 tok/s (504.8 ms), from 200.7 after M4b and past llama.cpp's 921.5. Decode in the same run: 103.4 tok/s. sclk 1725 MHz, junction 59 °C (`bench/model/results/2026-09-26-run4-moe-prefill.txt`, `-smi.csv`).
-- One MoE layer, 512 random tokens: 4.88 ms (Q6_K down) / 4.07 ms (Q4_K down), 9.5 / 8.0 µs per token against ~104 µs decode (`bench/moe/results/2026-09-26-run2-prefill.txt`).
+- M4c (done), `ctest --preset default` 17/17:
+  - `test_attn_splitk`: prefill attention vs FP64, causal, relative L2 <= 2.0e-6 for (pos0, n) = (0, 1), (0, 3), (0, 4), (0, 5), (0, 33), (40, 17), (0, 128).
+  - Golden layer 3 prefill (one chunk and 10+7) is unchanged at 4.63e-4.
+  - `test_prefill`: chunk sizes 25 / 7 / 1 stay bit-identical to each other. Against decode: logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4.
+- pp512 = 1397.5 tok/s (366.4 ms), from 1014.2 after M4e. Decode in the same run: 102.6 tok/s. sclk 1725 MHz, junction 57 °C (`bench/model/results/2026-09-26-run5-flash-attn.txt`, `-smi.csv`).
+- `attn_prefill_kernel`: 108 VGPR, 53760 B LDS, 144 B scratch, occupancy 1 (`build/kernel-resources/test_attn_splitk.txt`).
 
 ## Context pointers
 
@@ -62,7 +62,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M4e PR.
+- Merge the M4c PR.
 
 ## Session log
 
@@ -82,4 +82,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M4a): Roadmap merged as #12. On `ai-written/m4a-prefill-harness`, added the layer-major chunked `prefill()` (multi-token embedding and add+RMSNorm, per-token mixer and MoE kernels for now) and the oracle harness `tests/session_compare.hpp` + `tests/test_prefill.hip`. Prefill is bit-equal to decode for chunk sizes 25, 7 and 1, and one decode step after prefill also agrees. A mutation (dropping the MoE delta for token 0) is caught with 0.58-1.16 relative diffs. The CLI now prefills the prompt. Baseline pp512 = 123.3 tok/s (per-token kernels), the M4 starting point against llama.cpp's 921.5.
 - 2026-09-26 (M4b): M4a merged as #13. On `ai-written/m4b-gemm`, built the prefill GEMM (`kernels/qgemm.hpp`). Weights are expanded once per workgroup into LDS as exact FP16 integers (Q4_K `q*sc`; Q6_K `q-32`, scaled per 16-group because `|sc|` reaches 128 and 2.3% of `(q-32)*sc` products are not FP16-exact). It computes with `v_dot2_f32_f16` over 64x64 tiles and reaches ~51% of peak at T >= 512. Wired into `deltanet_prefill` / `attention_prefill` for all dense projections. Prefill is as accurate as decode against the golden layers, and the oracle now uses a justified 2e-3 tolerance plus bit-equality across chunk sizes. pp512 went from 123.3 to 200.7 tok/s; the profile shows the per-token MoE is 80% of prefill.
 - 2026-09-26 (M4e): M4b merged as #14. On `ai-written/m4e-moe-prefill`, MoE prefill batches the decode router dot product (routing bit-identical), counting-sorts the 9 assignments per token into tasks of 16, and runs grouped gate/up and down GEMMs that stage activations in LDS. The shared expert is expert 256. The DeltaNet prefill recurrence is one launch per layer (head state in registers), bit-identical to per-token steps. pp512 went from 200.7 to 1014.2 tok/s, past llama.cpp's 921.5. The oracle tolerance widened to 1e-2 / 5e-2 because a top-8 near-tie can route differently; this prompt does not.
-
+- 2026-09-26 (M4c): M4e merged as #15. On `ai-written/m4c-flash-attn`, prefill attention is one causal flash kernel per chunk: 4 query tokens share each staged 32-key sub-chunk, online softmax per row, gate applied in the same launch. RoPE and the KV append are the decode prep, batched over the chunk. FP64 error <= 2e-6. pp512 went from 1014.2 to 1397.5 tok/s.
