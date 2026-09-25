@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,8 +34,14 @@ std::vector<int> prompt_tokens() {
 }  // namespace
 
 // Prefill (layer-major over chunks) must leave the same state and next-token logits as decoding
-// the prompt token by token. With per-token kernels inside (M4a) the two are bit-identical; later
-// milestones replace kernels and assert measured tolerances against this same oracle.
+// the prompt token by token, up to the rounding of two FP16-activation paths (ADR_004): each is
+// held to 1e-3 relative L2 per layer against the golden reference (test_deltanet, test_attention,
+// where prefill and decode measure 2.96e-4 / 4.63e-4 alike), so they may differ by up to twice
+// that. The batched GEMMs (M4b) sum in a different order than the decode GEMVs; measured
+// differences after 40 layers are logits 2.8e-4, KV 6.6e-4, conv 5.7e-4, recurrent state 1.0e-3.
+// Logic errors give O(1) differences (dropping one token's MoE delta: 0.58 or more).
+constexpr double kPathTolerance = 2e-3;
+
 TEST_CASE("prefill matches token-by-token decode (oracle)" *
           doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
   const auto& m = model();
@@ -46,6 +53,14 @@ TEST_CASE("prefill matches token-by-token decode (oracle)" *
   for (unsigned t = 0; t < n; ++t)
     miso::decode_step(m, want, want.tokens.data() + t, nullptr);
 
+  // The reference including one more decode step after the prompt.
+  miso::Session want2(m, 64);
+  MISO_HIP_CHECK(hipMemcpy(want2.tokens.data(), toks.data(), n * 4, hipMemcpyHostToDevice));
+  for (unsigned t = 0; t < n; ++t)
+    miso::decode_step(m, want2, want2.tokens.data() + t, nullptr);
+  miso::decode_step(m, want2, want2.pred.data() + want2.pos - 1, nullptr);
+
+  std::optional<miso::Session> whole;  // the prompt as one chunk
   for (unsigned chunk : {n, 7u, 1u}) {
     CAPTURE(chunk);
     miso::Session got(m, 64);
@@ -53,17 +68,23 @@ TEST_CASE("prefill matches token-by-token decode (oracle)" *
     miso::prefill(m, got, got.tokens.data(), n, chunk, nullptr);
     MISO_HIP_CHECK(hipDeviceSynchronize());
     const auto d = miso::test::compare(got, want);
+    MESSAGE("logits " << d.logits << " kv " << d.kv << " conv " << d.conv << " state " << d.state);
     CHECK(d.same_pos);
     CHECK(d.same_pred);
-    CHECK(d.max() == 0.0);
+    CHECK(d.max() <= kPathTolerance);
+    // Every token's projections are computed independently of the chunk it lands in.
+    if (whole)
+      CHECK(miso::test::compare(got, *whole).max() == 0.0);
 
     // The state must be usable: one more decode step agrees too.
     miso::decode_step(m, got, got.pred.data() + got.pos - 1, nullptr);
-    miso::Session want2(m, 64);  // fresh reference including the extra step
-    MISO_HIP_CHECK(hipMemcpy(want2.tokens.data(), toks.data(), n * 4, hipMemcpyHostToDevice));
-    for (unsigned t = 0; t < n; ++t)
-      miso::decode_step(m, want2, want2.tokens.data() + t, nullptr);
-    miso::decode_step(m, want2, want2.pred.data() + want2.pos - 1, nullptr);
-    CHECK(miso::test::compare(got, want2).max() == 0.0);
+    const auto d2 = miso::test::compare(got, want2);
+    CHECK(d2.same_pred);
+    CHECK(d2.max() <= kPathTolerance);
+    if (!whole) {
+      whole.emplace(m, 64);
+      MISO_HIP_CHECK(hipMemcpy(whole->tokens.data(), toks.data(), n * 4, hipMemcpyHostToDevice));
+      miso::prefill(m, *whole, whole->tokens.data(), n, n, nullptr);
+    }
   }
 }

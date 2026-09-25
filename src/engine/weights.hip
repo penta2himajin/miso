@@ -6,6 +6,7 @@
 
 #include "q4k_gemv.hpp"
 #include "q6k_gemv.hpp"
+#include "qgemm.hpp"
 #include "repack.hpp"
 
 namespace miso {
@@ -75,6 +76,31 @@ void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream) {
   } else {
     throw std::runtime_error("gemv: no kernel for this type / K = " + std::to_string(w.k));
   }
+  MISO_HIP_CHECK(hipGetLastError());
+}
+
+void gemm_input(const float* x, unsigned k, unsigned n_tok, GemmInput& in, hipStream_t stream) {
+  if (std::size_t{n_tok} * k > in.xh.size() || k % 256 != 0)
+    throw std::runtime_error("gemm_input: chunk does not fit");
+  in.k = k, in.n_tok = n_tok;
+  const kernels::QGemmActParams p{x, in.xh.data(), in.xs.data(), k, n_tok};
+  const unsigned groups = n_tok * (k / 32);
+  kernels::qgemm_act_kernel<<<(groups + kBlock - 1) / kBlock, kBlock, 0, stream>>>(p);
+  MISO_HIP_CHECK(hipGetLastError());
+}
+
+void gemm(const QMatrix& w, const GemmInput& in, float* y, unsigned ldy, hipStream_t stream) {
+  if (w.k != in.k)
+    throw std::runtime_error("gemm: K mismatch");
+  const kernels::QGemmParams p{w.data.data(), in.xh.data(), in.xs.data(), y,
+                               w.k,           w.n,          in.n_tok,     ldy};
+  const unsigned grid = kernels::qgemm_tiles(w.n, in.n_tok);
+  if (w.type == gguf::GgmlType::Q4_K)
+    kernels::qgemm_kernel<kernels::QFormat::Q4K><<<grid, kBlock, 0, stream>>>(p);
+  else if (w.type == gguf::GgmlType::Q6_K)
+    kernels::qgemm_kernel<kernels::QFormat::Q6K><<<grid, kBlock, 0, stream>>>(p);
+  else
+    throw std::runtime_error("gemm: unsupported type");
   MISO_HIP_CHECK(hipGetLastError());
 }
 

@@ -1,0 +1,22 @@
+weight                      fmt     N     K     T        ms  TFLOP/s  %peak
+act prep                      -     -  2048    64    0.0170  (77 GB/s)
+act prep                      -     -  4096    64    0.0194  (135 GB/s)
+blk.0.attn_qkv.weight      Q6_K  8192  2048    64    0.3474     6.18  24.3%
+blk.0.attn_gate.weight     Q4_K  4096  2048    64    0.2037     5.27  20.8%
+blk.0.ssm_out.weight       Q4_K  2048  4096    64    0.2189     4.91  19.3%
+blk.3.attn_q.weight        Q4_K  8192  2048    64    0.2760     7.78  30.6%
+blk.0.ffn_up_shexp.weight  Q4_K   512  2048    64    0.1125     1.19   4.7%
+act prep                      -     -  2048   512    0.0714  (147 GB/s)
+act prep                      -     -  4096   512    0.1510  (139 GB/s)
+blk.0.attn_qkv.weight      Q6_K  8192  2048   512    1.3920    12.34  48.6%
+blk.0.attn_gate.weight     Q4_K  4096  2048   512    0.7346    11.69  46.0%
+blk.0.ssm_out.weight       Q4_K  2048  4096   512    0.8082    10.63  41.8%
+blk.3.attn_q.weight        Q4_K  8192  2048   512    1.3392    12.83  50.5%
+blk.0.ffn_up_shexp.weight  Q4_K   512  2048   512    0.1778     6.04  23.8%
+act prep                      -     -  2048  2048    0.2627  (160 GB/s)
+act prep                      -     -  4096  2048    0.5477  (153 GB/s)
+blk.0.attn_qkv.weight      Q6_K  8192  2048  2048    5.3030    12.96  51.0%
+blk.0.attn_gate.weight     Q4_K  4096  2048  2048    2.6520    12.96  51.0%
+blk.0.ssm_out.weight       Q4_K  2048  4096  2048    2.7444    12.52  49.3%
+blk.3.attn_q.weight        Q4_K  8192  2048  2048    5.2318    13.14  51.7%
+blk.0.ffn_up_shexp.weight  Q4_K   512  2048  2048    0.4336     9.91  39.0%

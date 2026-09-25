@@ -36,6 +36,11 @@ llama.cpp names DeltaNet tensors `ssm_*` (`ssm.state_size = 128`, `ssm.group_cou
 
 The engine must therefore implement Q4_K and Q6_K dequantisation for every GEMV/GEMM family, plus F32/BF16 small tensors.
 
+Integer ranges that matter for exact FP16 dequantisation (measured over all Q6_K tensors except 4 of every 5 expert-down layers, 2.1e9 weights):
+
+- Q4_K: `q * sc <= 15 * 63 = 945`, always exact in FP16.
+- Q6_K: the int8 scales reach `|sc| = 128` in every tensor. `(q - 32) * sc` then exceeds 2048 with an odd value for 2.3% of weights (47.7M of 2.1e9), which FP16 cannot represent. The prefill GEMM therefore stores `q - 32` and applies `d * sc` per 16-group (`kernels/qgemm.hpp`).
+
 ## Layout rewrites by the llama.cpp converter
 
 The GGUF is not a plain re-encoding of the HF checkpoint. llama.cpp's converter (`conversion/qwen.py`, `Qwen3NextModel` and `_LinearAttentionVReorderBase`) rewrites these tensors, and kernels that consume GGUF tensors directly must use the GGUF convention:

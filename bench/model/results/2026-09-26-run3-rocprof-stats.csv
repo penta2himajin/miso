@@ -1,0 +1,20 @@
+"Name","Calls","TotalDurationNs","AverageNs","Percentage"
+"void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams) [clone .kd]",62120,2908543076,46821,29.97092366888695
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]",31060,1366380267,43991,14.079791020750339
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]",31060,1282991651,41306,13.22051757019955
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 1>(miso::kernels::Q4kGemvParams) [clone .kd]",68770,775140016,11271,7.987388065156443
+"void miso::kernels::moe_router_kernel<256>(miso::kernels::MoeRouterParams) [clone .kd]",62120,667196522,10740,6.875090212007179
+"void miso::kernels::add_rmsnorm_kernel<2048u, 256>(miso::kernels::AddRmsNormParams, unsigned int) [clone .kd]",43011,530763141,12340,5.469219870398675
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]",11111,518632019,46677,5.34421538465457
+"void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams) [clone .kd]",46590,510056170,10947,5.2558460158472915
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 1>(miso::kernels::Q4kGemvParams) [clone .kd]",21160,421351628,19912,4.341794895441751
+"void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]",15530,267965517,17254,2.7612360711348902
+"void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)0>(miso::kernels::QGemmParams) [clone .kd]",340,196488132,577906,2.024701251498392
+"void miso::kernels::attn_combine_kernel<256>(miso::kernels::AttnCombineParams) [clone .kd]",15530,115236210,7420,1.187445247863273
+"void miso::kernels::attn_prep_kernel<256>(miso::kernels::AttnPrepParams) [clone .kd]",15530,74202993,4778,0.7646206987810665
+"void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)1>(miso::kernels::QGemmParams) [clone .kd]",40,41003035,1025075,0.4225135403075254
+"miso::kernels::qgemm_act_kernel(miso::kernels::QGemmActParams) [clone .kd]",160,15267966,95424,0.1573279238464891
+"void miso::kernels::argmax_partial_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd]",531,5192586,9778,0.05350671954432867
+"void miso::kernels::embed_q4k_kernel<2048u, 256>(miso::kernels::EmbedParams, unsigned int) [clone .kd]",531,3768728,7097,0.038834652355273204
+"void miso::kernels::argmax_final_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd]",531,2744220,5168,0.028277665484584675
+"__amd_rocclr_fillBufferAligned.kd",270,1625466,6020,0.016749525841428862
