@@ -7,26 +7,26 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m4d-deltanet` (PR open against `main`)
-- Last work commit: `0407a8b` (chunked delta rule, not on the prefill path)
+- Branch: `ai-written/m4f-dispatch` (PR open against `main`)
+- Last work commit: `4108d55` (dispatch at 8 tokens, CLI reports TTFT)
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
 - Last session: 2026-09-26 JST
-- Background: BF16 GGUF SHA256 matches the Hugging Face etag (`044d7f8b…a42b`).
+- Background: BF16 GGUF SHA256 matches the Hugging Face etag (`044d7f8b…a42b`). M4 is complete once this PR merges.
 
 ## Status
 
-ready-for-review (M4d: chunked delta rule measured, prefill stays on the register recurrence)
+ready-for-review (M4f: decode/prefill dispatch and TTFT)
 
 ## Next action
 
-After the M4d PR is merged, branch `ai-written/m4f-dispatch` from `main` and start M4f (`docs/roadmap.md`: set the decode/prefill dispatch threshold by measurement; CLI reports TTFT). Exit: pp512 stays above 921.5 tok/s (current shipping path is 1397.5). End-to-end golden and CLI tests still pass.
+After the M4f PR is merged, branch `ai-written/m6-quality` from `main` and start M6 (`docs/roadmap.md`, ADR_005: quality evaluation before decode optimisation). M6a waits on the BF16 GGUF, which is already downloaded and SHA-checked, then builds a pure-Q4_K file with `llama-quantize --pure`.
 
 ## Verification
 
-- `test_deltanet_chunk`: chunked conv + delta rule vs `deltanet_seq_kernel` for n = 1, 7, 64, 65, 128. Conv relative L2 is 0. Output <= 4.1e-7, state <= 5.0e-7.
-- `test_prefill` (seq path, unchanged): chunk sizes 25 / 7 / 1 stay bit-identical. Against decode: logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4.
-- Shipping pp512 remains 1397.5 tok/s (`bench/model/results/2026-09-26-run5-flash-attn.txt`). The chunk kernel, when wired in, measured 387.8 tok/s (`bench/model/results/2026-09-26-run6-chunk-deltanet.txt`, `-smi.csv`).
-- `deltanet_chunk_kernel`: 256 VGPR, 49936 B LDS, 860 B scratch, 214 spills, occupancy 1 (`build/kernel-resources/test_deltanet_chunk.txt`).
+- Sweep, median of 3 after one warm-up (`bench/model/results/2026-09-26-run7-dispatch.txt`, `-smi.csv`): decode is faster at 1/2/4 tokens (10.2/19.5/38.1 ms vs 45.6/47.3/50.1 ms); prefill is faster from 8 (56.9 vs 75.4 ms) through 512. sclk 1725 MHz, junction 69 °C, 219 W.
+- pp512 in that sweep: 367.8 ms, 1392 tok/s, above llama.cpp's 921.5.
+- `test_prefill`: chunk sizes 25/7/1 still bit-identical (logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4). `ingest` at 4 tokens is bit-identical to decode; at 8 tokens it is bit-identical to prefill.
+- `cli_golden_prompt` passes. The CLI prints `TTFT`.
 
 ## Context pointers
 
@@ -61,7 +61,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M4d PR.
+- Merge the M4f PR.
 
 ## Session log
 
@@ -83,3 +83,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M4e): M4b merged as #14. On `ai-written/m4e-moe-prefill`, MoE prefill batches the decode router dot product (routing bit-identical), counting-sorts the 9 assignments per token into tasks of 16, and runs grouped gate/up and down GEMMs that stage activations in LDS. The shared expert is expert 256. The DeltaNet prefill recurrence is one launch per layer (head state in registers), bit-identical to per-token steps. pp512 went from 200.7 to 1014.2 tok/s, past llama.cpp's 921.5. The oracle tolerance widened to 1e-2 / 5e-2 because a top-8 near-tie can route differently; this prompt does not.
 - 2026-09-26 (M4c): M4e merged as #15. On `ai-written/m4c-flash-attn`, prefill attention is one causal flash kernel per chunk: 4 query tokens share each staged 32-key sub-chunk, online softmax per row, gate applied in the same launch. RoPE and the KV append are the decode prep, batched over the chunk. FP64 error <= 2e-6. pp512 went from 1014.2 to 1397.5 tok/s.
 - 2026-09-26 (M4d): M4c merged as #16. On `ai-written/m4d-deltanet`, the chunk-64 gated delta rule plus batched conv matches the decode recurrence (conv bit-exact, output and state within 5e-7). It spills 214 times and, wired into prefill, measured pp512 at 387.8 tok/s, so the shipping path stays on the register recurrence at 1397.5.
+- 2026-09-26 (M4f): M4d merged as #17. On `ai-written/m4f-dispatch`, measured decode vs prefill from 1 to 512 tokens. Prefill wins from 8 tokens (75 vs 57 ms). `ingest` uses that split; the CLI reports TTFT. pp512 is 1392 tok/s. M4 is complete.

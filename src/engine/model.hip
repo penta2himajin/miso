@@ -152,4 +152,13 @@ void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned
   }
 }
 
+void ingest(const Model& m, Session& s, const int* tokens, unsigned n, hipStream_t stream) {
+  if (n < kPrefillMinTokens) {
+    for (unsigned t = 0; t < n; ++t)
+      decode_step(m, s, tokens + t, stream);
+    return;
+  }
+  prefill(m, s, tokens, n, Session::kMaxChunk, stream);
+}
+
 }  // namespace miso

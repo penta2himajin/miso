@@ -23,7 +23,7 @@ Goal: ingest prompts with compute-bound kernels. The decode path is the correctn
 | M4c | Causal flash attention over a prompt chunk (LDS tiles), batched RoPE and KV write | vs decode path; vs FP64 reference for long T |
 | M4d | Chunked gated delta rule (chunk 64) for DeltaNet, plus batched conv | vs decode recurrence, state included. Measured slower than the register recurrence (pp512 387.8 vs 1397.5 tok/s); prefill keeps the single-pass recurrence |
 | M4e | MoE prefill: batched router / top-k, tokens grouped by expert, grouped GEMM | Routing identical to decode path; output within tolerance |
-| M4f | Integrate; set the decode/prefill dispatch threshold by measurement; CLI uses prefill; TTFT reported | **pp512 > 921.5 tok/s** (beat llama.cpp); end-to-end golden and CLI tests still pass |
+| M4f | Integrate; set the decode/prefill dispatch threshold by measurement; CLI uses prefill; TTFT reported | **pp512 > 921.5 tok/s**. Threshold is 8 tokens (run7); pp512 1392 tok/s; CLI reports TTFT |
 
 Order after M4b (user decision, 2026-09-26): **M4e, then M4c, then M4d**. After M4b, pp512 takes 2.55 s. The per-token MoE takes ~2.05 s of that (80%), attention ~0.15 s, the DeltaNet recurrence ~0.17 s and the dense GEMMs ~0.12 s (`bench/model/results/2026-09-26-run3-rocprof-stats.csv`).
 

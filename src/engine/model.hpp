@@ -75,4 +75,11 @@ void decode_step(const Model& m, Session& s, const int* token, hipStream_t strea
 void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned max_chunk,
              hipStream_t stream);
 
+// Prefill kernels are faster from this length up (median of 3 on gfx906,
+// bench/model/results/2026-09-26-run7-dispatch.txt): 4 tokens 38 vs 50 ms, 8 tokens 75 vs 57 ms.
+inline constexpr unsigned kPrefillMinTokens = 8;
+
+// n < kPrefillMinTokens runs decode_step per token; otherwise prefill in Session::kMaxChunk chunks.
+void ingest(const Model& m, Session& s, const int* tokens, unsigned n, hipStream_t stream);
+
 }  // namespace miso
