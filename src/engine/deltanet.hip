@@ -23,11 +23,10 @@ void DeltaNetState::reset() {
   parity = 0;
 }
 
-void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch& sc, const float* h,
-                     float* y, float eps, hipStream_t stream) {
+void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch& sc, float* h,
+                     const float* delta, float* y, float eps, hipStream_t stream) {
   constexpr int kBlock = 256;
-  const kernels::AddRmsNormParams norm{const_cast<float*>(h), nullptr, w.attn_norm.data(),
-                                       sc.xn.data(), eps};
+  const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kBlock><<<1, kBlock, 0, stream>>>(norm, 1);
   gemv(w.qkv, sc.xn.data(), sc.qkv.data(), stream);
   gemv(w.z, sc.xn.data(), sc.z.data(), stream);

@@ -1,0 +1,4 @@
+model load: 27.6 s
+warm-up: 256 tokens at ctx 17..273: 9.13 ms/token, 109.5 tok/s
+measured: 256 tokens at ctx 273..529: 9.19 ms/token, 108.9 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

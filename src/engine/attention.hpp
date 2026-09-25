@@ -41,9 +41,10 @@ struct AttentionScratch {
   DeviceBuffer<float> part_o{2 * kMaxSplits * 8 * 256};
 };
 
-// y = Attention(RMSNorm(h)) for the token at position cache.len, appended to the cache.
+// h += delta (if delta != nullptr), then y = Attention(RMSNorm(h)) for the token at position
+// cache.len, which is appended to the cache.
 void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionScratch& sc,
-                      const RopeConfig& rope, const float* h, float* y, float eps,
+                      const RopeConfig& rope, float* h, const float* delta, float* y, float eps,
                       hipStream_t stream);
 
 }  // namespace miso

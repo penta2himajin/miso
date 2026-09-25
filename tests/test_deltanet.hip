@@ -50,7 +50,7 @@ TEST_CASE("Gated DeltaNet decode reproduces golden layer 0 token by token" *
     CAPTURE(t);
     MISO_HIP_CHECK(
         hipMemcpy(h.data(), in.data() + t * kHidden, kHidden * 4, hipMemcpyHostToDevice));
-    miso::deltanet_decode(layer, state, scratch, h.data(), y.data(), eps, nullptr);
+    miso::deltanet_decode(layer, state, scratch, h.data(), nullptr, y.data(), eps, nullptr);
     MISO_HIP_CHECK(hipDeviceSynchronize());
     const auto got = y.to_host();
     double num = 0, den = 0;
