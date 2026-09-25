@@ -38,6 +38,13 @@ struct SlotAct {
   gemv::Fp16x16 lo, hi;
 };
 
+// Activations of one slot: elements 128h + c + t (lo) and 128h + 64 + c + t (hi) of its block.
+__device__ inline SlotAct load_slot(const float* x, int slot) {
+  const int b = slot >> 3, i = slot & 7;
+  const float* lo = x + 256 * b + 128 * (i >> 2) + 16 * (i & 3);
+  return {gemv::fp16x16(lo), gemv::fp16x16(lo + 64)};
+}
+
 struct SlotW {
   uint4 ql, qh;
   uint2 sc;
@@ -89,9 +96,7 @@ __device__ void q6k_gemv_op(const Q6kGemvParams& p, unsigned first, unsigned cou
   SlotAct act[kIters];
 #pragma unroll
   for (int it = 0; it < kIters; ++it) {
-    const int s = lane + kWave * it, b = s >> 3, i = s & 7;
-    const float* lo = p.x + 256 * b + 128 * (i >> 2) + 16 * (i & 3);
-    act[it] = {gemv::fp16x16(lo), gemv::fp16x16(lo + 64)};
+    act[it] = load_slot(p.x, lane + kWave * it);
   }
 
   const unsigned end = first + count;

@@ -1,0 +1,5 @@
+"Name","Calls","TotalDurationNs","AverageNs","Percentage"
+"void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams) [clone .kd]",2400,113234603,47181,47.80124438428919
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]",1200,52446961,43705,22.140140324192988
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]",1200,46709444,38924,19.718085183716063
+"void miso::kernels::moe_router_kernel<256>(miso::kernels::MoeRouterParams) [clone .kd]",2400,24495300,10206,10.340530107801756
