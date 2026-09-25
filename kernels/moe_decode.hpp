@@ -2,11 +2,12 @@
 
 // Sparse MoE block (qwen3_5_moe), decode path, in three launches:
 //   moe_router:  logits = W_r x for 256 experts plus the shared-expert gate (row 256), BF16
-//   weights. moe_gate_up: every workgroup re-derives the top-8 experts from the logits (no extra
-//   launch),
-//                then computes gate and up (512 each) for the 8 routed experts and the shared one.
-//   moe_down:    out = sum_k w_k down_k(SiLU(gate_k) * up_k) + sigmoid(g_sh) down_sh(...), with 16
-//                lanes per K = 512 row, so one wavefront covers 4 experts of an output row at once.
+//   weights. moe_gate_up: each workgroup re-derives the top-8 (a separate launch measured 25 us),
+//   then writes
+//                SiLU(gate) * up for the 9 slots (512 floats). Slot 8 is shared.
+//   moe_down:    out = sum_k w_k down_k(h_k) + sigmoid(g_sh) down_sh(h_sh), with 16 lanes per K =
+//   512
+//                row, so one wavefront covers 4 experts of an output row at once.
 // Routing weights are the top-8 softmax probabilities renormalised over the 8.
 
 #include <hip/hip_runtime.h>
@@ -56,12 +57,25 @@ __device__ void moe_router_op(const MoeRouterParams& p, unsigned first, unsigned
   const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
   const unsigned n_waves = gridDim.x * (kBlock / kWave);
   const float* x = p.x + lane * 32;
-  for (unsigned r = first + wave; r < first + count; r += n_waves) {
+  auto load4 = [&](unsigned row_i, uint4(&v)[4]) {
     const uint4* row =
-        reinterpret_cast<const uint4*>(p.w + std::size_t{r} * moe::kHidden + lane * 32);
-    const uint4 v[4] = {row[0], row[1], row[2], row[3]};
-    float acc = moe_detail::router_lane_dot(v, x);
-    acc = wave_sum(acc);
+        reinterpret_cast<const uint4*>(p.w + std::size_t{row_i} * moe::kHidden + lane * 32);
+    v[0] = row[0], v[1] = row[1], v[2] = row[2], v[3] = row[3];
+  };
+  unsigned r = first + wave;
+  if (r < first + count) {
+    uint4 v[4];
+    load4(r, v);
+    for (unsigned nxt = r + n_waves; nxt < first + count; nxt += n_waves) {
+      uint4 v2[4];
+      load4(nxt, v2);
+      const float acc = wave_sum(moe_detail::router_lane_dot(v, x));
+      if (lane == kWave - 1)
+        p.logits[r] = acc;
+      v[0] = v2[0], v[1] = v2[1], v[2] = v2[2], v[3] = v2[3];
+      r = nxt;
+    }
+    const float acc = wave_sum(moe_detail::router_lane_dot(v, x));
     if (lane == kWave - 1)
       p.logits[r] = acc;
   }
@@ -100,12 +114,12 @@ struct MoeGateUpParams {
   const std::uint8_t* gate_sh;  // Q4_K r1, [512 rows]
   const std::uint8_t* up_sh;
   const float* x;  // [2048]
-  float* h;        // [9 slots][1024]: 512 gate then 512 up; slot 8 = shared
+  float* h;        // [9 slots][512]: SiLU(gate) * up; slot 8 = shared
   int* ids;        // [8], written by workgroup 0
   float* weights;  // [8]
 };
 
-// Rows [first, first + count) of 9 * 1024.
+// Rows [first, first + count) of 9 * 512. One wavefront writes SiLU(gate_row) * up_row.
 template <int kBlock>
 __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigned count) {
   using namespace q4k_detail;
@@ -113,31 +127,44 @@ __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigne
   __shared__ int sid[moe::kTopK];
   __shared__ float sw[moe::kTopK];
   moe_topk<kBlock>(p.logits, sid, sw);
-  if (blockIdx.x == 0 && threadIdx.x < moe::kTopK) {
+  if (blockIdx.x == 0 && threadIdx.x < moe::kTopK)
     p.ids[threadIdx.x] = sid[threadIdx.x], p.weights[threadIdx.x] = sw[threadIdx.x];
-  }
   const int lane = threadIdx.x % kWave;
   const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
   const unsigned n_waves = gridDim.x * (kBlock / kWave);
   const SlotAct<ActFormat::Fp16> act = load_slot<ActFormat::Fp16>(p.x, lane);
-  for (unsigned r = first + wave; r < first + count; r += n_waves) {
-    const unsigned slot = r / (2 * moe::kFf), j = r % (2 * moe::kFf);
-    const bool up = j >= moe::kFf;
-    const std::size_t row = j % moe::kFf;
-    const std::uint8_t* base =
-        slot < moe::kTopK
-            ? (up ? p.up_exps : p.gate_exps) + (std::size_t(sid[slot]) * moe::kFf + row) * kRowBytes
-            : (up ? p.up_sh : p.gate_sh) + row * kRowBytes;
-    float acc = slot_dot<ActFormat::Fp16>(load_w(base, lane), lane, act);
-    acc = wave_sum(acc);
+  auto rows = [&](unsigned r) {
+    const unsigned slot = r / moe::kFf, row = r % moe::kFf;
+    const std::uint8_t* gate =
+        slot < moe::kTopK ? p.gate_exps + (std::size_t(sid[slot]) * moe::kFf + row) * kRowBytes
+                          : p.gate_sh + row * kRowBytes;
+    const std::uint8_t* up = slot < moe::kTopK
+                                 ? p.up_exps + (std::size_t(sid[slot]) * moe::kFf + row) * kRowBytes
+                                 : p.up_sh + row * kRowBytes;
+    return std::pair<const std::uint8_t*, const std::uint8_t*>{gate, up};
+  };
+  auto emit = [&](unsigned r, const SlotW& gw, const SlotW& uw) {
+    const float g = wave_sum(slot_dot<ActFormat::Fp16>(gw, lane, act));
+    const float u = wave_sum(slot_dot<ActFormat::Fp16>(uw, lane, act));
     if (lane == kWave - 1)
-      p.h[r] = acc;
+      p.h[r] = g / (1.0f + expf(-g)) * u;
+  };
+  unsigned r = first + wave;
+  if (r < first + count) {
+    SlotW gw = load_w(rows(r).first, lane), uw = load_w(rows(r).second, lane);
+    for (unsigned nxt = r + n_waves; nxt < first + count; nxt += n_waves) {
+      const auto p2 = rows(nxt);
+      const SlotW g2 = load_w(p2.first, lane), u2 = load_w(p2.second, lane);
+      emit(r, gw, uw);
+      gw = g2, uw = u2, r = nxt;
+    }
+    emit(r, gw, uw);
   }
 }
 
 template <int kBlock>
 __global__ void __launch_bounds__(kBlock) moe_gate_up_kernel(MoeGateUpParams p) {
-  moe_gate_up_op<kBlock>(p, 0, moe::kSlots * 2 * moe::kFf);
+  moe_gate_up_op<kBlock>(p, 0, moe::kSlots * moe::kFf);
 }
 
 enum class QType { Q4K, Q6K };
@@ -148,7 +175,7 @@ struct MoeDownParams {
   const float* weights;           // [8]
   const std::uint8_t* down_exps;  // r1, [256 experts][2048 rows], K = 512
   const std::uint8_t* down_sh;    // r1, [2048 rows]
-  const float* h;                 // [9][1024] from moe_gate_up
+  const float* h;                 // [9][512] SiLU(gate)*up from moe_gate_up
   float* out;                     // [2048]
 };
 
@@ -199,11 +226,8 @@ __device__ void moe_down_op(const MoeDownParams& p, unsigned first, unsigned cou
   __shared__ float a[moe::kSlots][moe::kFf];
   __shared__ int sid[moe::kTopK];
   __shared__ float coef[moe::kSlots];
-  for (unsigned i = threadIdx.x; i < moe::kSlots * moe::kFf; i += kBlock) {
-    const unsigned s = i / moe::kFf, k = i % moe::kFf;
-    const float g = p.h[s * 2 * moe::kFf + k], u = p.h[s * 2 * moe::kFf + moe::kFf + k];
-    a[s][k] = g / (1.0f + expf(-g)) * u;
-  }
+  for (unsigned i = threadIdx.x; i < moe::kSlots * moe::kFf; i += kBlock)
+    a[i / moe::kFf][i % moe::kFf] = p.h[i];
   if (threadIdx.x < moe::kTopK)
     sid[threadIdx.x] = p.ids[threadIdx.x], coef[threadIdx.x] = p.weights[threadIdx.x];
   if (threadIdx.x == 0)

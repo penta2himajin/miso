@@ -1,0 +1,5 @@
+# Fused SiLU(gate)*up, gate/up+down grids both 120, overlapped gate/up weight loads.
+# Previous (run1): 103.6 / 102.2 us. After first M7a: 90.3 / 87.3 us.
+# gate/up grid: 80=94/91, 120=88/85, 160=89/86, 240=90/87, 320+=110+ us.
+MoE layer 0 (down Q6_K) decode: 88.4 us/token
+MoE layer 5 (down Q4_K) decode: 85.2 us/token

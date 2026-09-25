@@ -61,7 +61,8 @@ void moe_decode(const MoeLayer& w, MoeScratch& sc, const float* x, float* y, hip
       sc.logits.data(),      w.gate_exps.data.data(), w.up_exps.data.data(),
       w.gate_sh.data.data(), w.up_sh.data.data(),     x,
       sc.h.data(),           sc.ids.data(),           sc.weights.data()};
-  kernels::moe_gate_up_kernel<kBlock><<<240, kBlock, 0, stream>>>(gp);
+  // gate/up grid: 80=94/91, 120=88/85, 160=89/86, 240=90/87, 320+=110+ us (layer 0/5).
+  kernels::moe_gate_up_kernel<kBlock><<<120, kBlock, 0, stream>>>(gp);
   const kernels::MoeDownParams dp{sc.logits.data(),
                                   sc.ids.data(),
                                   sc.weights.data(),
@@ -69,10 +70,11 @@ void moe_decode(const MoeLayer& w, MoeScratch& sc, const float* x, float* y, hip
                                   w.down_sh.data.data(),
                                   sc.h.data(),
                                   y};
+  // down grid: 60=94/93, 120=90/87, 180=102/88, 240=102/95 us (before the gate/up retune).
   if (w.down_exps.type == gguf::GgmlType::Q4_K) {
-    kernels::moe_down_kernel<kernels::QType::Q4K, kBlock><<<240, kBlock, 0, stream>>>(dp);
+    kernels::moe_down_kernel<kernels::QType::Q4K, kBlock><<<120, kBlock, 0, stream>>>(dp);
   } else {
-    kernels::moe_down_kernel<kernels::QType::Q6K, kBlock><<<240, kBlock, 0, stream>>>(dp);
+    kernels::moe_down_kernel<kernels::QType::Q6K, kBlock><<<120, kBlock, 0, stream>>>(dp);
   }
   MISO_HIP_CHECK(hipGetLastError());
 }
