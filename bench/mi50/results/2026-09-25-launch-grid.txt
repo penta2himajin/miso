@@ -1,0 +1,9 @@
+launch back-to-back (stream)    1.26 us/kernel
+back-to-back grid    1 x 256: empty  1.28 us  touch  2.99 us per kernel
+back-to-back grid   60 x 256: empty  1.45 us  touch  2.99 us per kernel
+back-to-back grid  120 x 256: empty  1.63 us  touch  3.09 us per kernel
+back-to-back grid  240 x 256: empty  1.98 us  touch  3.24 us per kernel
+back-to-back grid  480 x 256: empty  2.68 us  touch  3.53 us per kernel
+back-to-back grid  960 x 256: empty  4.07 us  touch  4.38 us per kernel
+hipGraph 400 empty kernels     1.68 us/kernel (672.0 us/graph)
+launch+sync round trip         16.00 us

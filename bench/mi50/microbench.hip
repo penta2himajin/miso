@@ -141,6 +141,11 @@ __global__ void k_dot8i4(int* out, int b, int c, int iters) {
     out[0] = s;
 }
 __global__ void k_empty() {}
+// Every thread reads one float and writes one float: the minimum a dependent decode kernel does.
+__global__ void k_touch(const float* __restrict__ in, float* __restrict__ out) {
+  const unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+  out[i] = in[i] + 1.0f;
+}
 
 // ---------------------------------------------------------------- host
 template <class F>
@@ -243,6 +248,24 @@ int main(int argc, char** argv) {
       },
       5);
   printf("launch back-to-back (stream)  %6.2f us/kernel\n", tl * 1e3 / L);
+  // Same-stream kernels run in order, so each launch waits for the previous one to drain.
+  for (int g : {1, 60, 120, 240, 480, 960}) {
+    const int LL = 2000;
+    float te = time_ms(
+        [&] {
+          for (int i = 0; i < LL; ++i)
+            k_empty<<<g, TPB>>>();
+        },
+        5);
+    float tt = time_ms(
+        [&] {
+          for (int i = 0; i < LL; ++i)
+            k_touch<<<g, TPB>>>((const float*)A, (float*)B);
+        },
+        5);
+    printf("back-to-back grid %4d x %d: empty %5.2f us  touch %5.2f us per kernel\n", g, TPB,
+           te * 1e3 / LL, tt * 1e3 / LL);
+  }
   hipStream_t s;
   CHECK(hipStreamCreate(&s));
   hipGraph_t g;
