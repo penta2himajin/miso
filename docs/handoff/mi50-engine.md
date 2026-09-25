@@ -7,35 +7,37 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m2-gemv` (PR open against `main`)
-- Last work commit: `e1499ed` @ 2026-09-25
+- Branch: `ai-written/m3a-norm-embed-q6k` (PR open against `main`)
+- Last work commit: `da8d1b1` @ 2026-09-25
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-25 23:10 JST
-- Background: `hf download` of `Ornith-1.5-35B-Q8_0.gguf` then `-BF16.gguf` into `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/` (~6 MB/s; 9.2 GB done at 23:05). Completion is appended to `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
+- Last session: 2026-09-25 23:35 JST
+- Background: `hf download` of `Ornith-1.5-35B-Q8_0.gguf` then `-BF16.gguf` into `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/` (~6 MB/s; 17 GB done at 23:33). Completion is appended to `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
 
 ## Status
 
-ready-for-review (M2 complete: ADR_004 selects FP16 activations; `ctest --preset default` 6/6 green)
+ready-for-review (M3a complete: add+RMSNorm, Q4_K embedding, Q6_K r1 + GEMV; `ctest --preset default` 8/8 green)
 
 ## Next action
 
-After the M2 PR is merged, agree the M3 breakdown with the user. The proposal is one branch per sub-milestone, each checked against `tests/golden/ornith-layers.gguf`:
-- M3a: RMSNorm, embedding lookup, Q6_K GEMV.
-- M3b: DeltaNet decode (conv state + gated delta rule) vs `layer0.mixer_out`, token by token.
-- M3c: full-attention decode with KV cache and interleaved MRoPE vs `layer3.mixer_out`.
-- M3d: MoE (router top-8, fused expert GEMVs, shared expert) vs `moe_out`.
-- M3e: LM head, tokenizer, CLI, end-to-end tok/s against 57.2.
+After the M3a PR is merged, branch `ai-written/m3b-deltanet` from `main` and build the Gated DeltaNet decode path for one layer, test-first against `layer0.mixer_out` fed token by token:
+- attn_norm (existing `add_rmsnorm`, delta = nullptr);
+- in-projections qkv (Q6_K in layer 0), z / alpha / beta (Q4_K), in one fused launch where possible;
+- causal conv1d state update + SiLU;
+- gated delta rule recurrent update with FP32 state (V heads in GGUF tiled order: V head h uses K head h % 16);
+- gated RMSNorm (`ssm_norm`, SiLU(z) gate);
+- `ssm_out`.
+Read `transformers` `Qwen3_5MoeGatedDeltaNet` (recurrent path) for the exact math before writing the test.
 
 ## Verification
 
-- M2 (this branch): `ctest --preset default` passes; `build/bench/bench_q4k_gemv` reproduces `bench/gemv/results/2026-09-25-run4-rows.txt` within about ±1 µs per launch.
-- M3 exit (ADR_003 D14): coherent text, layer outputs within tolerance of the golden files, > 57.2 tok/s.
+- M3a (this branch): `ctest --preset default` passes; `build/bench/bench_q6k_gemv` reproduces `bench/gemv/results/2026-09-25-q6k-run1.txt`.
+- M3b exit: 17 tokens decoded one at a time reproduce `layer0.mixer_out` within a stated tolerance; the recurrent state after token t is the only carried state.
 
 ## Context pointers
 
 - Hardware facts: `docs/research/mi50.md` (§1 summary, §5 measurements, §8 implications)
 - Model file facts: `docs/research/ornith-q4km-gguf.md`
-- Decisions: `docs/decisions/ADR_001-engine-foundations.md`, `docs/decisions/ADR_002-build-scope-numerics-ops.md`
+- Decisions: `docs/decisions/ADR_001` … `ADR_004`
 - Baseline to beat: llama.cpp 57.2 tok/s tg64, 921.5 tok/s pp512 (`/home/penta/llm-mi50/NOTES-ubuntu.md`)
 - Input GGUF: `/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf` (SHA256 `42739874…d41f`)
 - Local llama.cpp with `gguf-py` and `llama-quantize`: `/home/penta/llm-mi50/src/llama.cpp` (`d81aef1`, build in `build-hip/`)
@@ -59,8 +61,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M2 PR.
-- Confirm the M3 sub-milestone breakdown (see Next action).
+- Merge the M3a PR.
 
 ## Session log
 
@@ -69,4 +70,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-25 (M0): Built the scaffold on `ai-written/m0-scaffold`: CMake Ninja preset with GCC auto-detection, vendored doctest 2.4.12, `miso_kernels`/`miso_host` include boundary, post-build kernel resource report from code-object metadata, smoke operator `axpy` in the `__device__` op + thin wrapper pattern. Tests green; a mutation of `axpy_op` is caught (999 failed assertions). Found and fixed stale HIP header dependencies under the Makefile generator. Merged as #2.
 - 2026-09-25 (M1a): On `ai-written/m1-gguf`, added the mmap GGUF v3 reader and F32/F16/BF16/Q4_K/Q6_K CPU dequantisation, bit-exact with gguf-py on real model blocks; the C++ tensor table matches gguf-py for all 753 tensors. A Q4_K scale-index mutation is caught. Allowing FMA contraction did not change results, because Q4_K products (11-bit d × 6-bit scale × 4-bit q) are exact in FP32; `-ffp-contract=off` stays as a guard for other formats. Merged as #3.
 - 2026-09-25 (M1b): On `ai-written/m1-golden`, built the golden harness (pinned `.venv`: torch 2.14.0+cpu, transformers 5.17.0, gguf 0.19.0). It inverts llama.cpp's converter rewrites (documented in `docs/research/ornith-q4km-gguf.md`), materialises one layer at a time (8.5 GB peak), and records layer 0 (DeltaNet) and layer 3 (full attention) for a 17-token prompt. Teacher-forced llama.cpp continuation through all 40 layers: 8/8, and 0/8 with the V-head reorder disabled. Golden output regenerates byte-identically. C++ dequantised embeddings equal the golden input bit for bit. Merged as #4.
-- 2026-09-25 (M2): On `ai-written/m2-gemv`, built the Q4_K decode GEMV in INT8 and FP16 activation variants with rigorous per-row error bounds, the lossless Q4_K r1 repack, DPP reductions and rows-per-wave. v1 FP16 was instruction-bound (63%); v2 reaches 83% (FP16) / 87% (INT8) of 797 GB/s on a 141 MB launch. On decode-sized 4.7 MB launches both take ~16–17 µs because of a ~7–9 µs per-launch fixed cost. ADR_004 selects FP16 (21–37× lower error, 4–12% slower). Started the Q8_0/BF16 downloads for ADR_003 D18.
+- 2026-09-25 (M2): On `ai-written/m2-gemv`, built the Q4_K decode GEMV in INT8 and FP16 activation variants with rigorous per-row error bounds, the lossless Q4_K r1 repack, DPP reductions and rows-per-wave. v1 FP16 was instruction-bound (63%); v2 reaches 83% (FP16) / 87% (INT8) of 797 GB/s on a 141 MB launch. On decode-sized 4.7 MB launches both take ~16–17 µs because of a ~7–9 µs per-launch fixed cost. ADR_004 selects FP16 (21–37× lower error, 4–12% slower). Started the Q8_0/BF16 downloads for ADR_003 D18. Merged as #5.
+- 2026-09-25 (M3a): User approved the M3a–M3e breakdown. On `ai-written/m3a-norm-embed-q6k`: fused add+RMSNorm (golden post-attention norm within bound, residual bit-exact), Q4_K r1 embedding lookup (bit-exact with the golden input), Q6_K r1 row layout (lossless) and Q6_K FP16 GEMV (within 7% of bound). LM head 417 MB at 713 GB/s (89.5%); 13.8 MB DeltaNet qkv at 27.6 us, consistent with the ~8 us per-launch fixed cost. DPP reductions moved to `kernels/wave.hpp`.
