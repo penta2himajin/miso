@@ -42,6 +42,23 @@ In these runs B is 4–12% slower per launch (7% on `attn_gate`, 11% on `attn_q`
 
 The INT8 variant stays in the code as a measured alternative. It is not used by the engine.
 
+## Amendment (2026-09-25, M3b): two accuracy defects fixed; decision unchanged
+
+The first end-to-end DeltaNet test showed 2.0e-3 relative L2 error per token. That is 7× what an FP64 reference with FP16-rounded GEMV inputs predicts (2.96e-4). Isolating the `ssm_out` GEMV on the real activation (golden `mixer_core`, whose outputs cancel ~10×) found two causes:
+
+1. **Inconsistent rounding in the Q4_K min term.** The kernel computed `d·sc·Σ q·x₁₆ − dmin·m·Σ x` with *exact* activation sums. Its FP16 rounding error therefore scaled with `d·sc·q` rather than `|W| = |d·sc·q − dmin·m|`, and exceeded the per-row bound where the two terms cancel. Now both terms use the converted activations (`Σ x₁₆`; INT8: `dx·Σ xq`), so the kernel computes exactly `Σ W·x₁₆`.
+2. **Biased FP16 nibble encoding.** `0x6400|q = 1024 + q` made the FP32 chain accumulate a 1024× offset before subtracting it. Nibbles are now read as FP16 subnormals (`q·2⁻²⁴`, exact; gfx906 `v_dot2_f32_f16` keeps FP16 denormals) and the `2²⁴` scale is folded into `d`. This also removes the OR and the offset correction.
+
+The GEMV tests gained a real-activation case (both output projections, 17 tokens). Their bound's chain term dropped from `1039·d·sc` to `15·d·sc` (Q4_K) and from `1087` to `95` (Q6_K).
+
+| After the fix | INT8 | FP16 |
+|---|---|---|
+| rel. error rms (`attn_gate`, `moe_in` activation) | 4.74e-4 | 1.19e-5 |
+| tall 141.6 MB launch, best | 687 GB/s | 675 GB/s |
+| VGPRs (K = 2048, R = 1) | 47 | 45 |
+
+The DeltaNet layer now matches the FP16-rounding prediction: 2.96e-4. FP16 remains the decode activation format; its accuracy margin over INT8 is now ~40×. Results: `bench/gemv/results/2026-09-25-run6-subnormal.txt`, `-q6k-run2-subnormal.txt`.
+
 ## Findings that shape the next steps
 
 - **Per-launch fixed cost is ~7–9 µs** for a GEMV (`scale` rows in `run5-scaling.txt`): 0.55 MB takes 7 µs; the linear fit over 9–38 MB gives an 8.8 µs intercept and ~700 GB/s marginal bandwidth. A dependent read-one/write-one kernel costs ~3 µs back to back (`bench/mi50/results/2026-09-25-launch-grid.txt`). The rest is per-launch activation setup, first-access latency and drain.

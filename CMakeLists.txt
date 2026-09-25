@@ -71,6 +71,11 @@ target_include_directories(miso_host PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_compile_options(miso_host PRIVATE -ffp-contract=off)
 miso_warnings(miso_host)
 
+# Engine: host code that owns device weights/state and launches kernels (compiled as HIP).
+add_library(miso_engine STATIC src/engine/weights.hip src/engine/deltanet.hip)
+target_link_libraries(miso_engine PUBLIC miso_host miso_kernels)
+miso_warnings(miso_engine)
+
 add_library(doctest INTERFACE)
 target_include_directories(doctest SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_party)
 

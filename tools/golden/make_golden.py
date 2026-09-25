@@ -56,6 +56,11 @@ class LazyLayer(torch.nn.Module):
             mixer = layer.self_attn if hasattr(layer, "self_attn") else layer.linear_attn
             hooks.append(mixer.register_forward_hook(
                 lambda m, a, o: rec.__setitem__("mixer_out", o[0] if isinstance(o, tuple) else o)))
+            # Input of the mixer's output projection (HF head order): the activation the engine's
+            # ssm_out / attn_output GEMV consumes.
+            out_proj = mixer.o_proj if hasattr(mixer, "o_proj") else mixer.out_proj
+            hooks.append(out_proj.register_forward_hook(
+                lambda m, a, o: rec.__setitem__("mixer_core", a[0])))
 
             def moe_hook(m, a, o):
                 rec["moe_in"] = a[0]

@@ -1,0 +1,18 @@
+# 14 Q6_K attn_qkv layers x 13.76 MB; LM head 417.2 MB
+attn_qkv Q6_K  R=1 grid  120:   29.05 us/launch   473.8 GB/s   59.4%
+attn_qkv Q6_K  R=1 grid  240:   27.14 us/launch   507.1 GB/s   63.6%
+attn_qkv Q6_K  R=1 grid  480:   27.95 us/launch   492.4 GB/s   61.8%
+attn_qkv Q6_K  R=2 grid  120:   27.71 us/launch   496.7 GB/s   62.3%
+attn_qkv Q6_K  R=2 grid  240:   27.59 us/launch   498.9 GB/s   62.6%
+attn_qkv Q6_K  R=2 grid  480:   27.31 us/launch   504.0 GB/s   63.2%
+attn_qkv Q6_K  R=4 grid  120:   30.03 us/launch   458.2 GB/s   57.5%
+attn_qkv Q6_K  R=4 grid  240:   28.86 us/launch   476.8 GB/s   59.8%
+attn_qkv Q6_K  R=4 grid  480:   32.30 us/launch   426.0 GB/s   53.5%
+LM head Q6_K   R=1 grid  240:    600.8 us   694.3 GB/s   87.1%
+LM head Q6_K   R=1 grid  480:    593.5 us   703.0 GB/s   88.2%
+LM head Q6_K   R=1 grid  960:    582.7 us   715.9 GB/s   89.8%
+LM head Q6_K   R=1 grid 1920:    578.1 us   721.6 GB/s   90.5%
+LM head Q6_K   R=4 grid  240:    610.1 us   683.8 GB/s   85.8%
+LM head Q6_K   R=4 grid  480:    602.7 us   692.1 GB/s   86.8%
+LM head Q6_K   R=4 grid  960:    602.7 us   692.1 GB/s   86.8%
+LM head Q6_K   R=4 grid 1920:    609.3 us   684.7 GB/s   85.9%
