@@ -7,23 +7,23 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m0-scaffold` (PR open against `main`)
-- Last work commit: `16a4bc3` @ 2026-09-25
+- Branch: `ai-written/m1-gguf` (PR open against `main`)
+- Last work commit: `18c39da` @ 2026-09-25
 - Working tree: clean after the handoff commit
-- Last session: 2026-09-25 22:10 JST
+- Last session: 2026-09-25 22:25 JST
 
 ## Status
 
-ready-for-review (M0 complete: `ctest --preset default` 2/2 green on the MI50)
+ready-for-review (M1 first half: GGUF reader + CPU dequant; `ctest --preset default` 3/3 green)
 
 ## Next action
 
-After the M0 PR is merged, branch `ai-written/m1-gguf` from `main` and start M1 (ADR_003 D14) with a failing test: a C++ GGUF reader that lists the 753 tensors of the Q4_K_M file with the same names, types, shapes and offsets as `gguf-py`.
+After the M1a PR is merged, branch `ai-written/m1-golden` from `main` and build the golden-output harness (ADR_001 D6, ADR_002 D11): a pinned Python env with `transformers` (qwen3_5_moe) + CPU `torch`, fed dequantised GGUF tensors, writing per-layer inputs/outputs for one DeltaNet layer, one full-attention layer and one MoE block.
 
 ## Verification
 
-- M0 (this branch): `cmake --preset default && cmake --build --preset default && ctest --preset default` passes; the build prints the kernel resource table and writes `build/kernel-resources/*.txt`.
-- M1 exit: CPU Q4_K dequantisation matches `gguf-py` bit-exactly; golden files exist for one layer of each type.
+- M1a (this branch): `ctest --preset default` passes; `build/tests/test_gguf` reports 6 test cases, 0 skipped (the 753-tensor model comparison runs when the GGUF is present).
+- M1 exit: golden files exist for one layer of each type and are reproducible from a script.
 
 ## Context pointers
 
@@ -49,10 +49,11 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19). Pending by measu
 
 ## Open questions for user
 
-- Merge the M0 PR.
+- Merge the M1a PR.
 
 ## Session log
 
 - 2026-09-25: Measured MI50 (`docs/research/mi50.md`), inventoried the Q4_K_M GGUF, recorded ADR_001 (language, kernels, prefill/decode split, decode execution, weight source, verification) and ADR_002 (build/test, scope, numerics, tokenizer/API, reference weights, benchmarks, repo ops). Found no published all-Q4_K Ornith GGUF; a pure file can be made with `llama-quantize --pure` from the BF16 GGUF (+13% decode floor, lower precision). Created the public GitHub remote and moved handoff to `docs/handoff/`.
 - 2026-09-25 (later): Recorded ADR_003 (decode-first milestones M0–M5, source layout, clang-format 18.1.8 via pre-commit + pre-push check, no CI, Q8_0-based KL evaluation, `ai-written/<topic>` branches with PRs). Added the hooks, reformatted `bench/`, filled the project sections of `AGENTS.md`. Opened the PR from `ai-written/adr-003-tooling` (merged as #1).
-- 2026-09-25 (M0): Built the scaffold on `ai-written/m0-scaffold`: CMake Ninja preset with GCC auto-detection, vendored doctest 2.4.12, `miso_kernels`/`miso_host` include boundary, post-build kernel resource report from code-object metadata, smoke operator `axpy` in the `__device__` op + thin wrapper pattern. Tests green; a mutation of `axpy_op` is caught (999 failed assertions). Found and fixed stale HIP header dependencies under the Makefile generator.
+- 2026-09-25 (M0): Built the scaffold on `ai-written/m0-scaffold`: CMake Ninja preset with GCC auto-detection, vendored doctest 2.4.12, `miso_kernels`/`miso_host` include boundary, post-build kernel resource report from code-object metadata, smoke operator `axpy` in the `__device__` op + thin wrapper pattern. Tests green; a mutation of `axpy_op` is caught (999 failed assertions). Found and fixed stale HIP header dependencies under the Makefile generator. Merged as #2.
+- 2026-09-25 (M1a): On `ai-written/m1-gguf`, added the mmap GGUF v3 reader and F32/F16/BF16/Q4_K/Q6_K CPU dequantisation, bit-exact with gguf-py on real model blocks; the C++ tensor table matches gguf-py for all 753 tensors. A Q4_K scale-index mutation is caught. Allowing FMA contraction did not change results, because Q4_K products (11-bit d × 6-bit scale × 4-bit q) are exact in FP32; `-ffp-contract=off` stays as a guard for other formats.
