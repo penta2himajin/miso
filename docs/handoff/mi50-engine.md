@@ -7,29 +7,28 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m3d-moe` (PR open against `main`)
-- Last work commit: `59da75d` @ 2026-09-26
+- Branch: `ai-written/m3e-e2e` (PR open against `main`)
+- Last work commit: `c29ad67` @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
-- Last session: 2026-09-26 01:10 JST
-- Background: `Ornith-1.5-35B-Q8_0.gguf` downloaded (exit 0; SHA256 check against the HF etag pending, output in `/tmp/q8_sha.txt`). `Ornith-1.5-35B-BF16.gguf` in progress (~6 MB/s). Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
+- Last session: 2026-09-26 01:35 JST
+- Background: `Ornith-1.5-35B-Q8_0.gguf` downloaded and verified (SHA256 `de46c4ba…58c3` = HF etag). `Ornith-1.5-35B-BF16.gguf` still downloading (~6 MB/s). Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`.
 
 ## Status
 
-ready-for-review (M3d complete: MoE routing identical to golden, output at the FP64 prediction; `ctest --preset default` 12/12 green)
+ready-for-review (M3e part 1: full-model decode, llama.cpp continuation reproduced 8/8, **108.9 tok/s**; `ctest --preset default` 13/13 green in 41 s)
 
 ## Next action
 
-After the M3d PR is merged, branch `ai-written/m3e-e2e` from `main` and assemble the full decode path (ADR_003 D14 M3e):
-- `src/engine/model.*`: embedding -> 40 layers (DeltaNet / attention by `layer_types`, each followed by add+RMSNorm and MoE with residual adds) -> output norm -> LM head (Q6_K) -> greedy argmax;
-- first end-to-end check: teacher-forced greedy agreement with llama.cpp's continuation of the golden prompt (8/8 expected, as `tools/golden/make_golden.py --verify` does for the reference);
-- tokenizer from GGUF metadata (BPE with the `qwen35` pre-tokeniser regex), chat template, CLI;
-- measure decode tok/s with the ADR_002 D12 protocol against 57.2 (llama.cpp tg64).
-Measured per-token costs so far (short context): DeltaNet ~100 us x 30, attention ~113 us x 10, MoE ~103 us x 40, LM head ~0.6 ms, so ~9 ms/token (~110 tok/s) before optimisation.
+After the M3e-1 PR is merged, branch `ai-written/m3e-tokenizer` from `main` and finish M3 (ADR_003 D14; ADR_002 D10):
+- C++ BPE tokenizer from GGUF metadata (`tokenizer.ggml.tokens` / `merges` / `token_type`, `pre = qwen35` regex, byte-level mapping), tested against the HF tokenizer on a fixed corpus (ids must match exactly) and on the golden prompt ids;
+- detokenizer (byte-level decode, special tokens);
+- chat template for a user message (from `tokenizer.chat_template`; hand-written for v1 is acceptable if tested against HF `apply_chat_template`);
+- CLI `miso` (prompt in, greedy text out, tok/s printed).
 
 ## Verification
 
-- M3d (this branch): `ctest --preset default` passes; `build/bench/bench_moe` reproduces `bench/moe/results/2026-09-26-run1.txt`.
-- M3 exit (ADR_003 D14): coherent text, layer outputs within tolerance of golden, > 57.2 tok/s.
+- M3e-1 (this branch): `ctest --preset default` passes, including `test_model`; `build/bench/bench_decode` reproduces ~109 tok/s (`bench/model/results/2026-09-26-run1.txt`).
+- M3 exit (ADR_003 D14): the CLI prints coherent text for a prompt, and decode stays above 57.2 tok/s.
 
 ## Context pointers
 
@@ -62,7 +61,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M3d PR.
+- Merge the M3e-1 PR.
 
 ## Session log
 
@@ -75,4 +74,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-25 (M3a): User approved the M3a–M3e breakdown. On `ai-written/m3a-norm-embed-q6k`: fused add+RMSNorm (golden post-attention norm within bound, residual bit-exact), Q4_K r1 embedding lookup (bit-exact with the golden input), Q6_K r1 row layout (lossless) and Q6_K FP16 GEMV (within 7% of bound). LM head 417 MB at 713 GB/s (89.5%); 13.8 MB DeltaNet qkv at 27.6 us, consistent with the ~8 us per-launch fixed cost. DPP reductions moved to `kernels/wave.hpp`. Merged as #6.
 - 2026-09-26 (M3b): On `ai-written/m3b-deltanet`, built the Gated DeltaNet decode step (conv ping-pong state, delta rule in registers, gated norm) and the `src/engine` HIP library (weight upload/repack, GEMV dispatch, DeltaNet layer). The first run gave 2.0e-3 vs golden; stage-by-stage comparison with an FP64 reference traced it to the `ssm_out` GEMV. Fixed the Q4_K min-term rounding inconsistency and replaced the 1024-biased FP16 nibbles with exact subnormals (ADR_004 amendment). The layer now matches the FP16-rounding prediction (2.96e-4); the GEMVs got more accurate and slightly faster. One DeltaNet layer takes ~100 us/token, dominated by the fixed cost of 7 small launches (rocprof breakdown in `bench/deltanet/results/`). Merged as #7.
 - 2026-09-26 (M3c): On `ai-written/m3c-attention`, built gated full-attention decode: per-head q/k norm + partial NEOX RoPE + FP16 KV append, then attention. The first version (one workgroup per query head) was correct but scaled at 0.41 us per context token (1.8 ms/layer at 4k). Replaced it with split-K flash decoding (8 query heads per KV-head workgroup, online softmax over 32-position sub-chunks, merge kernel): 177 us at 4k, 334 us at 16k. Golden layer 3 error 4.62e-4, exactly the FP64 prediction for FP16 GEMV inputs + FP16 KV; split-K vs FP64 <= 2e-6 up to 5000 positions. Merged as #8.
-- 2026-09-26 (M3d): On `ai-written/m3d-moe`, built the MoE decode path in 3 launches: BF16 router (+ shared gate row), fused gate/up for 8 routed + shared experts with top-8 re-derived per workgroup, fused down + weighting (16 lanes per K = 512 row, Q4_K and Q6_K). Expert ids match golden for all 34 token-layers, output error equals the FP64 prediction (3.6e-4 / 3.9e-4). ~103 us/token per layer; gate/up (47 us) and down (39-44 us) are slowed by per-workgroup redundant top-k and SiLU prologues, candidates for the performance phase. Q8_0 download finished.
+- 2026-09-26 (M3d): On `ai-written/m3d-moe`, built the MoE decode path in 3 launches: BF16 router (+ shared gate row), fused gate/up for 8 routed + shared experts with top-8 re-derived per workgroup, fused down + weighting (16 lanes per K = 512 row, Q4_K and Q6_K). Expert ids match golden for all 34 token-layers, output error equals the FP64 prediction (3.6e-4 / 3.9e-4). ~103 us/token per layer; gate/up (47 us) and down (39-44 us) are slowed by per-workgroup redundant top-k and SiLU prologues, candidates for the performance phase. Q8_0 download finished. Merged as #9.
+- 2026-09-26 (M3e-1): On `ai-written/m3e-e2e`, assembled the full model (`src/engine/model.*`): device-side tokens and predictions (no host round trip per token), two-stage argmax, residual adds fused into the mixers' input norms. End to end, it reproduces llama.cpp's greedy continuation of the golden prompt 8/8, both teacher-forced and free-running. Decode runs at 108.9 tok/s (9.19 ms/token, ctx ~273-529), 1.9x llama.cpp's 57.2 and past ADR_002 D12 stage 1. Model load takes 27.6 s (single-threaded repack plus PCIe 3.0 x4).
