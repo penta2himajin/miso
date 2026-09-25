@@ -6,7 +6,10 @@ Sharable git hooks for consumer repos.
 
 | File | Purpose |
 |---|---|
-| `pre-push` | Run format / lint / clippy locally before `git push`. Detects toolchains (Cargo, npm, ruff) by file presence and skips anything the repo doesn't have. |
+| `pre-commit` | Format staged C++/HIP files with `clang-format` and re-stage them. Refuses files that also have unstaged changes. |
+| `pre-push` | Run format / lint / clippy locally before `git push`. Detects toolchains (Cargo, npm, ruff, `.clang-format`) by file presence and skips anything the repo doesn't have. |
+
+`clang-format` is pinned to 18.1.8 (matches ROCm 6.3's clang 18): `python3 -m pip install --user clang-format==18.1.8`.
 
 ## Install (per repo)
 
