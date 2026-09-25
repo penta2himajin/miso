@@ -7,23 +7,24 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `main`
-- Last work commit: `7297897` @ 2026-09-25
+- Branch: `ai-written/adr-003-tooling` (PR open against `main`)
+- Last work commit: `b6a52b3` @ 2026-09-25
 - Working tree: clean after the handoff commit
-- Last session: 2026-09-25 21:45 JST
+- Last session: 2026-09-25 21:55 JST
 
 ## Status
 
-in-progress (design discussion; no engine code yet)
+ready-for-review (design decisions complete; no engine code yet)
 
 ## Next action
 
-Settle the remaining discussion items listed under "Open questions for user", then scaffold milestone M0 (CMake + CTest + vendored doctest + HIP smoke test).
+After the ADR_003 PR is merged, branch `ai-written/m0-scaffold` from `main` and build milestone M0 (ADR_003 D14): CMake + CTest + vendored doctest, a HIP smoke test, and per-kernel VGPR/LDS reporting.
 
 ## Verification
 
-- Decisions from the discussion are recorded in `docs/decisions/ADR_003-*.md`.
-- For M0: `cmake -S . -B build && cmake --build build && ctest --test-dir build` passes on the MI50 host.
+- `cmake -S . -B build && cmake --build build && ctest --test-dir build` passes on the MI50 host.
+- The build prints (or writes) VGPR / LDS usage for every kernel target.
+- `git push` passes the pre-push clang-format check.
 
 ## Context pointers
 
@@ -36,22 +37,20 @@ Settle the remaining discussion items listed under "Open questions for user", th
 
 ## Decisions made
 
-See ADR_001 (D1–D6) and ADR_002 (D7–D13). Pending: pure-Q4_K weight file (ADR_002 D9), activation format A/B (ADR_002 D9).
+See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19). Pending by measurement: activation format A/B (ADR_002 D9, at M2); pure-Q4_K weight file (ADR_002 D9, evaluated per ADR_003 D18 in parallel with M2).
 
 ## Failed approaches
 
 - First cache-sweep microbenchmark: grid stride was a multiple of 2^18, so windows ≤256 KiB re-read one address per thread and overstated L1/L2 bandwidth. Fixed by per-block streaming (`bench/mi50/microbench.hip` `k_sweep`).
 - `hipcc` without flags fails with `'cmath' file not found`: clang picks GCC 12 but only `libstdc++-11-dev` is installed. Use `--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11`.
 
+- A persistent shell running `set -e` exited on the first failing command and killed the agent shell session. Run throwaway tests in a `( … )` subshell instead.
+
 ## Open questions for user
 
-- Milestone order and first TDD target.
-- Source layout and module boundaries.
-- Formatting / warnings policy and whether the pre-push hook gains C++ checks.
-- CI (GitHub runners cannot run gfx906).
-- Quality-evaluation baseline for the pure-Q4_K candidate, and whether to start the 71.1 GB BF16 download.
-- Branch / PR policy (push to `main` vs. branch + PR per workstream).
+- Merge the ADR_003 PR, and confirm starting M0.
 
 ## Session log
 
 - 2026-09-25: Measured MI50 (`docs/research/mi50.md`), inventoried the Q4_K_M GGUF, recorded ADR_001 (language, kernels, prefill/decode split, decode execution, weight source, verification) and ADR_002 (build/test, scope, numerics, tokenizer/API, reference weights, benchmarks, repo ops). Found no published all-Q4_K Ornith GGUF; a pure file can be made with `llama-quantize --pure` from the BF16 GGUF (+13% decode floor, lower precision). Created the public GitHub remote and moved handoff to `docs/handoff/`.
+- 2026-09-25 (later): Recorded ADR_003 (decode-first milestones M0–M5, source layout, clang-format 18.1.8 via pre-commit + pre-push check, no CI, Q8_0-based KL evaluation, `ai-written/<topic>` branches with PRs). Added the hooks, reformatted `bench/`, filled the project sections of `AGENTS.md`. Opened the PR from `ai-written/adr-003-tooling`.
