@@ -13,7 +13,8 @@ endfunction()
 set(MISO_TEST_DEFINITIONS
     MISO_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
     MISO_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/golden"
-    MISO_ORNITH_GGUF="${MISO_ORNITH_GGUF}")
+    MISO_ORNITH_GGUF="${MISO_ORNITH_GGUF}"
+    MISO_ORNITH_Q4K="${MISO_ORNITH_Q4K}")
 
 miso_gpu_test(test_device test_device.hip)
 miso_gpu_test(test_axpy test_axpy.hip)
@@ -30,6 +31,9 @@ target_link_libraries(test_deltanet PRIVATE miso_engine)
 miso_gpu_test(test_prefill test_prefill.hip)
 target_compile_definitions(test_prefill PRIVATE ${MISO_TEST_DEFINITIONS})
 target_link_libraries(test_prefill PRIVATE miso_engine)
+miso_gpu_test(test_pure_q4k test_pure_q4k.hip)
+target_compile_definitions(test_pure_q4k PRIVATE ${MISO_TEST_DEFINITIONS})
+target_link_libraries(test_pure_q4k PRIVATE miso_engine)
 miso_gpu_test(test_model test_model.hip)
 target_compile_definitions(test_model PRIVATE ${MISO_TEST_DEFINITIONS})
 target_link_libraries(test_model PRIVATE miso_engine)

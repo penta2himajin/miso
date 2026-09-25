@@ -33,7 +33,7 @@ Goal: decide between the current Q4_K_M and a pure-Q4_K file on measured quality
 
 | Step | Content | Exit |
 |---|---|---|
-| M6a | Wait for `Ornith-1.5-35B-BF16.gguf` (verify SHA256 against the HF etag). Build the pure-Q4_K file with `llama-quantize --pure` and an imatrix; record the recipe and hashes | File builds; the engine loads it (Q4_K only) |
+| M6a | Wait for `Ornith-1.5-35B-BF16.gguf` (verify SHA256 against the HF etag). Build the pure-Q4_K file with `llama-quantize --pure` and an imatrix; record the recipe and hashes | Done: `docs/research/ornith-pure-q4k.md`. The engine loads the file; every quantised tensor is Q4_K |
 | M6b | Fix the evaluation text (English prose, Japanese, code; recorded with hashes) and run `llama-perplexity --kl-divergence` against Q8_0 base logits for Q4_K_M and pure Q4_K | Mean / p99 KL divergence, top-1 agreement, perplexity for both |
 | M6c | Engine decode tok/s and pp512 for both files | Numbers recorded |
 | M6d | ADR on the weight file | Decision recorded; tests follow the chosen file |

@@ -82,6 +82,9 @@ target_include_directories(doctest SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_
 set(MISO_ORNITH_GGUF
     "/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf"
     CACHE FILEPATH "Ornith Q4_K_M GGUF: default model path; tests that need it are skipped when absent")
+set(MISO_ORNITH_Q4K
+    "/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K.gguf"
+    CACHE FILEPATH "Local pure-Q4_K GGUF; the load test is skipped when absent")
 
 add_executable(miso src/cli/miso.hip)
 target_link_libraries(miso PRIVATE miso_engine)
