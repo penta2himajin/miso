@@ -25,6 +25,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 import ornith_ref  # noqa: E402
 
 PROMPT = "The capital of France is Paris. The capital of Japan is Tokyo. 日本の首都は"
+# Greedy continuation of PROMPT by llama.cpp (`llama-simple -n 8`, ROCm build d81aef1, this GGUF),
+# which the reference reproduces 8/8 when teacher-forced (tests/golden/README.md).
+LLAMA_CPP_CONTINUATION = "東京です。 The capital of Japan is"
 
 
 def self_check_reorder():
@@ -108,7 +111,9 @@ def main():
     ap.add_argument("--out", default="tests/golden/ornith-layers.gguf")
     ap.add_argument("--gguf-sha256", default="")
     ap.add_argument("--layers", default="0,3")
-    ap.add_argument("--verify", help="llama.cpp greedy continuation of PROMPT; runs all layers")
+    ap.add_argument("--verify", nargs="?", const=LLAMA_CPP_CONTINUATION,
+                    help="teacher-force a continuation of PROMPT through all layers (default: the "
+                         "recorded llama.cpp one)")
     a = ap.parse_args()
     torch.set_num_threads(os.cpu_count())
     self_check_reorder()
@@ -141,6 +146,9 @@ def main():
     w = gguf.GGUFWriter(a.out, "miso-golden")
     w.add_string("golden.prompt", PROMPT)
     w.add_array("golden.token_ids", ids)
+    full = tok(PROMPT + LLAMA_CPP_CONTINUATION)["input_ids"]
+    assert full[:len(ids)] == ids
+    w.add_array("golden.continuation_ids", full[len(ids):])
     w.add_array("golden.layers", layers)
     w.add_string("golden.model_gguf_sha256", a.gguf_sha256)
     w.add_string("golden.hf_config", cfg_path.split("snapshots/")[-1])

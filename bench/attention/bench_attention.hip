@@ -20,11 +20,11 @@ int main(int argc, char** argv) {
   MISO_HIP_CHECK(hipEventCreate(&b));
   for (unsigned ctx : {16u, 1024u, 4096u, 16384u}) {
     while (cache.len < ctx)
-      miso::attention_decode(layer, cache, sc, rope, h.data(), y.data(), 1e-6f, nullptr);
+      miso::attention_decode(layer, cache, sc, rope, h.data(), nullptr, y.data(), 1e-6f, nullptr);
     const int n = 64;
     MISO_HIP_CHECK(hipEventRecord(a));
     for (int i = 0; i < n; ++i)
-      miso::attention_decode(layer, cache, sc, rope, h.data(), y.data(), 1e-6f, nullptr);
+      miso::attention_decode(layer, cache, sc, rope, h.data(), nullptr, y.data(), 1e-6f, nullptr);
     MISO_HIP_CHECK(hipEventRecord(b));
     MISO_HIP_CHECK(hipEventSynchronize(b));
     float ms;

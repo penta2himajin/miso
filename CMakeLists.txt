@@ -72,7 +72,7 @@ target_compile_options(miso_host PRIVATE -ffp-contract=off)
 miso_warnings(miso_host)
 
 # Engine: host code that owns device weights/state and launches kernels (compiled as HIP).
-add_library(miso_engine STATIC src/engine/weights.hip src/engine/deltanet.hip src/engine/attention.hip src/engine/moe.hip)
+add_library(miso_engine STATIC src/engine/weights.hip src/engine/deltanet.hip src/engine/attention.hip src/engine/moe.hip src/engine/model.hip)
 target_link_libraries(miso_engine PUBLIC miso_host miso_kernels)
 miso_warnings(miso_engine)
 

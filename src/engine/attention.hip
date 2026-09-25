@@ -35,14 +35,13 @@ AttentionCache::AttentionCache(unsigned n)
     : max_ctx(n), k(std::size_t{2} * n * 256), v(std::size_t{2} * n * 256) {}
 
 void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionScratch& sc,
-                      const RopeConfig& rope, const float* h, float* y, float eps,
+                      const RopeConfig& rope, float* h, const float* delta, float* y, float eps,
                       hipStream_t stream) {
   using kernels::attn::half_t;
   constexpr int kBlock = 256;
   if (cache.len >= cache.max_ctx)
     throw std::runtime_error("attention_decode: KV cache is full");
-  const kernels::AddRmsNormParams norm{const_cast<float*>(h), nullptr, w.attn_norm.data(),
-                                       sc.xn.data(), eps};
+  const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kBlock><<<1, kBlock, 0, stream>>>(norm, 1);
   gemv(w.q, sc.xn.data(), sc.qg.data(), stream);
   gemv(w.k, sc.xn.data(), sc.k.data(), stream);

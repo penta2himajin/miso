@@ -32,8 +32,9 @@ struct DeltaNetScratch {
   DeviceBuffer<float> xn{2048}, qkv{8192}, z{4096}, a{32}, b{32}, o{4096};
 };
 
-// y = DeltaNet(RMSNorm(h)) for one token; h and y are device pointers to 2048 floats.
-void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch& sc, const float* h,
-                     float* y, float eps, hipStream_t stream);
+// h += delta (if delta != nullptr), then y = DeltaNet(RMSNorm(h)) for one token. h, delta and y are
+// device pointers to 2048 floats.
+void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch& sc, float* h,
+                     const float* delta, float* y, float eps, hipStream_t stream);
 
 }  // namespace miso

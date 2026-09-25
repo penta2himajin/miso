@@ -62,7 +62,7 @@ TEST_CASE("gated full-attention decode reproduces golden layer 3 token by token"
     CAPTURE(t);
     MISO_HIP_CHECK(
         hipMemcpy(h.data(), in.data() + t * kHidden, kHidden * 4, hipMemcpyHostToDevice));
-    miso::attention_decode(layer, cache, scratch, rope, h.data(), y.data(), eps, nullptr);
+    miso::attention_decode(layer, cache, scratch, rope, h.data(), nullptr, y.data(), eps, nullptr);
     MISO_HIP_CHECK(hipDeviceSynchronize());
     const double rc = rel_l2(scratch.core.to_host(), core.data() + t * kCore, kCore);
     const double ro = rel_l2(y.to_host(), out.data() + t * kHidden, kHidden);

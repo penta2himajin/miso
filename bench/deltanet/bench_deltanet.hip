@@ -14,14 +14,14 @@ int main(int argc, char** argv) {
   miso::DeltaNetScratch sc;
   miso::DeviceBuffer<float> h(std::vector<float>(2048, 0.1f)), y(2048);
   for (int i = 0; i < 200; ++i)
-    miso::deltanet_decode(layer, st, sc, h.data(), y.data(), 1e-6f, nullptr);
+    miso::deltanet_decode(layer, st, sc, h.data(), nullptr, y.data(), 1e-6f, nullptr);
   hipEvent_t a, b;
   MISO_HIP_CHECK(hipEventCreate(&a));
   MISO_HIP_CHECK(hipEventCreate(&b));
   const int n = 1000;
   MISO_HIP_CHECK(hipEventRecord(a));
   for (int i = 0; i < n; ++i)
-    miso::deltanet_decode(layer, st, sc, h.data(), y.data(), 1e-6f, nullptr);
+    miso::deltanet_decode(layer, st, sc, h.data(), nullptr, y.data(), 1e-6f, nullptr);
   MISO_HIP_CHECK(hipEventRecord(b));
   MISO_HIP_CHECK(hipEventSynchronize(b));
   float ms;
