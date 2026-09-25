@@ -49,9 +49,10 @@ struct AttentionPrefillScratch {
         qg(max_tok * 8192),
         k(max_tok * 512),
         v(max_tok * 512),
+        q(max_tok * 4096),
         core(max_tok * 4096) {}
   GemmInput in;
-  DeviceBuffer<float> xn, qg, k, v, core;
+  DeviceBuffer<float> xn, qg, k, v, q, core;
 };
 
 // h += delta (if delta != nullptr), then y = Attention(RMSNorm(h)) for the token at position
@@ -60,8 +61,8 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
                       const RopeConfig& rope, float* h, const float* delta, float* y, float eps,
                       hipStream_t stream);
 
-// The same for n consecutive tokens ([n][2048] arrays): projections as prefill GEMMs, attention
-// token by token (causal, each token sees the cache up to itself).
+// The same for n consecutive tokens ([n][2048] arrays): projections as prefill GEMMs, then causal
+// flash attention over the chunk (each token sees the cache up to itself).
 void attention_prefill(const AttentionLayer& w, AttentionCache& cache, AttentionScratch& sc,
                        AttentionPrefillScratch& ps, const RopeConfig& rope, float* h,
                        const float* delta, float* y, unsigned n, float eps, hipStream_t stream);

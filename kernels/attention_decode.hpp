@@ -30,38 +30,43 @@ struct AttnPrepParams {
   float eps;
 };
 
-// Heads [first, first + count) of 18: 0..15 query heads, 16..17 KV heads. One 256-thread
-// workgroup per head: per-head RMSNorm, RoPE at `pos`, then write q or append k / v to the cache.
+// One head of 18 (0..15 query heads, 16..17 KV heads) on a 256-thread workgroup: per-head RMSNorm,
+// RoPE at `pos`, then write q or append k / v to the cache.
 template <int kBlock>
-__device__ void attn_prep_op(const AttnPrepParams& p, unsigned first, unsigned count) {
+__device__ void attn_prep_head(const AttnPrepParams& p, unsigned head) {
   using namespace attn;
   static_assert(kBlock == kDim);
   __shared__ float xs[kDim], red[kBlock / kWave];
   const unsigned d = threadIdx.x;
-  for (unsigned head = first + blockIdx.x; head < first + count; head += gridDim.x) {
-    const bool is_q = head < kQHeads;
-    const unsigned kvh = head - kQHeads;
-    float x = is_q ? p.qg[head * 2 * kDim + d] : p.k[kvh * kDim + d];
-    const float r = rsqrtf(block_sum<kBlock>(x * x, red) / kDim + p.eps);
-    x = x * r * (is_q ? p.q_norm[d] : p.k_norm[d]);
-    xs[d] = x;
-    __syncthreads();
-    if (d < kRopeDim) {
-      constexpr unsigned kHalf = kRopeDim / 2;
-      const unsigned i = d % kHalf;
-      float s, c;
-      sincosf(static_cast<float>(p.pos) * p.inv_freq[i], &s, &c);
-      x = d < kHalf ? xs[i] * c - xs[i + kHalf] * s : xs[i + kHalf] * c + xs[i] * s;
-    }
-    if (is_q) {
-      p.q[head * kDim + d] = x;
-    } else {
-      const std::size_t at = (std::size_t{kvh} * p.max_ctx + p.pos) * kDim + d;
-      p.k_cache[at] = static_cast<half_t>(x);
-      p.v_cache[at] = static_cast<half_t>(p.v[kvh * kDim + d]);
-    }
-    __syncthreads();
+  const bool is_q = head < kQHeads;
+  const unsigned kvh = head - kQHeads;
+  float x = is_q ? p.qg[head * 2 * kDim + d] : p.k[kvh * kDim + d];
+  const float r = rsqrtf(block_sum<kBlock>(x * x, red) / kDim + p.eps);
+  x = x * r * (is_q ? p.q_norm[d] : p.k_norm[d]);
+  xs[d] = x;
+  __syncthreads();
+  if (d < kRopeDim) {
+    constexpr unsigned kHalf = kRopeDim / 2;
+    const unsigned i = d % kHalf;
+    float s, c;
+    sincosf(static_cast<float>(p.pos) * p.inv_freq[i], &s, &c);
+    x = d < kHalf ? xs[i] * c - xs[i + kHalf] * s : xs[i + kHalf] * c + xs[i] * s;
   }
+  if (is_q) {
+    p.q[head * kDim + d] = x;
+  } else {
+    const std::size_t at = (std::size_t{kvh} * p.max_ctx + p.pos) * kDim + d;
+    p.k_cache[at] = static_cast<half_t>(x);
+    p.v_cache[at] = static_cast<half_t>(p.v[kvh * kDim + d]);
+  }
+  __syncthreads();
+}
+
+// Heads [first, first + count) of 18, one workgroup per head (grid-stride).
+template <int kBlock>
+__device__ void attn_prep_op(const AttnPrepParams& p, unsigned first, unsigned count) {
+  for (unsigned head = first + blockIdx.x; head < first + count; head += gridDim.x)
+    attn_prep_head<kBlock>(p, head);
 }
 
 template <int kBlock>
