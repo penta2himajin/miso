@@ -45,9 +45,30 @@ void check(unsigned n) {
       ddt(dt), dnw(norm_w);
   miso::DeviceBuffer<float> st_seq(state), st_ch(state), co_seq(kNch * 3), co_ch(kNch * 3);
   miso::DeviceBuffer<float> o_seq(std::size_t{n} * kV * kD), o_ch(std::size_t{n} * kV * kD);
-  const miso::kernels::DeltaNetSeqParams seq{
-      dqkv.data(), dz.data(),  da.data(),  db.data(),     dcw.data(),   dci.data(), co_seq.data(),
-      dsa.data(),  ddt.data(), dnw.data(), st_seq.data(), o_seq.data(), n,          1e-6f};
+  // z, a and b now share one GEMV output with stride 4160: rows [0,4096) z, [4096,4128) a,
+  // [4128,4160) b. Pack the separately generated arrays into that layout.
+  std::vector<float> zab(std::size_t{n} * 4160);
+  for (unsigned t = 0; t < n; ++t) {
+    std::copy_n(z.data() + std::size_t{t} * kV * kD, kV * kD, zab.data() + std::size_t{t} * 4160);
+    std::copy_n(a.data() + std::size_t{t} * kV, kV, zab.data() + std::size_t{t} * 4160 + 4096);
+    std::copy_n(b.data() + std::size_t{t} * kV, kV, zab.data() + std::size_t{t} * 4160 + 4128);
+  }
+  miso::DeviceBuffer<float> dzab(zab);
+  const miso::kernels::DeltaNetSeqParams seq{dqkv.data(),
+                                             dzab.data(),
+                                             dzab.data() + 4096,
+                                             dzab.data() + 4128,
+                                             dcw.data(),
+                                             dci.data(),
+                                             co_seq.data(),
+                                             dsa.data(),
+                                             ddt.data(),
+                                             dnw.data(),
+                                             st_seq.data(),
+                                             o_seq.data(),
+                                             n,
+                                             1e-6f,
+                                             4160};
   miso::kernels::deltanet_seq_kernel<256><<<32, 256>>>(seq);
   MISO_HIP_CHECK(hipGetLastError());
 

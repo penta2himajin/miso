@@ -11,7 +11,11 @@
 namespace miso {
 
 struct DeltaNetLayer {
-  QMatrix qkv, z, a, b, out;  // attn_qkv, attn_gate, ssm_alpha, ssm_beta, ssm_out
+  QMatrix qkv;  // attn_qkv
+  // attn_gate + ssm_alpha + ssm_beta share K = 2048, so they are concatenated and one GEMV writes
+  // all three: rows [0,4096) z, [4096,4128) a, [4128,4160) b.
+  QMatrix z_ab;
+  QMatrix out;  // ssm_out
   DeviceBuffer<float> attn_norm, conv_w, ssm_a, dt_bias, ssm_norm;
 
   static DeltaNetLayer load(const gguf::File& f, int layer);
@@ -29,7 +33,10 @@ struct DeltaNetState {
 };
 
 struct DeltaNetScratch {
-  DeviceBuffer<float> xn{2048}, qkv{8192}, z{4096}, a{32}, b{32}, o{4096};
+  DeviceBuffer<float> xn{2048}, qkv{8192}, z_ab{4160}, o{4096};
+  float* z() { return z_ab.data(); }
+  float* a() { return z_ab.data() + 4096; }
+  float* b() { return z_ab.data() + 4128; }
 };
 
 // Chunk buffers of the prefill path, for up to max_tok tokens.
@@ -38,12 +45,11 @@ struct DeltaNetPrefillScratch {
       : in(max_tok, 4096),
         xn(max_tok * 2048),
         qkv(max_tok * 8192),
-        z(max_tok * 4096),
-        a(max_tok * 32),
-        b(max_tok * 32),
+        z_ab(max_tok * 4160),
         o(max_tok * 4096) {}
   GemmInput in;
-  DeviceBuffer<float> xn, qkv, z, a, b, o;
+  DeviceBuffer<float> xn, qkv, z_ab, o;
+  float* z(unsigned t) { return z_ab.data() + std::size_t{t} * 4160; }
 };
 
 // h += delta (if delta != nullptr), then y = DeltaNet(RMSNorm(h)) for one token. h, delta and y are

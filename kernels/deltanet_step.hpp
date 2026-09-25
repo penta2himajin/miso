@@ -145,9 +145,9 @@ __global__ void __launch_bounds__(kBlock) deltanet_step_kernel(DeltaNetStepParam
 // deltanet_step_op, so the result is bit-identical to n steps.
 struct DeltaNetSeqParams {
   const float* qkv;  // [n][8192]
-  const float* z;    // [n][4096]
-  const float* a;    // [n][32]
-  const float* b;    // [n][32]
+  const float* z;    // [n][zab_stride], first 4096 rows
+  const float* a;    // [n][zab_stride], rows 4096..4127
+  const float* b;    // [n][zab_stride], rows 4128..4159
   const float* conv_w;
   const float* conv_in;  // [8192][3] before the first token
   float* conv_out;       // [8192][3] after the last token
@@ -158,6 +158,7 @@ struct DeltaNetSeqParams {
   float* out;  // [n][4096]
   unsigned n;
   float eps;
+  unsigned zab_stride;  // 4160 when z, a and b were concatenated into one GEMV output
 };
 
 template <int kBlock>
@@ -214,8 +215,8 @@ __device__ void deltanet_seq_op(const DeltaNetSeqParams& p, unsigned first, unsi
       }
       __syncthreads();
 
-      const float beta = 1.0f / (1.0f + __expf(-p.b[tok * kVHeads + h]));
-      const float decay = __expf(p.ssm_a[h] * softplus(p.a[tok * kVHeads + h] + p.dt_bias[h]));
+      const float beta = 1.0f / (1.0f + __expf(-p.b[tok * p.zab_stride + h]));
+      const float decay = __expf(p.ssm_a[h] * softplus(p.a[tok * p.zab_stride + h] + p.dt_bias[h]));
       float kv = 0;
 #pragma unroll
       for (int j = 0; j < kDim / 2; ++j) {
@@ -244,7 +245,7 @@ __device__ void deltanet_seq_op(const DeltaNetSeqParams& p, unsigned first, unsi
       if (t < kDim) {
         const float r = rsqrtf((red[0] + red[1]) / kDim + p.eps);
         p.out[std::size_t{tok} * kO + h * kDim + t] =
-            oh * r * p.norm_w[t] * silu(p.z[std::size_t{tok} * kO + h * kDim + t]);
+            oh * r * p.norm_w[t] * silu(p.z[std::size_t{tok} * p.zab_stride + h * kDim + t]);
       }
       __syncthreads();
     }

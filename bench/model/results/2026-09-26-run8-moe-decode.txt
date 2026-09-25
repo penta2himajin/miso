@@ -1,7 +1,7 @@
-# After gate/up grid 120 + overlapped loads. sclk 1725 MHz, junction 54 C, 148 W.
-model load: 25.5 s
-warm-up: pp512 366.8 ms, 1395.7 tok/s
-measured: pp512 366.2 ms, 1398.1 tok/s
-warm-up: 256 tokens at ctx 17..273: 8.74 ms/token, 114.5 tok/s
-measured: 256 tokens at ctx 273..529: 8.76 ms/token, 114.1 tok/s
+# After prefetched weight loads in the MoE router and gate/up. sclk 1725 MHz, junction 53 C, 158 W.
+model load: 28.2 s
+warm-up: pp512 367.0 ms, 1395.1 tok/s
+measured: pp512 366.5 ms, 1397.1 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.73 ms/token, 114.6 tok/s
+measured: 256 tokens at ctx 273..529: 8.75 ms/token, 114.3 tok/s
 first generated ids: 115197 36298 1710 561 6511 314 6124 369

@@ -1,0 +1,7 @@
+# After the DeltaNet z/a/b fused GEMV. sclk 1725 MHz, junction 53 C, 176 W.
+model load: 25.1 s
+warm-up: pp512 360.2 ms, 1421.4 tok/s
+measured: pp512 359.9 ms, 1422.7 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.36 ms/token, 119.6 tok/s
+measured: 256 tokens at ctx 273..529: 8.39 ms/token, 119.2 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

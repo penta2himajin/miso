@@ -1,0 +1,3 @@
+# After concatenating attn_gate + ssm_alpha + ssm_beta into one QMatrix (K = 2048, Q4_K),
+# so one GEMV replaces three launches per DeltaNet layer. DeltaNet layer 0: 88.2 us/token.
+DeltaNet layer 0 decode: 88.2 us/token (1000 tokens back to back)

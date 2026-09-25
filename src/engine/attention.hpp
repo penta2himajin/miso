@@ -13,7 +13,9 @@
 namespace miso {
 
 struct AttentionLayer {
-  QMatrix q, k, v, o;  // attn_q (q + gate), attn_k, attn_v, attn_output
+  QMatrix q;     // attn_q (query then gate in the same rows)
+  QMatrix k, v;  // attn_k and attn_v are different types (Q4_K / Q6_K), so they stay separate
+  QMatrix o;     // attn_output
   DeviceBuffer<float> attn_norm, q_norm, k_norm;
 
   static AttentionLayer load(const gguf::File& f, int layer);

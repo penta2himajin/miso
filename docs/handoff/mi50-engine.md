@@ -7,25 +7,26 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m7a-moe-decode` (PR open against `main`)
-- Last work commit: `fcedde7` (gate/up grid 120, overlapped weight loads)
+- Branch: `ai-written/m7b-fused-gemv` (PR open against `main`)
+- Last work commit: (M7b fused DeltaNet GEMV)
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
 
 ## Status
 
-ready-for-review (M7a: fused MoE decode)
+ready-for-review (M7b: concatenated DeltaNet projection GEMV)
 
 ## Next action
 
-After the M7a PR is merged, branch `ai-written/m7b-fused-gemv` from `main` and start M7b (`docs/roadmap.md`: fuse DeltaNet norm + qkv/z/a/b into one GEMV, and attention q/k/v likewise). Decode is 114.1 tok/s; stage 2 is 115.
+After the M7b PR is merged, branch `ai-written/m7c-*` from `main` and start M7c (`docs/roadmap.md`: K = 4096 GEMV for `ssm_out` / `attn_output` and Q6_K `attn_qkv` efficiency). Decode is 119.2 tok/s, past stage 2 (115); stage 3 is 190.
 
 ## Verification
 
-- `test_moe`: routing unchanged. Layer 0 / 3 output error 3.58e-4 / 3.86e-4, the same FP16-rounding bound as before.
-- MoE decode: layer 0 (Q6_K down) 103.6 → 88.4 us, layer 5 (Q4_K down) 102.2 → 85.2 us (`bench/moe/results/2026-09-26-run3-decode.txt`). gate/up grid: 80=94/91, 120=88/85, 160=89/86, 240=90/87 us.
-- End to end: 8.76 ms/token, 114.1 tok/s. pp512 1398 tok/s. sclk 1725 MHz, junction 54 °C, 148 W (`bench/model/results/2026-09-26-run8-moe-decode.txt`, `-smi.csv`). First generated ids unchanged.
+- `ctest --preset default` 17/17 (run alone: two suites at once contend for the GPU and one aborts).
+- `test_deltanet` golden layer 0 unchanged; `test_deltanet_chunk`, `test_attention`, `test_prefill` (chunk sizes bit-identical), `cli_golden_prompt` all pass.
+- DeltaNet layer 0: 100 → 88.2 us/token (`bench/deltanet/results/2026-09-26-run3-fused-zab.txt`).
+- End to end: 8.39 ms/token, **119.2 tok/s**; pp512 359.9 ms, 1422.7 tok/s. sclk 1725 MHz, junction 53 °C, 176 W (`bench/model/results/2026-09-26-run9-fused-gemv.txt`, `-smi.csv`). First generated ids unchanged.
 
 ## Context pointers
 
@@ -84,4 +85,6 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M4c): M4e merged as #15. On `ai-written/m4c-flash-attn`, prefill attention is one causal flash kernel per chunk: 4 query tokens share each staged 32-key sub-chunk, online softmax per row, gate applied in the same launch. RoPE and the KV append are the decode prep, batched over the chunk. FP64 error <= 2e-6. pp512 went from 1014.2 to 1397.5 tok/s.
 - 2026-09-26 (M4d): M4c merged as #16. On `ai-written/m4d-deltanet`, the chunk-64 gated delta rule plus batched conv matches the decode recurrence (conv bit-exact, output and state within 5e-7). It spills 214 times and, wired into prefill, measured pp512 at 387.8 tok/s, so the shipping path stays on the register recurrence at 1397.5.
 - 2026-09-26 (M4f): M4d merged as #17. On `ai-written/m4f-dispatch`, measured decode vs prefill from 1 to 512 tokens. Prefill wins from 8 tokens (75 vs 57 ms). `ingest` uses that split; the CLI reports TTFT. pp512 is 1392 tok/s. M4 is complete.
+- 2026-09-26 (M7a): M4f merged as #18. On `ai-written/m7a-moe-decode`, MoE decode writes SiLU(gate)*up once instead of storing both, sizes the gate/up and down grids at 120, and prefetches the weight loads in the router and gate/up row loops. MoE 103.6/102.2 → 85.6/82.5 us (Q6_K/Q4_K down); decode ~103 → 114.3 tok/s. A separate top-k launch cost 25 us and was reverted; router block/grid made no difference; the down prefetch spilled (151 VGPR). Merged as #20.
+- 2026-09-26 (M7b): On `ai-written/m7b-fused-gemv`, `attn_gate`, `ssm_alpha` and `ssm_beta` are concatenated at load into one QMatrix (all Q4_K, K = 2048) so one GEMV writes z, a and b; the prefill seq kernel takes a `zab_stride`. DeltaNet layer 0 100 → 88.2 us, decode 114.3 → 119.2 tok/s (past ADR_002 D12 stage 2). `attn_k` is Q4_K but `attn_v` is Q6_K, so those two cannot be concatenated (an attempt threw at load).
 - 2026-09-26 (M7a): User paused M6 (PR #19 left as a draft) and asked for speed. On `ai-written/m7a-moe-decode`, fused `SiLU(gate)*up`, cut the down and gate/up grids to 120, and overlapped gate/up weight loads. MoE layers 88.4 / 85.2 us. Decode 114.1 tok/s. Contiguous row walks and a separate top-8 kernel were slower.

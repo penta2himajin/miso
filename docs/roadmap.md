@@ -45,7 +45,7 @@ Goal: stage 2 (≥ 115 tok/s, borderline now), then stage 3 (**≥ 190 tok/s**, 
 | Step | Content | Expected effect (*estimate*) |
 |---|---|---|
 | M7a | MoE: pair gate/up so `SiLU(gate)·up` is written once; size the down grid so the activation reload is not repeated too often | Measured: MoE 103.6/102.2 → 90.3/87.3 µs (Q6_K/Q4_K). A separate top-8 launch cost 25 µs, so top-8 stays in the gate/up kernel. End to end 113.0 tok/s (was ~103) |
-| M7b | Fuse launches that share an input: DeltaNet norm + qkv / z / a / b as one GEMV over concatenated rows; attention q / k / v likewise | ~3 fewer launches per layer at ~7 µs each (−0.8 ms) |
+| M7b | Fuse launches that share an input: DeltaNet norm + qkv / z / a / b as one GEMV over concatenated rows; attention q / k / v likewise | Measured: DeltaNet z + a + b share K = 2048 and Q4_K, so one GEMV replaces three launches: layer 0 100 → 88.2 µs, decode 114.3 → **119.2 tok/s** (past stage 2, 115). attn_k is Q4_K but attn_v is Q6_K, so those two cannot be concatenated |
 | M7c | K = 4096 GEMV (`ssm_out`, `attn_output`: 20 µs for 4.7 MB) and Q6_K qkv efficiency | −0.4 ms |
 | M7d | Attention score loop (LDS-bound, ~65 µs extra at 4k context) | Long-context decode |
 | M7e | Measure grid-barrier cost and evaluate the ADR_001 D4 megakernel trigger | ADR: megakernel or not |

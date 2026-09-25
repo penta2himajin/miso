@@ -31,6 +31,39 @@ constexpr unsigned kGrid = 240;
 
 }  // namespace
 
+// Rows of same-type, same-K matrices, concatenated into one QMatrix (shared by DeltaNet and
+// attention, whose gate/alpha/beta and k/v projections are split into separate GGUF tensors).
+QMatrix concat_rows(const gguf::File& f, const std::vector<std::string>& names) {
+  gguf::GgmlType type = gguf::GgmlType::F32;
+  unsigned k = 0, n_total = 0;
+  std::vector<std::byte> dst;
+  bool first = true;
+  for (const auto& name : names) {
+    const auto& t = tensor(f, name);
+    const unsigned kt = static_cast<unsigned>(t.dims[0]);
+    const unsigned nt = static_cast<unsigned>(t.n_elements() / kt);
+    if (first) {
+      type = t.type, k = kt, first = false;
+    } else if (t.type != type || kt != k) {
+      throw std::runtime_error("concat_rows: mixed type or K in " + name);
+    }
+    const auto src = f.tensor_data(t);
+    if (t.type == gguf::GgmlType::Q4_K) {
+      const std::size_t at = dst.size();
+      dst.resize(at + src.size());
+      repack_q4k(src, std::span<std::byte>(dst).subspan(at));
+    } else if (t.type == gguf::GgmlType::Q6_K) {
+      const std::size_t at = dst.size();
+      dst.resize(at + std::size_t{nt} * q6k_r1_row_bytes(k));
+      repack_q6k(src, k, std::span<std::byte>(dst).subspan(at));
+    } else {
+      throw std::runtime_error(name + ": cannot concatenate " + gguf::traits(t.type).name);
+    }
+    n_total += nt;
+  }
+  return {upload_bytes(dst), type, n_total, k};
+}
+
 QMatrix upload_qmatrix(const gguf::File& f, const std::string& name) {
   const auto& t = tensor(f, name);
   const auto src = f.tensor_data(t);

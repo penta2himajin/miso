@@ -1,5 +1,7 @@
-# Fused SiLU(gate)*up, gate/up+down grids both 120, overlapped gate/up weight loads.
-# Previous (run1): 103.6 / 102.2 us. After first M7a: 90.3 / 87.3 us.
+# Fused SiLU(gate)*up, gate/up+down grids 120, prefetched weight loads in router and gate/up.
+# History: run1 103.6/102.2 us; after fusion 90.3/87.3; after the grid retune 88.4/85.2; here 85.6/82.5.
 # gate/up grid: 80=94/91, 120=88/85, 160=89/86, 240=90/87, 320+=110+ us.
-MoE layer 0 (down Q6_K) decode: 88.4 us/token
-MoE layer 5 (down Q4_K) decode: 85.2 us/token
+# Router block/grid made no difference (256/65, 512/33, 1024/17, 1024/9 all 88.4/85.2).
+# down prefetch (3 base pointers, kSteps=3) spilled to 151 VGPR and was 1.6x slower on Q6_K: reverted.
+MoE layer 0 (down Q6_K) decode: 85.6 us/token
+MoE layer 5 (down Q4_K) decode: 82.5 us/token

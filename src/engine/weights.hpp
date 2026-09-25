@@ -19,6 +19,9 @@ struct QMatrix {
   unsigned n, k;
 };
 
+// Rows of same-type, same-K matrices, concatenated into one QMatrix (one GEMV covers them).
+QMatrix concat_rows(const gguf::File& f, const std::vector<std::string>& names);
+
 QMatrix upload_qmatrix(const gguf::File& f, const std::string& name);
 DeviceBuffer<float> upload_f32(const gguf::File& f, const std::string& name);
 
