@@ -7,29 +7,28 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m4b-gemm` (PR open against `main`)
-- Last work commit: M4b commit on this branch @ 2026-09-26
+- Branch: `ai-written/m4e-moe-prefill` (PR open against `main`)
+- Last work commit: M4e handoff on this branch @ 2026-09-26
 - Working tree: clean after the handoff commit (`.venv/` is git-ignored)
 - Last session: 2026-09-26 JST
-- Background: `Ornith-1.5-35B-BF16.gguf` downloading (36 of 71 GB at 00:25); Q8_0 done and verified. Log: `/home/penta/llm-mi50/logs/dl-miso-quality.log`. When it finishes, check its SHA256 against the etag in `.cache/huggingface/download/*.metadata`.
+- Background: `Ornith-1.5-35B-BF16.gguf` download finished (`dl-miso-quality.log`, exit 0). SHA256 against the Hugging Face etag is still unchecked.
 
 ## Status
 
-ready-for-review (M4b: prefill GEMM, wired into `prefill()` for all dense mixer projections)
+ready-for-review (M4e: batched MoE routing and grouped expert GEMMs; DeltaNet prefill recurrence is one launch per layer)
 
 ## Next action
 
-After the M4b PR is merged, branch `ai-written/m4e-moe-prefill` from `main` and start M4e (user chose it before M4c / M4d; `docs/roadmap.md`). M4e is the MoE prefill: batched router and top-k over the chunk, tokens grouped by expert, and a grouped GEMM over the qgemm tiles for gate/up and down (Q4_K, plus Q6_K down in 21 layers). The shared expert becomes a dense GEMM. Exit: routing is identical to the decode path, and the output is within tolerance of it (`tests/test_prefill.hip` oracle, `test_moe` golden). The per-token MoE is ~2.05 s of the 2.55 s pp512.
+After the M4e PR is merged, branch `ai-written/m4c-flash-attn` from `main` and start M4c (`docs/roadmap.md`: causal flash attention over a prompt chunk, batched RoPE and KV write). pp512 is already above the M4f speed bar, so M4c and M4d are headroom; M4f still has to set the decode/prefill dispatch threshold by measurement and report TTFT.
 
 ## Verification
 
-- M4b (done):
-  - `test_qgemm` checks the activation prep bit-exactly. It also checks Q4_K / Q6_K GEMMs on real projections (fixture, attn_gate, ssm_alpha with N = 32, attn_qkv, ssm_out, attn_v; token tails, short grids, row stride) against FP64 within an FP32-accumulation bound.
-  - Golden layer tests for `deltanet_prefill` / `attention_prefill` (one chunk and 10 + 7) match decode accuracy: 2.96e-4 / 4.63e-4.
-  - `test_prefill` holds prefill to 2e-3 relative L2 of decode (measured at most 1.0e-3) and requires chunk sizes 25 / 7 / 1 to be bit-identical to each other.
-  - Mutations (Q4_K min term, Q6_K qh shift, K offset, conv parity) are all caught.
-- GEMM: 12.3–13.1 TFLOP/s (48.6–51.7% of the 25.4 dot2 peak) at T = 512–2048 for N >= 4096; 20–31% at T = 64 (`bench/gemm/`).
-- pp512 = 200.7 tok/s (from 123.3); decode unchanged at 108.5 tok/s.
+- M4e (done), `ctest --preset default` 17/17:
+  - `test_moe`: prefill routing ids and weights are bit-identical to decode and to the golden top-8, for layers 0 (Q6_K down) and 3 (Q4_K down), including the prompt repeated 24 times. Repeated tokens are bit-identical to each other. Output stays within the 1e-3 golden bound.
+  - `test_prefill`: chunk sizes 25 / 7 / 1 are bit-identical to each other. Against decode, tolerances are logits 1e-2 and state 5e-2, because a top-8 near-tie can swap an expert (layer 23 token 3, logits 5.8e-4 apart) and then spread. This run does not flip: logits 2.9e-4, KV 7.0e-4, conv 6.5e-4, state 6.0e-4. One decode step after prefill agrees. Logic errors still fail (0.24 or more).
+  - DeltaNet prefill recurrence is one launch per layer and bit-identical to the per-token steps.
+- pp512 = 1014.2 tok/s (504.8 ms), from 200.7 after M4b and past llama.cpp's 921.5. Decode in the same run: 103.4 tok/s. sclk 1725 MHz, junction 59 °C (`bench/model/results/2026-09-26-run4-moe-prefill.txt`, `-smi.csv`).
+- One MoE layer, 512 random tokens: 4.88 ms (Q6_K down) / 4.07 ms (Q4_K down), 9.5 / 8.0 µs per token against ~104 µs decode (`bench/moe/results/2026-09-26-run2-prefill.txt`).
 
 ## Context pointers
 
@@ -63,7 +62,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M4b PR.
+- Merge the M4e PR.
 
 ## Session log
 
@@ -82,3 +81,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (roadmap): User chose the order a -> c -> b after M3: M4 prefill, then M6 quality evaluation, then M7 decode optimisation, then M5 MTP. Wrote `docs/roadmap.md` with per-step exit criteria and ADR_005.
 - 2026-09-26 (M4a): Roadmap merged as #12. On `ai-written/m4a-prefill-harness`, added the layer-major chunked `prefill()` (multi-token embedding and add+RMSNorm, per-token mixer and MoE kernels for now) and the oracle harness `tests/session_compare.hpp` + `tests/test_prefill.hip`. Prefill is bit-equal to decode for chunk sizes 25, 7 and 1, and one decode step after prefill also agrees. A mutation (dropping the MoE delta for token 0) is caught with 0.58-1.16 relative diffs. The CLI now prefills the prompt. Baseline pp512 = 123.3 tok/s (per-token kernels), the M4 starting point against llama.cpp's 921.5.
 - 2026-09-26 (M4b): M4a merged as #13. On `ai-written/m4b-gemm`, built the prefill GEMM (`kernels/qgemm.hpp`). Weights are expanded once per workgroup into LDS as exact FP16 integers (Q4_K `q*sc`; Q6_K `q-32`, scaled per 16-group because `|sc|` reaches 128 and 2.3% of `(q-32)*sc` products are not FP16-exact). It computes with `v_dot2_f32_f16` over 64x64 tiles and reaches ~51% of peak at T >= 512. Wired into `deltanet_prefill` / `attention_prefill` for all dense projections. Prefill is as accurate as decode against the golden layers, and the oracle now uses a justified 2e-3 tolerance plus bit-equality across chunk sizes. pp512 went from 123.3 to 200.7 tok/s; the profile shows the per-token MoE is 80% of prefill.
+- 2026-09-26 (M4e): M4b merged as #14. On `ai-written/m4e-moe-prefill`, MoE prefill batches the decode router dot product (routing bit-identical), counting-sorts the 9 assignments per token into tasks of 16, and runs grouped gate/up and down GEMMs that stage activations in LDS. The shared expert is expert 256. The DeltaNet prefill recurrence is one launch per layer (head state in registers), bit-identical to per-token steps. pp512 went from 200.7 to 1014.2 tok/s, past llama.cpp's 921.5. The oracle tolerance widened to 1e-2 / 5e-2 because a top-8 near-tie can route differently; this prompt does not.
+
