@@ -64,8 +64,12 @@ add_library(miso_kernels INTERFACE)
 target_include_directories(miso_kernels INTERFACE ${PROJECT_SOURCE_DIR}/kernels)
 
 # Host code.
-add_library(miso_host INTERFACE)
-target_include_directories(miso_host INTERFACE ${PROJECT_SOURCE_DIR}/src)
+add_library(miso_host STATIC src/gguf.cpp src/dequant.cpp)
+target_include_directories(miso_host PUBLIC ${PROJECT_SOURCE_DIR}/src)
+# gguf-py rounds mul and sub separately. For Q4_K/Q6_K the products are exact, so contraction
+# does not change results today, but it would for formats with inexact products.
+target_compile_options(miso_host PRIVATE -ffp-contract=off)
+miso_warnings(miso_host)
 
 add_library(doctest INTERFACE)
 target_include_directories(doctest SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_party)
