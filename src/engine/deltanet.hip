@@ -62,23 +62,22 @@ void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefill
   gemm(w.z, sc.in, sc.z.data(), 4096, stream);
   gemm(w.a, sc.in, sc.a.data(), 32, stream);
   gemm(w.b, sc.in, sc.b.data(), 32, stream);
-  for (unsigned t = 0; t < n; ++t) {
-    const kernels::DeltaNetStepParams step{sc.qkv.data() + std::size_t{t} * 8192,
-                                           sc.z.data() + std::size_t{t} * 4096,
-                                           sc.a.data() + std::size_t{t} * 32,
-                                           sc.b.data() + std::size_t{t} * 32,
-                                           w.conv_w.data(),
-                                           st.conv[st.parity].data(),
-                                           st.conv[1 - st.parity].data(),
-                                           w.ssm_a.data(),
-                                           w.dt_bias.data(),
-                                           w.ssm_norm.data(),
-                                           st.s.data(),
-                                           sc.o.data() + std::size_t{t} * 4096,
-                                           eps};
-    kernels::deltanet_step_kernel<kBlock><<<32, kBlock, 0, stream>>>(step);
-    st.parity = 1 - st.parity;
-  }
+  const kernels::DeltaNetSeqParams seq{sc.qkv.data(),
+                                       sc.z.data(),
+                                       sc.a.data(),
+                                       sc.b.data(),
+                                       w.conv_w.data(),
+                                       st.conv[st.parity].data(),
+                                       st.conv[1 - st.parity].data(),
+                                       w.ssm_a.data(),
+                                       w.dt_bias.data(),
+                                       w.ssm_norm.data(),
+                                       st.s.data(),
+                                       sc.o.data(),
+                                       n,
+                                       eps};
+  kernels::deltanet_seq_kernel<kBlock><<<32, kBlock, 0, stream>>>(seq);
+  st.parity = 1 - st.parity;
   MISO_HIP_CHECK(hipGetLastError());
   gemm_input(sc.o.data(), 4096, n, sc.in, stream);
   gemm(w.out, sc.in, y, 2048, stream);

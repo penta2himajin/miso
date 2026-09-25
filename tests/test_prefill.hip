@@ -41,12 +41,13 @@ std::vector<int> prompt_tokens() {
 // (test_deltanet, test_attention, test_moe).
 //
 // Over 40 layers the two paths can still route a token differently: a top-8 near-tie is decided
-// by the rounding difference. On this prompt, layer 23 token 3 has its 8th and 9th router logits
-// 5.8e-4 apart, 1e-4 of the logit range and below the FP16 activation error. From there the
-// swapped expert propagates through that token's later layers and, via attention, to later
-// tokens: 27 of 1000 token-layers route differently. Measured differences are logits 3.6e-3,
-// KV 2.4e-2, conv 1.2e-2 and state 1.2e-2. Logic errors give 0.24 or more (wrong K offset, conv
-// parity, a dropped MoE delta).
+// by the rounding difference. With the first M4e kernels, layer 23 token 3 of this prompt had its
+// 8th and 9th router logits 5.8e-4 apart (1e-4 of the logit range, below the FP16 activation
+// error). The swapped expert then propagated through that token's later layers and, via
+// attention, to later tokens: 27 of 1000 token-layers routed differently, giving logits 3.6e-3
+// and KV 2.4e-2. The current kernels do not flip on this prompt (logits 2.9e-4, KV 7.0e-4,
+// conv 6.5e-4, state 6.0e-4), but any kernel change can. Logic errors give 0.24 or more (wrong K
+// offset, conv parity, a dropped MoE delta).
 constexpr double kLogitsTolerance = 1e-2, kStateTolerance = 5e-2;
 
 bool within(const miso::test::SessionDiff& d) {
