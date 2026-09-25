@@ -10,9 +10,6 @@ function(miso_gpu_test name)
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
-set(MISO_ORNITH_GGUF
-    "/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf"
-    CACHE FILEPATH "Ornith Q4_K_M GGUF; tests that need it are skipped when absent")
 set(MISO_TEST_DEFINITIONS
     MISO_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
     MISO_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/golden"
@@ -52,3 +49,11 @@ endfunction()
 miso_cpu_test(test_gguf test_gguf.cpp)
 miso_cpu_test(test_golden test_golden.cpp)
 miso_cpu_test(test_repack test_repack.cpp)
+miso_cpu_test(test_tokenizer test_tokenizer.cpp)
+
+# CLI smoke test: the golden prompt, raw, greedy for 8 tokens, prints llama.cpp's continuation.
+if(EXISTS "${MISO_ORNITH_GGUF}")
+  add_test(NAME cli_golden_prompt
+           COMMAND miso --raw -n 8 "The capital of France is Paris. The capital of Japan is Tokyo. 日本の首都は")
+  set_tests_properties(cli_golden_prompt PROPERTIES PASS_REGULAR_EXPRESSION "東京です。 The capital of Japan is")
+endif()

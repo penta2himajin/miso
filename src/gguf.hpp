@@ -27,6 +27,11 @@ enum class GgmlType : std::uint32_t {
   Q5_K = 13,
   Q6_K = 14,
   Q8_K = 15,
+  I8 = 24,
+  I16 = 25,
+  I32 = 26,
+  I64 = 27,
+  F64 = 28,
   BF16 = 30,
 };
 

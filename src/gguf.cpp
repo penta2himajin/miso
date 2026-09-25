@@ -141,6 +141,9 @@ const TypeTraits& traits(GgmlType type) {
       {GgmlType::Q3_K, {"Q3_K", 256, 110}}, {GgmlType::Q4_K, {"Q4_K", 256, 144}},
       {GgmlType::Q5_K, {"Q5_K", 256, 176}}, {GgmlType::Q6_K, {"Q6_K", 256, 210}},
       {GgmlType::Q8_K, {"Q8_K", 256, 292}}, {GgmlType::BF16, {"BF16", 1, 2}},
+      {GgmlType::I8, {"I8", 1, 1}},         {GgmlType::I16, {"I16", 1, 2}},
+      {GgmlType::I32, {"I32", 1, 4}},       {GgmlType::I64, {"I64", 1, 8}},
+      {GgmlType::F64, {"F64", 1, 8}},
   };
   const auto it = table.find(type);
   if (it == table.end()) {

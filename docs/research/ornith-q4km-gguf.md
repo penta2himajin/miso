@@ -51,6 +51,18 @@ The GGUF is not a plain re-encoding of the HF checkpoint. llama.cpp's converter 
 
 `tools/golden/ornith_ref.py` inverts these rewrites for the reference. The mapping is validated by teacher-forcing llama.cpp's continuation through all 40 layers (8/8 agreement; 0/8 with the V-head reorder disabled). See `tests/golden/README.md`.
 
+## Tokenizer
+
+`tokenizer.ggml.model = gpt2`, `pre = qwen35`: byte-level BPE with 248,044 base tokens and 247,587 merges. Special tokens are GGUF token types 3 (control) and 4 (user defined), and HF splits them out before normalisation. Then the tokenizer applies NFC, then a split regex:
+
+```
+(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?[\p{L}\p{M}]+|\p{N}| ?[^\s\p{L}\p{M}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+
+```
+
+**Measured quirk**: the HF tokenizer's regex engine matches nothing for `\p{M}` in this pattern. For example, `हिन्दी` splits as `ह | िन | ्द | ी`. So combining marks are neither part of `[\p{L}\p{M}]+` nor excluded from `[^\s\p{L}\p{M}\p{N}]`. `src/tokenizer.cpp` reproduces this. With it, the engine matches the HF ids on all 261 fixture cases (`tests/fixtures/tokenizer_cases.gguf`, 17,812 ids, including 200 random strings dense in combining marks). Treating `\p{M}` as Mark gave 11 mismatches.
+
+The GGUF also marks 7 audio / TTS tokens (ids 248070–248076) as control, which the HF `tokenizer.json` does not list. The engine treats them as special.
+
 ## Decode bytes per token (40 main layers, batch 1)
 
 | Category | MB / token | Share |

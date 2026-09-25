@@ -9,12 +9,12 @@ Hardware facts: @docs/research/mi50.md. Model file facts: @docs/research/ornith-
 ## Project Structure
 
 ```
-src/          # host code: GGUF reader, weight repack, tokenizer, CLI (C++)
+src/          # host code: GGUF reader, weight repack, tokenizer / unicode (C++); src/cli/ the miso CLI
 src/engine/   # host code that owns device weights/state and launches kernels (HIP)
 kernels/      # device code: operators as __device__ functions + thin __global__ wrappers
 tests/        # CTest / doctest tests and golden-file fixtures
 bench/        # microbenchmarks and raw results (bench/<topic>/results/)
-tools/        # offline Python scripts (inventory, golden generation, quality evaluation)
+tools/        # offline Python scripts (inventory, golden / fixture generation, unicode tables)
 third_party/  # vendored test-only code (doctest)
 docs/         # research/, decisions/ (ADRs), handoff/
 ```
@@ -46,6 +46,12 @@ python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt
 cmake --preset default          # Ninja, Release, gfx906, build/
 cmake --build --preset default  # also prints per-kernel VGPR/SGPR/LDS/scratch/occupancy
 ctest --preset default          # runs on the MI50
+```
+
+Run the model (greedy; `--no-think` for an empty think block, `--raw` to skip the chat template):
+
+```bash
+./build/miso -n 256 "your prompt"
 ```
 
 Per-kernel resource reports are written to `build/kernel-resources/<target>.txt` (`tools/kernel_resources.py`). The Makefile generator is rejected: CMake 3.22 does not track HIP header dependencies with it.
