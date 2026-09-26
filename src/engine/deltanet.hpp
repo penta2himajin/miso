@@ -18,7 +18,7 @@ struct DeltaNetLayer {
   QMatrix out;  // ssm_out
   DeviceBuffer<float> attn_norm, conv_w, ssm_a, dt_bias, ssm_norm;
 
-  static DeltaNetLayer load(const gguf::File& f, int layer);
+  static DeltaNetLayer load(const gguf::File& f, int layer, LoadStage* st = nullptr);
 };
 
 // Recurrent state carried across tokens: double-buffered conv history and the FP32 delta-rule

@@ -7,29 +7,31 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m7e-megakernel` (PR against `main`)
-- Last work commit: (M7e grid-barrier / D4 trigger measurement)
+- Branch: `ai-written/m7f-parallel-repack` (PR against `main`)
+- Last work commit: (M7f: overlapped staged weight upload)
 - Working tree: dirty until the handoff commit
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
 
 ## Status
 
-ready-for-review (M7e: D4 megakernel trigger measured false; ADR_006)
+ready-for-review (M7f: load 27.6 -> 9.7 s via staged overlap)
 
 ## Next action
 
-After the M7e PR is merged, branch `ai-written/m7f-*` from `main` and start M7f (`docs/roadmap.md`: parallel weight repack at load, 27.6 s → < 10 s). Decode is 129.1 tok/s (past stage 2, 115); stage 3 is 190 and must come from per-kernel work, not dispatch (ADR_006).
+After the M7f PR is merged, the M7 decode-optimisation phase is done (M7a-M7f). The next step is stage 3 (>= 190 tok/s), which must come from per-kernel work in the MoE (19.6% + 13.1% of decode), dense GEMV (19.5%) and norms (10.5%) - not from dispatch (ADR_006) and no longer from load. Decode is 127.6 tok/s at short context.
 
 ## Verification
 
 - `ctest --preset default` all green (run alone: concurrent GPU suites can OOM).
 - `bench/mi50/grid_barrier.hip`: barrier 1.81 µs at 60×256 vs boundary 1.69 µs; 20-step chain 3.21 µs/step as launches vs 2.12 µs/step cooperative.
 - Decode gaps (`bench/mi50/results/2026-09-26-m7e-decode-gaps.txt`): 186 887 kernels, positive gaps 6.86 ms = **0.177%** of decode span.
+- Load: **9.7-9.8 s** in `bench_decode` (was 27.6 s). `test_load_stage`: staged uploads byte-identical to the pageable path for Q4_K/Q6_K/F32 and for the `attn_q + attn_k` concat. `ctest` 21/21 green.
+- A/B for the load fix: `bench/model/results/2026-09-26-m7f-load-ab.txt`.
 - `test_attn_splitk`: FP64 relative L2 ≤ 2e-6 through 5k positions; `attn_n_splits(4096)=22`, `(16384)=57`.
 - `test_attention` / `test_prefill` / `test_model` / `cli_golden_prompt` pass; first generated ids unchanged.
 - Attention L3: 93.4 / 95.4 / 126.1 / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`).
-- End to end (M7d, unchanged): 7.75 ms/token, **129.1 tok/s**; pp512 357.2 ms, 1433.2 tok/s. sclk 1725 MHz, junction 56 °C, 192 W peak (`bench/model/results/2026-09-26-run13-m7d.txt`, `-smi.csv`).
+- End to end: 7.84 ms/token, **127.6 tok/s**; pp512 357.3 ms, 1433.0 tok/s. sclk 1725 MHz, junction 64 °C, 228 W peak (`bench/model/results/2026-09-26-run14-m7f-load.txt`, `-smi.csv`).
 
 ## Context pointers
 
@@ -100,3 +102,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M7c): On `ai-written/m7c-gemv-eff`, `gemv()` picks rows-per-wave and grid by shape (K=4096 and K=2048 with N≥2048 use R=4; Q6_K qkv uses R=2 at grid 480; LM head uses grid 1920). ssm_out 21.9 → 18.5 µs; decode 123.4 → **125.5 tok/s**. A Q6_K next-row weight prefetch spilled and was reverted.
 - 2026-09-26 (M7c review): attn_q and attn_k are Q4_K in all 11 attention layers, so the 7 layers whose attn_v is Q6_K now fuse q+k into one 8704-row GEMV (3 → 2 projection launches). Decode 125.5 → **126.0 tok/s**. Tried and rejected: R=5/R=6 and small grids (microbench-optimal but 1.1 tok/s *slower* end to end) and a Q6_K double-buffered weight prefetch (112 B scratch spill). The lesson is recorded under Failed approaches: tune GEMV dispatch on `bench_decode`, not on the isolated sweep.
 - 2026-09-26 (M7d): On `ai-written/m7d-attn-score`, staged V alongside K in LDS for split-K decode and retuned `attn_n_splits` (~6 sub-chunks/split, `kMaxSplits=60`) after a max_splits sweep showed combine dominating at 120. Attention L3 173→126 µs at 4k; decode 126.0→**129.1 tok/s**. FP16 Q/fdot2 and a part_o transpose were measured and reverted.
+- 2026-09-26 (M7f): On `ai-written/m7f-parallel-repack`, load went 27.6 → **9.7 s**. The cost was repacking into a freshly faulted pageable buffer per tensor (fresh 28.3 s vs reused 13.6 s for the same 21.8 GB), not pinned-vs-pageable (both 3.05 GB/s warm). Added `LoadStage`: 4 pinned slots with event-gated reuse, copies on a side stream, and a 4-chunk repack/copy pipeline. `test_load_stage` proves staged == pageable byte-for-byte; the first chunk loop copied only the last chunk and the test caught it. Decode unchanged at 127.6 tok/s.

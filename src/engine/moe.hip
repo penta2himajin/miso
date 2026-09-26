@@ -30,19 +30,19 @@ void append_bf16(const gguf::File& f, const std::string& name, std::vector<std::
 
 }  // namespace
 
-MoeLayer MoeLayer::load(const gguf::File& f, int layer) {
+MoeLayer MoeLayer::load(const gguf::File& f, int layer, LoadStage* st) {
   const std::string p = "blk." + std::to_string(layer) + ".";
   std::vector<std::uint16_t> router;
   router.reserve(257 * 2048);
   append_bf16(f, p + "ffn_gate_inp.weight", router);
   append_bf16(f, p + "ffn_gate_inp_shexp.weight", router);
   MoeLayer m{DeviceBuffer<std::uint16_t>(router),
-             upload_qmatrix(f, p + "ffn_gate_exps.weight"),
-             upload_qmatrix(f, p + "ffn_up_exps.weight"),
-             upload_qmatrix(f, p + "ffn_down_exps.weight"),
-             upload_qmatrix(f, p + "ffn_gate_shexp.weight"),
-             upload_qmatrix(f, p + "ffn_up_shexp.weight"),
-             upload_qmatrix(f, p + "ffn_down_shexp.weight")};
+             upload_qmatrix(f, p + "ffn_gate_exps.weight", st),
+             upload_qmatrix(f, p + "ffn_up_exps.weight", st),
+             upload_qmatrix(f, p + "ffn_down_exps.weight", st),
+             upload_qmatrix(f, p + "ffn_gate_shexp.weight", st),
+             upload_qmatrix(f, p + "ffn_up_shexp.weight", st),
+             upload_qmatrix(f, p + "ffn_down_shexp.weight", st)};
   for (const QMatrix* q : {&m.gate_exps, &m.up_exps, &m.gate_sh, &m.up_sh}) {
     if (q->type != gguf::GgmlType::Q4_K || q->k != 2048)
       throw std::runtime_error("MoE gate/up must be Q4_K, K = 2048");

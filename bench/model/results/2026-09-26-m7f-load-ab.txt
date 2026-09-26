@@ -1,0 +1,54 @@
+# M7f: parallel/overlapped weight upload at load (2026-09-26)
+
+Host: 8 cores, PCIe 3.0 x4. Idle GPU (auto power profile, junction 36-42 C, 17 W idle).
+Model: Ornith-1.5-35B-Q4_K_M, 21.8 GB of engine-layout weights across 753 tensors.
+
+## Where the 27.6 s went (single-threaded repack + pageable H2D)
+
+`/tmp/loadprof3` (instrumented copy of the upload loop, file-order tensors, reused host buffer):
+
+| Stage | Time |
+|---|---|
+| repack + host memcpy | 4.31 s |
+| h2pMalloc | 1.52 s |
+| hipMemcpy H2D | 7.65 s |
+| total | 13.57 s |
+
+The real `Model::load` measured 26.4 s, i.e. roughly twice that, because every tensor was repacked
+into a **freshly allocated pageable** buffer. Measured A/B (same loop, `fresh` vs `reuse`):
+
+| Host buffer | repack/memcpy | hipMemcpy H2D | total |
+|---|---|---|---|
+| reused | 4.31 s | 7.65 s | 13.57 s |
+| fresh per tensor | 11.61 s | 14.40 s | 28.29 s |
+
+So the fix is not "pinned vs pageable" (both reach the same 3.05 GB/s on a warm buffer, measured
+across 1-512 MB chunks) but not faulting a brand-new multi-GB allocation on every copy.
+
+## Implemented: `LoadStage`
+
+- 4 pinned staging slots, rotating, each gated by its own event, growing once to the largest tensor
+  (417 MB → ~1.7 GB pinned host memory).
+- Copies go out on a dedicated non-blocking stream; `Model::load` calls `sync()` once at the end.
+- `load_split` streams one tensor in 4 row-chunks: chunk c is repacked while the copy of chunk c-1
+  is in flight, so repack (~1.4 GB/s single-thread) and H2D (~3.05 GB/s) overlap.
+
+`tests/test_load_stage.hip` asserts the staged path is byte-identical to the plain pageable path for
+Q4_K/Q6_K/F32 tensors and for the row-order-sensitive `attn_q + attn_k` concatenation. The first
+version of the chunk loop copied only the last chunk and the test caught it.
+
+## Result
+
+| | Load |
+|---|---|
+| Before (M7d/M7e) | 27.6 s |
+| LoadStage | 10.8 s (5 runs: 9.78, 10.45, 10.80, 10.81, 10.83) |
+| `bench_decode` end to end | 9.7-9.8 s |
+
+Decode throughput is unchanged: 127.3-127.6 tok/s, pp512 1431.9-1433.0 tok/s, first generated ids
+`115197 36298 1710 561 6511 314 6124 369` (same as M7d). sclk 1725 MHz, junction 64 C, 228 W peak
+during the decode run.
+
+Remaining floor: 21.8 GB at the measured 3.05 GB/s H2D is 7.15 s, so 10.8 s is 1.5x the copy alone;
+repack (~2.5 s in parallel with nothing else to overlap at the start) plus 753 `hipMalloc` calls
+(~1.2 s) account for most of the gap.

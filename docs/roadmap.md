@@ -50,7 +50,7 @@ Goal: stage 2 (≥ 115 tok/s, borderline now), then stage 3 (**≥ 190 tok/s**, 
 | M7c (review) | Fuse attn_q + attn_k: both are Q4_K in every attention layer, so the 7 layers with Q6_K `attn_v` go from 3 projection launches to 2 | Measured: decode 125.5 → **126.0 tok/s**. A microbenchmark-optimal R=5/6 dispatch (ssm_out 17.3 → 14.5 µs, fused qkv 29.1 → 26.9 µs) made end-to-end *slower* (123.8 vs 125.2); microbenchmark throughput optimises a different point than the per-token critical path, so tuning decisions came from A/B'd end-to-end runs |
 | M7d | Attention score loop (LDS-bound, ~65 µs extra at 4k context) | Measured: stage V in LDS with K; `attn_n_splits` prefers ~6 sub-chunks/split (cap `kMaxSplits=60`) so combine stays cheap. Layer-3 decode 173→**126 µs** at 4k, 326→260 µs at 16k; short e2e 126.0→**129.1 tok/s**. FP16 Q + fdot2 raised split error to ~5e-4 and was reverted |
 | M7e | Measure grid-barrier cost and evaluate the ADR_001 D4 megakernel trigger | ADR: **no megakernel** (ADR_006). Barrier 1.81 µs ≈ kernel boundary 1.69 µs at 60×256; dependent-kernel gaps are 0.18% of decode time. Stage 3 must come from per-kernel work |
-| M7f | Parallel weight repack at load | Load 27.6 s → < 10 s |
+| M7f | Parallel weight repack at load | Measured: load 27.6 → **9.7 s**. The cost was not pinned-vs-pageable (both 3.05 GB/s warm) but repacking into a freshly faulted pageable buffer per tensor: fresh 28.3 s vs reused 13.6 s for the same 21.8 GB. Pinned staging slots with event-gated reuse, copies on a side stream, and 4-chunk repack/copy overlap. Decode unchanged (127.6 tok/s) |
 
 M7a–M7c together are *estimated* at 9.2 − 2.1 − 0.8 − 0.4 ≈ 5.9 ms/token (~170 tok/s); stage 3 then needs M7e or further per-kernel work.
 
