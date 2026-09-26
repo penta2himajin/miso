@@ -1,0 +1,25 @@
+command: ['./build/bench/bench_decode']
+run 1 utc 2026-09-26T13:40:10.174613+00:00
+model load: 15.7 s
+warm-up: pp512 356.0 ms, 1438.1 tok/s
+measured: pp512 355.4 ms, 1440.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.11 ms/token, 140.7 tok/s
+measured: 256 tokens at ctx 273..529: 7.14 ms/token, 140.0 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
+run 2 utc 2026-09-26T13:40:30.837665+00:00
+model load: 11.0 s
+warm-up: pp512 356.2 ms, 1437.5 tok/s
+measured: pp512 355.6 ms, 1439.9 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.04 ms/token, 142.0 tok/s
+measured: 256 tokens at ctx 273..529: 7.07 ms/token, 141.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
+run 3 utc 2026-09-26T13:40:46.881768+00:00
+model load: 10.8 s
+warm-up: pp512 356.4 ms, 1436.5 tok/s
+measured: pp512 356.0 ms, 1438.4 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.03 ms/token, 142.2 tok/s
+measured: 256 tokens at ctx 273..529: 7.06 ms/token, 141.6 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

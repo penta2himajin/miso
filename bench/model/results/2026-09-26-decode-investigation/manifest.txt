@@ -1,0 +1,20 @@
+$ ['git', 'rev-parse', 'HEAD']
+33915aa47fcdf6e7b6b6a53fd78a408ff4079036
+
+$ ['uname', '-a']
+Linux odin-ub 6.8.0-138-generic #138~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Aug  7 13:43:15 UTC  x86_64 x86_64 x86_64 GNU/Linux
+
+$ ['/opt/rocm/bin/hipcc', '--version']
+HIP version: 6.3.42134-a9a80e791
+AMD clang version 18.0.0git (https://github.com/RadeonOpenCompute/llvm-project roc-6.3.4 25012 e5bf7e55c91490b07c49d8960fa7983d864936c4)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/rocm-6.3.4/lib/llvm/bin
+Configuration file: /opt/rocm-6.3.4/lib/llvm/bin/clang++.cfg
+
+$ ['sha256sum', 'build/bench/bench_decode', '/tmp/miso-decode-investigation/context_probe']
+16973e61634e128f585f9a92032a47b31fa9c73844dc8701329393d1fd226c6f  build/bench/bench_decode
+ad3ffc476084dabd61b9d09883d9d7478c69ba02df168f24fc6a720a8bc45af9  /tmp/miso-decode-investigation/context_probe
+
+$ ['stat', '--format=%n size=%s mtime=%y', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf']
+/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf size=21713463040 mtime=2026-09-25 11:52:52.185279147 +0900

@@ -1,0 +1,100 @@
+{
+  "context-4096.txt.smi.jsonl": {
+    "active_samples": 20,
+    "sclk_min_median_max": [
+      1725.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 66.0,
+    "power_max_W": 213.0
+  },
+  "context-32768.txt.smi.jsonl": {
+    "active_samples": 148,
+    "sclk_min_median_max": [
+      1606.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 77.0,
+    "power_max_W": 249.0
+  },
+  "context-17.txt.smi.jsonl": {
+    "active_samples": 15,
+    "sclk_min_median_max": [
+      1485.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 57.0,
+    "power_max_W": 172.0
+  },
+  "baseline.txt.smi.jsonl": {
+    "active_samples": 58,
+    "sclk_min_median_max": [
+      1485.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 64.0,
+    "power_max_W": 243.0
+  },
+  "profile-32k.txt.smi.jsonl": {
+    "active_samples": 138,
+    "sclk_min_median_max": [
+      1606.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 79.0,
+    "power_max_W": 267.0
+  },
+  "counters-log.txt.smi.jsonl": {
+    "active_samples": 37,
+    "sclk_min_median_max": [
+      1485.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 67.0,
+    "power_max_W": 251.0
+  },
+  "profile.txt.smi.jsonl": {
+    "active_samples": 22,
+    "sclk_min_median_max": [
+      1485.0,
+      1725.0,
+      1725.0
+    ],
+    "mclk_min_max": [
+      800.0,
+      1000.0
+    ],
+    "junction_max_C": 64.0,
+    "power_max_W": 228.0
+  }
+}

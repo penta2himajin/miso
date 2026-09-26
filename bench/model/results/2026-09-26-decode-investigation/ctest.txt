@@ -1,0 +1,47 @@
+Test project /home/penta/repos/miso/build
+      Start  1: test_device
+ 1/21 Test  #1: test_device ......................   Passed    0.27 sec
+      Start  2: test_axpy
+ 2/21 Test  #2: test_axpy ........................   Passed    0.27 sec
+      Start  3: test_q4k_gemv
+ 3/21 Test  #3: test_q4k_gemv ....................   Passed    1.46 sec
+      Start  4: test_q6k_gemv
+ 4/21 Test  #4: test_q6k_gemv ....................   Passed    0.85 sec
+      Start  5: test_qgemm
+ 5/21 Test  #5: test_qgemm .......................   Passed    8.14 sec
+      Start  6: test_deltanet_chunk
+ 6/21 Test  #6: test_deltanet_chunk ..............   Passed    0.83 sec
+      Start  7: test_deltanet
+ 7/21 Test  #7: test_deltanet ....................   Passed    0.37 sec
+      Start  8: test_prefill
+ 8/21 Test  #8: test_prefill .....................   Passed   13.10 sec
+      Start  9: test_model
+ 9/21 Test  #9: test_model .......................   Passed   11.85 sec
+      Start 10: test_moe
+10/21 Test #10: test_moe .........................   Passed    3.81 sec
+      Start 11: test_attn_splitk
+11/21 Test #11: test_attn_splitk .................   Passed    2.57 sec
+      Start 12: test_attention
+12/21 Test #12: test_attention ...................   Passed    0.36 sec
+      Start 13: test_fused_gemv
+13/21 Test #13: test_fused_gemv ..................   Passed    0.43 sec
+      Start 14: test_gemv_dispatch
+14/21 Test #14: test_gemv_dispatch ...............   Passed    0.32 sec
+      Start 15: test_load_stage
+15/21 Test #15: test_load_stage ..................   Passed    0.47 sec
+      Start 16: test_norm_embed
+16/21 Test #16: test_norm_embed ..................   Passed    0.79 sec
+      Start 17: test_gguf
+17/21 Test #17: test_gguf ........................   Passed    0.02 sec
+      Start 18: test_golden
+18/21 Test #18: test_golden ......................   Passed    0.02 sec
+      Start 19: test_repack
+19/21 Test #19: test_repack ......................   Passed    0.64 sec
+      Start 20: test_tokenizer
+20/21 Test #20: test_tokenizer ...................   Passed    0.17 sec
+      Start 21: cli_golden_prompt
+21/21 Test #21: cli_golden_prompt ................   Passed   10.69 sec
+
+100% tests passed, 0 tests failed out of 21
+
+Total Test time (real) =  57.45 sec

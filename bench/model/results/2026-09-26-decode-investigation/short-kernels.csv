@@ -1,0 +1,25 @@
+name,calls_per_token,us_per_token,kernel_time_percent
+"('void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams) [clone .kd]', '30720')",40.0,1169.06713671875,17.167833322283773
+"('void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]', '61440')",40.0,915.00240625,13.436874843713706
+"('void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]', '61440')",40.0,806.67566015625,11.846088940260275
+"('void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int) [clone .kd]', '512')",81.0,697.67392578125,10.245390786309818
+"('void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]', '30720')",20.0,660.2734375,9.696161979154494
+"('void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]', '30720')",20.0,566.352421875,8.31692524324279
+"('void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]', '491520')",1.0,564.572921875,8.29079316028753
+"('void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams) [clone .kd]', '8192')",30.0,420.1574765625,6.1700421645430925
+"('void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams) [clone .kd]', '122880')",14.0,374.62262890625,5.501359716491222
+"('void miso::kernels::moe_router_kernel<256>(miso::kernels::MoeRouterParams) [clone .kd]', '16640')",40.0,282.2732890625,4.145203150230769
+"('void miso::kernels::attn_combine_kernel<256>(miso::kernels::AttnCombineParams) [clone .kd]', '4096')",10.0,83.3355078125,1.2237878074037998
+"('void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]', '61440')",6.0,53.50742578125,0.7857603198865427
+"('void miso::kernels::attn_prep_kernel<256>(miso::kernels::AttnPrepParams) [clone .kd]', '4608')",10.0,50.1774140625,0.7368588630299164
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '4608')",1.25,22.40621484375,0.32903684462505095
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '8192')",1.25,17.458734375,0.2563827451426631
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '7680')",1.25,17.39123046875,0.25539144552033705
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '7168')",1.25,17.30058984375,0.254060381552022
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '6656')",1.25,17.2862265625,0.2538494557542503
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '6144')",1.25,17.25558984375,0.25339955337950903
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '5632')",1.25,17.21748046875,0.2528399145209122
+"('void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]', '5120')",1.25,17.21123046875,0.2527481328302854
+"('void miso::kernels::argmax_partial_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd]', '61440')",1.0,10.271234375,0.15083380092184864
+"('void miso::kernels::embed_q4k_kernel<2048u, 256>(miso::kernels::EmbedParams, unsigned int) [clone .kd]', '256')",1.0,6.97998828125,0.10250162000133493
+"('void miso::kernels::argmax_final_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd]', '256')",1.0,5.1668671875,0.07587580891405829
