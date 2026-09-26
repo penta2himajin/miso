@@ -1,0 +1,18 @@
+**1. Confirm CLOSE.** The numbers leave no honest room for a layout change:
+
+- **Ceiling argument.** The excess over ideal is 66 KB (gate_up), 62.8 KB (Q4), 70 KB (Q6) — i.e. 0.6–1.2% of fetched weight bytes. Even a *perfect* layout that eliminated every redundant byte captures ≤1.2% on those kernels, and the kernels are a subset of e2e. Against a gate of ≥143 from baseline 140.1 (+2.1%), the entire theoretical win is well inside noise. There is no version of this item that reaches the gate.
+- **The excess is not structural.** All three residuals cluster at ~64–70 KB regardless of kernel size (10.4 MB vs 5.2 MB), which reads as a fixed per-launch/tile flush or partial-line tail, not a tiling/indexing defect. Fixed overheads don't shrink with layout changes.
+- **The high L2 miss is not a counter-read.** L2 miss 0.8–0.9 with DRAM bytes ≈ unique weights means each line is fetched ~once and streamed — low reuse is the *expected* shape for weight streams, not wasted traffic. Miss rate is the wrong metric here; total bytes versus the ideal floor is the right one, and it's 1.006–1.012×.
+- **Transaction width already optimal.** 0% 32B RDREQ forecloses the only common transaction-efficiency lever.
+- One soft spot: medians only, no dispersion reported. That would matter for *adopting* a change, not for *rejecting* one — for CLOSE, the direction of the bias doesn't matter because even the favorable tail of the estimate misses the gate.
+
+**2. Future-open (one sentence, not to execute now):** Transaction *volume* on gate/up and down is closed as ideal, but the *latency* cost of the ~0.85 L2 miss rate (prefetch depth / ILP / wave-overlap to hide it) was never measured — bytes and stalls are different questions, and that stall-hiding question is what a future M8b batch should open.
+
+**3. Do-not-try carry-forward:**
+- SlotW sequential reordering (L1 REJECT)
+- Split-K reduction (L2 REJECT)
+- Dropping down-proj LDS `a[]` staging (L3 REJECT)
+- GEMV ISA schedule variant (L4 ABANDON — invalidate)
+- Any gate/up/down layout or tiling change justified by FETCH_SIZE (L5 CLOSE — fetch is at the ideal floor)
+- 32B→64B RDREQ tuning (already 0% 32B)
+- Re-measuring fetch bytes or treating high L2 miss rate as a bandwidth problem (bytes ≈ unique weights; it's a latency question, not a volume question)

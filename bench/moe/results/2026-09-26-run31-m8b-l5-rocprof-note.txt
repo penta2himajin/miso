@@ -1,0 +1,4 @@
+# Raw rocprof outputs (not committed; regenerated locally):
+# /tmp/miso-l5/fetch.csv (7369 rows), /tmp/miso-l5/l2.csv
+# input: pmc FETCH_SIZE TCC_EA_RDREQ_sum TCC_EA_RDREQ_32B_sum SQ_INSTS_VMEM_RD
+#        pmc TCC_HIT_sum TCC_MISS_sum
