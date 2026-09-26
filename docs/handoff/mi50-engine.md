@@ -15,18 +15,17 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Status
 
-in-progress (M8a: post-attn RMSNorm fused into router; 127.6 → 128.4 tok/s)
+in-progress (M8a: norm fusion race-fixed but ~−1 tok/s vs main; reverted; peer review done)
 
 ## Next action
 
-Peer-review the M8a draft with astra/mimo/deepseek, then iterate: fuse mixer input norms, or other high-EV decode kernel work from the consultation. Do not reopen cooperative top-k-in-router without a new measurement that beats 128.4.
+After peer review (astra/mimo/deepseek): do not ship consumer-side 65× RMSNorm fusion (race-fixed median 126.7 vs main 127.7). Next bets: (1) replace O(n²) moe_topk with 8× argmax inside gate/up, (2) MoE/GEMV bandwidth, (3) producer-epilogue norm (not consumer redundant). Keep cooperative top-k closed.
 
 ## Verification
 
-- Cooperative top-k-in-router: correct but **slower** (121.1 tok/s); reverted (`bench/moe/results/2026-09-26-run3-m8a-topk-failed-coop.txt`, `bench/model/results/2026-09-26-run16-m8a-topk.txt`).
-- Fused post-attn RMSNorm into `moe_router`: `test_moe` fused-vs-separate rel L2 ≤ 1e-6; `test_model` green.
-- End to end: 7.79 ms/token, **128.4 tok/s**; pp512 1430 tok/s (`bench/model/results/2026-09-26-run17-m8a-normfuse.txt`). Prior M7f baseline 127.6 tok/s.
-- `ctest` MoE/model green for this change; full suite still expects solo GPU runs.
+- Cooperative top-k-in-router: **121.1 tok/s** — reverted.
+- Consumer-side post-attn RMSNorm fusion: first build +0.8 tok/s but **raced on residual**; race-fixed median **126.7** vs main **127.7** (−1) — reverted (`run17`/`run18`).
+- Peer reviews agree: ship+fix then drop this pattern; stage 3 needs MoE/GEMV work, not launch fusion.
 
 ## Context pointers
 
@@ -65,6 +64,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - FP16 Q + `v_dot2` in the attention score loop dropped split error from ≤2e-6 to ~5e-4 vs FP64; keep float Q. Transposing `part_o` to split-major for combine made the split kernel’s strided stores slower than the combine win.
 - Collapsing `attn_n_splits` below one-per-sub-chunk on short contexts (ctx ~300 → 2 splits) cost ~2 tok/s end to end; keep min parallelism = min(subs, 16).
 
+- Consumer-side post-attn RMSNorm fusion in `moe_router` (65× rebuild): race on residual when WG0 commits in-router; after deferring commit to gate/up, median **−1 tok/s** vs main. Reverted.
 - Cooperative `moe_router` + `grid.sync` + WG0 top-k (gate_up loads ids): correct but 102.6/99.2 µs MoE and **121.1 tok/s** e2e (was 85.6/82.5 and 127.6). Cost matches the rejected separate top-k launch (~25 µs). Reverted.
 
 ## Open questions for user
@@ -102,4 +102,6 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M7f): On `ai-written/m7f-parallel-repack`, load went 27.6 → **9.7 s**. The cost was repacking into a freshly faulted pageable buffer per tensor (fresh 28.3 s vs reused 13.6 s for the same 21.8 GB), not pinned-vs-pageable (both 3.05 GB/s warm). Added `LoadStage`: 4 pinned slots with event-gated reuse, copies on a side stream, and a 4-chunk repack/copy pipeline. `test_load_stage` proves staged == pageable byte-for-byte; the first chunk loop copied only the last chunk and the test caught it. Decode unchanged at 127.6 tok/s.
 
 - 2026-09-26 (M8a): Started stage-3 decode loop. Cooperative top-k-in-router measured slower and reverted. Fused post-attention RMSNorm into `moe_router` (40 launches/token removed); decode 127.6 → **128.4 tok/s**. Draft PR + peer review next.
+
+- 2026-09-26 (M8a peer loop): astra found residual race; fixed then median −1 tok/s vs main → reverted fusion. Peer consensus: next is top-k algorithm / MoE bandwidth / producer-epilogue norms — not more redundant consumer norms.
 

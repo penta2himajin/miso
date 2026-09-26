@@ -11,7 +11,6 @@
 #include "engine/moe.hpp"
 #include "gguf.hpp"
 #include "hip_util.hpp"
-#include "rmsnorm.hpp"
 
 using miso::gguf::File;
 
@@ -54,7 +53,7 @@ TEST_CASE("MoE decode reproduces golden routing and output for layers 0 and 3" *
       CAPTURE(t);
       MISO_HIP_CHECK(
           hipMemcpy(dx.data(), x.data() + t * kHidden, kHidden * 4, hipMemcpyHostToDevice));
-      miso::moe_decode(moe, sc, nullptr, nullptr, nullptr, dx.data(), dy.data(), 0.f, nullptr);
+      miso::moe_decode(moe, sc, dx.data(), dy.data(), nullptr);
       MISO_HIP_CHECK(hipDeviceSynchronize());
       const auto ids = sc.ids.to_host();
       const auto w = sc.weights.to_host();
@@ -77,45 +76,6 @@ TEST_CASE("MoE decode reproduces golden routing and output for layers 0 and 3" *
     MESSAGE("layer " << layer << ": max routing weight error " << worst_w
                      << ", max relative L2 error " << worst_out);
   }
-}
-
-// Fused post-attention RMSNorm inside the router must match a separate add_rmsnorm + MoE.
-TEST_CASE("MoE decode fused post-norm matches separate RMSNorm + MoE" *
-          doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
-  const File m = File::open(MISO_ORNITH_GGUF);
-  const File g = File::open(std::string(MISO_GOLDEN_DIR) + "/ornith-layers.gguf");
-  const auto x = golden_f32(g, "layer0.moe_in");
-  const auto moe = miso::MoeLayer::load(m, 0);
-  const auto* nw_t = m.find_tensor("blk.0.post_attention_norm.weight");
-  REQUIRE(nw_t != nullptr);
-  std::vector<float> nw(2048);
-  std::memcpy(nw.data(), m.tensor_data(*nw_t).data(), 2048 * 4);
-  constexpr float kEps = 1e-6f;
-  miso::MoeScratch sc;
-  miso::DeviceBuffer<float> xn(2048), y_sep(2048), y_fuse(2048), dnw(nw);
-  {
-    miso::DeviceBuffer<float> res(x);
-    const miso::kernels::AddRmsNormParams norm{res.data(), nullptr, dnw.data(), xn.data(), kEps};
-    miso::kernels::add_rmsnorm_kernel<2048, 256><<<1, 256>>>(norm, 1);
-    miso::moe_decode(moe, sc, nullptr, nullptr, nullptr, xn.data(), y_sep.data(), 0.f, nullptr);
-    MISO_HIP_CHECK(hipDeviceSynchronize());
-  }
-  {
-    miso::DeviceBuffer<float> res(x);
-    miso::moe_decode(moe, sc, res.data(), nullptr, dnw.data(), nullptr, y_fuse.data(), kEps,
-                     nullptr);
-    MISO_HIP_CHECK(hipDeviceSynchronize());
-  }
-  const auto a = y_sep.to_host(), b = y_fuse.to_host();
-  double num = 0, den = 0;
-  for (unsigned i = 0; i < 2048; ++i) {
-    const double d = double{a[i]} - b[i];
-    num += d * d;
-    den += double{a[i]} * a[i];
-  }
-  const double rel = std::sqrt(num / (den + 1e-30));
-  MESSAGE("fused vs separate relative L2 " << rel);
-  CHECK(rel <= 1e-6);
 }
 
 // The prefill form routes the whole chunk at once and runs grouped expert GEMMs. Routing must be
@@ -145,7 +105,7 @@ TEST_CASE("MoE prefill routes like decode and reproduces golden output for layer
     for (unsigned t = 0; t < n_prompt; ++t) {
       MISO_HIP_CHECK(
           hipMemcpy(dx.data(), x.data() + t * kHidden, kHidden * 4, hipMemcpyHostToDevice));
-      miso::moe_decode(moe, sc, nullptr, nullptr, nullptr, dx.data(), dy.data(), 0.f, nullptr);
+      miso::moe_decode(moe, sc, dx.data(), dy.data(), nullptr);
       const auto ids = sc.ids.to_host();
       const auto w = sc.weights.to_host();
       dec_ids.insert(dec_ids.end(), ids.begin(), ids.end());

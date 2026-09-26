@@ -22,16 +22,14 @@ int main(int argc, char** argv) {
     const auto moe = miso::MoeLayer::load(m, layer);
     miso::MoeScratch sc;
     for (int i = 0; i < 200; ++i)
-      miso::moe_decode(moe, sc, nullptr, nullptr, nullptr, x.data() + (i % 17) * 2048, y.data(),
-                       0.f, nullptr);
+      miso::moe_decode(moe, sc, x.data() + (i % 17) * 2048, y.data(), nullptr);
     hipEvent_t a, b;
     MISO_HIP_CHECK(hipEventCreate(&a));
     MISO_HIP_CHECK(hipEventCreate(&b));
     const int n = 1000;
     MISO_HIP_CHECK(hipEventRecord(a));
     for (int i = 0; i < n; ++i)
-      miso::moe_decode(moe, sc, nullptr, nullptr, nullptr, x.data() + (i % 17) * 2048, y.data(),
-                       0.f, nullptr);
+      miso::moe_decode(moe, sc, x.data() + (i % 17) * 2048, y.data(), nullptr);
     MISO_HIP_CHECK(hipEventRecord(b));
     MISO_HIP_CHECK(hipEventSynchronize(b));
     float ms;

@@ -53,16 +53,13 @@ MoeLayer MoeLayer::load(const gguf::File& f, int layer, LoadStage* st) {
   return m;
 }
 
-void moe_decode(const MoeLayer& w, MoeScratch& sc, float* residual, const float* mixer,
-                const float* post_norm, const float* x, float* y, float eps, hipStream_t stream) {
+void moe_decode(const MoeLayer& w, MoeScratch& sc, const float* x, float* y, hipStream_t stream) {
   constexpr int kBlock = 256;
-  const float* act = post_norm != nullptr ? sc.xn.data() : x;
-  const kernels::MoeRouterParams rp{w.router.data(),  x,  residual, mixer, post_norm, sc.xn.data(),
-                                    sc.logits.data(), eps};
+  const kernels::MoeRouterParams rp{w.router.data(), x, sc.logits.data()};
   kernels::moe_router_kernel<kBlock><<<(257 + 3) / 4, kBlock, 0, stream>>>(rp);
   const kernels::MoeGateUpParams gp{
       sc.logits.data(),      w.gate_exps.data.data(), w.up_exps.data.data(),
-      w.gate_sh.data.data(), w.up_sh.data.data(),     act,
+      w.gate_sh.data.data(), w.up_sh.data.data(),     x,
       sc.h.data(),           sc.ids.data(),           sc.weights.data()};
   // gate/up grid: 80=94/91, 120=88/85, 160=89/86, 240=90/87, 320+=110+ us (layer 0/5).
   kernels::moe_gate_up_kernel<kBlock><<<120, kBlock, 0, stream>>>(gp);

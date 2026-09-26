@@ -118,8 +118,10 @@ void decode_step(const Model& m, Session& s, const int* token, hipStream_t strea
       attention_decode(*l.attention, *s.kv[i], s.attn_scratch, m.rope, s.h.data(), delta,
                        s.mixer_out.data(), m.eps, stream);
     }
-    moe_decode(l.moe, s.moe_scratch, s.h.data(), s.mixer_out.data(), l.post_attention_norm.data(),
-               nullptr, s.moe_out.data(), m.eps, stream);
+    const kernels::AddRmsNormParams post{s.h.data(), s.mixer_out.data(),
+                                         l.post_attention_norm.data(), s.xn.data(), m.eps};
+    kernels::add_rmsnorm_kernel<kHidden, kBlock><<<1, kBlock, 0, stream>>>(post, 1);
+    moe_decode(l.moe, s.moe_scratch, s.xn.data(), s.moe_out.data(), stream);
   }
 
   head_argmax(m, s, s.h.data(), s.moe_out.data(), s.pos, stream);

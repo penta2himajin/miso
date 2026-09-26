@@ -20,7 +20,7 @@ struct MoeLayer {
 };
 
 struct MoeScratch {
-  DeviceBuffer<float> logits{257}, h{9 * 512}, weights{8}, xn{2048};
+  DeviceBuffer<float> logits{257}, h{9 * 512}, weights{8};
   DeviceBuffer<int> ids{8};
 };
 
@@ -35,12 +35,8 @@ struct MoePrefillScratch {
   DeviceBuffer<_Float16> ah;
 };
 
-// y = MoE(x). When post_norm != nullptr, fuses the post-attention RMSNorm into the router:
-// residual += mixer (mixer may be null), xn = rmsnorm(residual) * post_norm, then MoE(xn).
-// When post_norm == nullptr, x is the already-normalised activation (tests / callers that norm
-// separately); residual and mixer are ignored.
-void moe_decode(const MoeLayer& w, MoeScratch& sc, float* residual, const float* mixer,
-                const float* post_norm, const float* x, float* y, float eps, hipStream_t stream);
+// y = MoE(x) for one token (x is the post-attention RMSNorm output).
+void moe_decode(const MoeLayer& w, MoeScratch& sc, const float* x, float* y, hipStream_t stream);
 
 // The same for n tokens ([n][2048] arrays): batched routing identical to decode, then grouped
 // expert GEMMs over the tokens routed to each expert (the shared expert as expert 256).
