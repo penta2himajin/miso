@@ -7,27 +7,29 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m7d-attn-score` (PR against `main`)
-- Last work commit: 3dc777d @ 2026-09-26
-- Working tree: clean
+- Branch: `ai-written/m7e-megakernel` (PR against `main`)
+- Last work commit: (M7e grid-barrier / D4 trigger measurement)
+- Working tree: dirty until the handoff commit
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
 
 ## Status
 
-ready-for-review (M7d: attention V-in-LDS + split policy)
+ready-for-review (M7e: D4 megakernel trigger measured false; ADR_006)
 
 ## Next action
 
-After the M7d PR is merged, branch `ai-written/m7e-*` from `main` and start M7e (`docs/roadmap.md`: measure grid-barrier cost / ADR_001 D4 megakernel). Decode is 129.1 tok/s (past stage 2, 115); stage 3 is 190.
+After the M7e PR is merged, branch `ai-written/m7f-*` from `main` and start M7f (`docs/roadmap.md`: parallel weight repack at load, 27.6 s → < 10 s). Decode is 129.1 tok/s (past stage 2, 115); stage 3 is 190 and must come from per-kernel work, not dispatch (ADR_006).
 
 ## Verification
 
 - `ctest --preset default` all green (run alone: concurrent GPU suites can OOM).
+- `bench/mi50/grid_barrier.hip`: barrier 1.81 µs at 60×256 vs boundary 1.69 µs; 20-step chain 3.21 µs/step as launches vs 2.12 µs/step cooperative.
+- Decode gaps (`bench/mi50/results/2026-09-26-m7e-decode-gaps.txt`): 186 887 kernels, positive gaps 6.86 ms = **0.177%** of decode span.
 - `test_attn_splitk`: FP64 relative L2 ≤ 2e-6 through 5k positions; `attn_n_splits(4096)=22`, `(16384)=57`.
 - `test_attention` / `test_prefill` / `test_model` / `cli_golden_prompt` pass; first generated ids unchanged.
-- Attention L3: 93.4 / 95.4 / **126.1** / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`; was 103.5 / 110.4 / 173.3 / 325.6).
-- End to end: 7.75 ms/token, **129.1 tok/s**; pp512 357.2 ms, 1433.2 tok/s. sclk 1725 MHz, junction 56 °C, 192 W peak (`bench/model/results/2026-09-26-run13-m7d.txt`, `-smi.csv`).
+- Attention L3: 93.4 / 95.4 / 126.1 / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`).
+- End to end (M7d, unchanged): 7.75 ms/token, **129.1 tok/s**; pp512 357.2 ms, 1433.2 tok/s. sclk 1725 MHz, junction 56 °C, 192 W peak (`bench/model/results/2026-09-26-run13-m7d.txt`, `-smi.csv`).
 
 ## Context pointers
 
@@ -68,7 +70,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M7d PR when ready. Next is M7e (megakernel / barrier cost). M6 stays a draft (#19) until asked for.
+- Merge the M7e PR when ready. Next is M7f (parallel weight repack). M6 stays a draft (#19) until asked for.
 
 ## Session log
 
