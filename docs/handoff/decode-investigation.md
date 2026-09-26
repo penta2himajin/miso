@@ -2,51 +2,44 @@
 
 ## Snapshot
 
-- Branch: `ai-written/moe-down-fp16-staging`
-- Last work commit: ea81b00 @ 2026-09-26 JST
-- Base: `d3dd1a6` (main after investigation PR #28)
-- Working tree: clean after handoff commit
-- Last session: 2026-09-26 JST (Cursor continuing Codex WIP)
+- Branch: `ai-written/gemv-fp16-act-reuse`
+- Last work commit: (pending) @ 2026-09-26 JST
+- Base: `b9defbe` (main after MoE-down FP16 staging PR #29)
+- Working tree: dirty until commit
+- Last session: 2026-09-26 JST
 
 ## Status
 
-ready-for-review — MoE-down **vector FP16 LDS staging KEEP** (paired +3.40% short decode).
+ready-for-review — short-context GEMV xn FP16-reuse **REJECT** (−0.27% paired).
+MoE-down vector FP16 staging remains KEEP on main.
 
 ## Next action
 
-Review/merge the FP16-staging PR; next short-context experiment can target dense GEMV
-(per investigation plan). Long-context attention work remains a separate track.
+User asked short then long: after merging this REJECT docs PR, start **long-context
+attention** (split LDS / head tiling; include combine). Optional later short-context
+retry: pack `core`/`o` for K=4096 out GEMVs (not covered here).
 
 ## Verification
 
-- Paired short e2e: median **141.1 → 145.9 tok/s** (+3.40%); pp512 ~1440.
-- Context probes: 17 **+2.47%**, 4k **+2.39%**, 32k **+1.98%** (no regression).
-- `ctest --preset default -j1`: 21/21 pass.
-- Resources: LDS 18512→9296; VGPR/occ unchanged; scratch 0.
-- Artifacts: `bench/moe/results/2026-09-26-fp16-staging/` (incl. rejected scalar).
+- Paired e2e median baseline 146.0 vs candidate 145.6 (`bench/gemv/results/2026-09-26-gemv-fp16-act/`).
+- Equivalence tests kept green; production wiring reverted.
 
 ## Context pointers
 
-- Investigation: `docs/research/decode-optimization-2026-09-26.md`
-- Kernel: `kernels/moe_decode.hpp`, `kernels/gemv_common.hpp`
-- Tests: `tests/test_moe_down_staging.hip`, `tests/moe_down_reference.hpp`
-- Prior rejects: `docs/handoff/mi50-engine.md` (M8a/M8b)
+- Plan: `docs/research/decode-optimization-2026-09-26.md` §2–3
+- Reject write-up: `bench/gemv/results/2026-09-26-gemv-fp16-act/README.md`
+- Kernel hooks retained: `Q4kGemvParams::x_h`, `AddRmsNormParams::out_h`, `test_gemv_fp16_act.hip`
 
 ## Decisions made
 
-- Adoption gate (≥2% short, ≤1% 4k/32k/pp512 regression) from the investigation report.
-- **KEEP** vector FP16 staging (4× float4→half4 LDS writes + FP16 packed reads).
-- **REJECT** scalar FP16 staging (+0.85% only).
-- M8b closed bets remain closed; this change keeps launch geometry and arithmetic order.
+- ≥2% short paired gate; xn-only GEMV act reuse failed it.
+- Do not ship rmsnorm→xn_h wiring without a measured win.
 
 ## Failed approaches
 
-- Scalar FP16 staging: correct, LDS halved, but short e2e +0.85% < 2% gate.
-- M8b L3 drop of `a[9][512]` without FP16 reuse: LDS↓ but Q6 occ↓ — different bet.
+- Decode xn FP16 pack + K=2048 GEMV consumer: bit-exact, paired −0.27% → REJECT.
 
 ## Session log
 
-- 2026-09-26: Investigation PR #28 (measurement only; next = FP16 staging).
-- 2026-09-26 (Codex + Cursor): Implemented TDD FP16 staging; scalar REJECT; vector KEEP
-  (+3.4% short e2e; gains at 17/4k/32k). Context probes and full CTest completed after
-  Codex session paused mid-finalization.
+- 2026-09-26: Investigation + MoE-down FP16 staging KEEP (PR #28–#29).
+- 2026-09-26: Short GEMV xn FP16 reuse measured and rejected; production wiring reverted.

@@ -68,7 +68,8 @@ DeviceBuffer<float> upload_f32(const gguf::File& f, const std::string& name,
 void load_split(const gguf::File& f, const gguf::TensorInfo& t, std::byte* dst, LoadStage* st);
 
 // y = W x for one token (decode GEMV family, FP16 activations per ADR_004).
-void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream);
+void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream,
+          const _Float16* x_h = nullptr);
 
 // Activations of a token chunk for the prefill GEMM family: FP16-rounded values and per-32 sums.
 struct GemmInput {

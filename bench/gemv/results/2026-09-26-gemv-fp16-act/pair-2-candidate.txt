@@ -1,0 +1,9 @@
+command: ['/tmp/miso-gemv-fp16/candidate_decode']
+run 1 utc 2026-09-26T15:01:43.396251+00:00
+model load: 11.0 s
+warm-up: pp512 356.6 ms, 1435.8 tok/s
+measured: pp512 355.3 ms, 1440.9 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.83 ms/token, 146.3 tok/s
+measured: 256 tokens at ctx 273..529: 6.87 ms/token, 145.6 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
