@@ -1,0 +1,18 @@
+kernel,grid,n,VALUBusy,VALUUtilization,SQ_WAVES,LDSBankConflict,MemUnitStalled,SQ_WAIT_INST_LDS,SQ_INSTS_VMEM_RD,SQ_INSTS_VALU,SQ_INSTS_LDS
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]",491520,3,58.1638197133,95.964339698,7680.0,0.0,44.0053852681,0.0,1054720.0,35909120.0,0.0
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams) [clone .kd]",122880,42,36.331444412500005,97.74448227639999,1920.0,0.0,12.07190510735,0.0,48128.0,1430784.0,0.0
+void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams) [clone .kd],30720,120,29.092372048999998,83.40810615500001,480.0,0.0,1.5998597965,768.5,23712.0,1256456.0,10593.0
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]",30720,60,27.7749840491,98.361162201,480.0,1.2517770042,1.10572233235,2303.0,26976.0,1014536.0,9600.0
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]",61440,120,24.19336548855,96.1515816232,960.0,0.0,9.3857600099,0.0,25600.0,910080.0,0.0
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]",30720,60,19.6561396107,96.61526514485,480.0,4.02505261705,0.9921864193000001,980.5,14688.0,667240.0,9600.0
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]",61440,120,13.5922108246,97.3210883065,960.0,0.0,1.5133993612,0.0,16384.0,451392.0,0.0
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]",61440,18,8.9690134913,97.9878539548,960.0,0.0,0.37725768075,0.0,6144.0,149312.0,0.0
+void miso::kernels::argmax_partial_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd],61440,3,4.824032817,90.2769123059,960.0,0.0,0.6404484265,3164.0,4078.0,61245.0,10158.0
+void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams) [clone .kd],8192,90,3.2855428668,99.7167266187,128.0,0.0,1.95890924195,1707.5,9536.0,84096.0,7616.0
+void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd],4608,30,2.92517533025,96.5673727375,72.0,0.50522175745,0.22437793230000003,5593.5,1136.0,74994.0,22784.0
+void miso::kernels::moe_router_kernel<256>(miso::kernels::MoeRouterParams) [clone .kd],16640,120,1.63756604765,94.2115461618,260.0,0.0,0.4599415201,0.0,3084.0,25709.0,0.0
+void miso::kernels::attn_combine_kernel<256>(miso::kernels::AttnCombineParams) [clone .kd],4096,30,0.50666152005,99.4561464088,64.0,0.0,0.17821476755,0.0,2368.0,9152.0,0.0
+void miso::kernels::attn_prep_kernel<256>(miso::kernels::AttnPrepParams) [clone .kd],4608,30,0.36849794745,97.9857708255,72.0,0.0,0.8170780452999999,86.5,170.0,4946.0,288.0
+"void miso::kernels::embed_q4k_kernel<2048u, 256>(miso::kernels::EmbedParams, unsigned int) [clone .kd]",256,3,0.0702241103,100.0,4.0,0.0,0.2809434621,0.0,128.0,972.0,0.0
+"void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int) [clone .kd]",512,243,0.0424577744,98.76953125,8.0,0.0,0.4656974103,17.0,96.0,616.0,24.0
+void miso::kernels::argmax_final_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd],256,2,0.01254433375,86.65171091925001,4.0,0.0,0.011672657650000001,1.5,8.0,139.5,41.0

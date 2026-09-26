@@ -1,0 +1,83 @@
+1. **Verdict on next step:** **Re-profile first, then split short vs long t
+tracks.** There is no fresh rocprof after #29/#31, so the old 39.3% MoE / 3
+31.6% dense / 4.1% short-attn shares may be stale. Re-profile short (`bench
+(`bench_decode` ctx 273..529) and 32k (`context 32768..32832`) on `4814fe5`
+`4814fe5` with kernel times plus FETCH/LDS/VGPR/occupancy. If short still s
+shows dense+MoE >60% and attn <5%, run short bets; if 32k shows `attn_split
+`attn_split` still >20% and occ 2, run the long bet. Do not code blind.
+
+2. **Ranked next 3 bets** (highest EV first)
+
+### Bet 1 — Short/high EV: dense + LM-head GEMV weight-layout / transactio
+transaction pass
+- **Mechanism:** Repack dense projection weights (QKV, output projection, s
+shared expert) and LM head into the same tiled/swizzled layout that gave Mo
+MoE gate/up `FETCH≈ideal`. Kernel loads become fully coalesced 128B/`uint4
+128B/`uint4` transactions per workgroup, reducing wasted sectors and L2 pre
+pressure.
+- **Why not a REJECT:** Closed “gate/up layout” is MoE gate/up only. Clos
+Closed “GEMV ISA hand-schedule” is instruction scheduling, not weight lay
+layout. Closed #30 was dense `xn` FP16 activation reuse, not weight layout.
+layout.
+- **Measure first:** Red test: fresh short rocprof on `4814fe5`; ver
+verify dense+LM still ~40% of token time and FETCH is not already ideal. A/
+A/B: repack dense/LM weights, benchmark short / 4k / 32k / pp512. Gate: sho
+short ≥2% paired, ≤1% regression on 4k/32k/pp512.
+- **Sensitivity:** Dense 2.15 ms + LM 0.57 ms ≈ 2.72 ms of ~6.85 ms short.
+short. A 10–15% kernel reduction saves 0.27–0.41 ms → e2e +4–6% short. 
+Defensible from shares.
+- **Risk:** Load-time repack cost and extra memory; layout bugs. Accuracy u
+unchanged.
+
+### Bet 2 — Long/high EV: `attn_split` LDS occupancy unlock
+- **Mechanism:** `attn_split` LDS is 25824 with occ 2. Reduce K/V tile LDS 
+by smaller `kAttnSubChunk` (64→48→32) and/or fewer Q-heads per WG (2→1) 
+to get LDS ≤ ~21845, enabling occ 3. Keep the K/V overlay and vectorized l
+loads.
+- **Why not a REJECT:** Closed “more `attn_n_splits` alone” is split-coun
+split-count/combine, not tile/head partitioning. Astra §3 listed smaller c
+chunk / fewer Q-heads but did not measure them. Overlay KEEP likely did not
+not change occupancy.
+- **Measure first:** Red test: 32k rocprof on `4814fe5`; confirm `attn_spli
+`attn_split` time and occ 2. If still ≥20% of token time, A/B chunk sizes 
+and Q-heads/WG. Gate: 32k ≥5%, short/4k/pp512 ≤1% regression.
+- **Sensitivity:** 32k e2e is 8.91 ms/token; post-#31 attention is roughly 
+~2.3 ms. Occ 2→3 with 20–30% attention speedup saves 0.46–0.69 ms → e2e
+e2e +5–8% at 32k. Short attn is ~0.28 ms, so short impact is <1%.
+- **Risk:** Smaller chunk increases loop overhead and may reduce vectorizat
+vectorization; fewer Q-heads may reduce parallelism. Tiling math must be ex
+exact. Accuracy unchanged.
+
+### Bet 3 — Short/secondary: MoE-down Q6 occupancy via VGPR/block-size
+- **Mechanism:** `moe_down` LDS is 9296, which allows 3 CTAs, but Q6 path r
+reports occ 2. Specialize Q6-down with smaller block size (e.g., 128 vs 256
+256) or split output tile to reduce VGPR pressure, targeting occ 3. Keep ve
+vector FP16 LDS staging.
+- **Why not a REJECT:** Closed “drop down LDS `a[]`” is LDS removal; this
+this is VGPR/occupancy tuning. Not GEMV ISA hand-schedule if done via block
+block-size/tile specialization.
+- **Measure first:** Red test: check VGPR count for Q6 down on `4814fe5`. I
+If occ 2 despite LDS allowing 3, A/B block sizes/tiles. Gate: short ≥2% pa
+paired (likely needs combination with Bet 1), ≤1% regression on 4k/32k/pp5
+4k/32k/pp512.
+- **Sensitivity:** Q6 down is 0.66 ms. Occ 2→3 at 15–25% speedup saves 0.
+0.10–0.17 ms → e2e +1.5–2.5% short.
+- **Risk:** Smaller block may reduce ILP; occ 3 may not materialize or may 
+regress. Accuracy unchanged.
+
+3. **Do-not-try additions**
+- Scalar FP16 staging on MoE gate/up — already rejected at +0.85%.
+- More `attn_n_splits` alone — combine already dominates.
+- Dense GEMV `xn` FP16 activation reuse — REJECT #30.
+- Drop MoE-down LDS `a[]` / scalar FP16 MoE staging.
+- FP16 Q / fdot2 — accuracy risk.
+- Vendor BLAS / MFMA / float atomics / new runtime deps.
+- Megakernel — ADR_006.
+- Re-tune MoE gate/up layout — closed with FETCH≈ideal.
+
+4. **One sentence on further attn tile/head-partition:** Further attn tile/
+tile/head-partition is still worth trying **only at 32k** if fresh rocprof 
+shows `attn_split` ≥20% and occ 2; the overlay KEEP cut LDS/time but likel
+likely left occupancy at 2, so smaller `kAttnSubChunk` / fewer Q-heads is t
+the most credible remaining long-context lever, while short-context attn (~
+(~4%) is not worth it.

@@ -1,0 +1,138 @@
+**Caveat first:** I can't read the repo from here — everything below is de
+derived from the numbers you posted. Repo-shape claims I couldn't verify ar
+are tagged `[assumption]`; arithmetic from your shares is tagged `[est]`.
+
+---
+
+## 1. Verdict on next step: re-profile first (both short and 32k), then spl
+split tracks
+
+Yes to both, before coding anything. It's ~1 hour and every red test below 
+reads off it:
+
+- **Short rocprof on `4814fe5`** (same last-256 protocol): per-kernel name,
+name, count/token, mean µs, grid, occupancy, VGPR, LDS, and bytes/µs → ach
+achieved GB/s. Plus a **timeline gap audit**: `(wall − Σ kernel µs) / wall
+wall` over 256 tokens.
+- **32k rocprof**: attn_split share of the 8.91 ms token and achieved occup
+occupancy.
+
+Rationale: your shares are pre-#29/#31, and the two KEEP PRs moved exactly 
+the two families you'd bet on next. Also the projection-kernel *internal* s
+split (q/k/v/o vs DeltaNet in-proj; separate launches vs fused) is unknown 
+and decides the top bet `[assumption]`.
+
+Post-KEEP short split I'd expect `[est]`: MoE ~2.45 ms (36%, gate/up now li
+likely the single largest kernel ~1.1 ms), dense 2.15 (31%), norms 0.70 (10
+(10%), LM head 0.57 (8%), DeltaNet 0.42 (6%), attn 0.28 (4%), ~0.3 ms unatt
+unattributed. For the 190 tok/s target you need **−1.59 ms** (5.26 ms/token
+ms/token).
+
+---
+
+## 2. Ranked next 3 bets
+
+### Bet 1 — Fused same-input projection launch (short track)
+
+- **Mechanism:** One launch per block computing all GEMVs that read the *sa
+*same* normed x: q, k, v (+ DeltaNet in-proj pieces qkvz/ba on DeltaNet lay
+layers) `[assumption: currently separate launches]`. Grid partitions **outp
+**output columns** across WGs; each WG keeps the existing full-K GEMV loop.
+loop. 3–5 launches/layer → 1. No weight-layout or ISA change.
+- **Not a reopen:** #30 changed the activation *format* (FP16 `xn` staging)
+staging); this keeps FP32 x and changes launch granularity/column partition
+partitioning. Split-K closure was cross-WG K-reduction on MoE-down; here ev
+every WG owns full K. gate/up layout closure is untouched.
+- **Red test:** From the fresh profile — proceed if q/k/v/dn-in are separa
+separate launches **and** any achieves <~400 GB/s at <2–3 WGs/CU (wave-qua
+(wave-quantized underfill at small N). A/B: fused vs base, paired `bench_de
+`bench_decode` ctx 273..529 + 4096..4160.
+- **Sensitivity:** Dense = 2.15 ms. If those launches run ~250–350 GB/s (1
+(11 µs each is consistent with underfill) and fusion lifts them to ~500–60
+600, save **0.5–0.8 ms → +7–11% short**. Collapses to ~0 if already fuse
+fused/efficient — hence the red test.
+- **Risk:** Low correctness risk. Watch VGPR if tile shapes differ across o
+outputs (use one tile shape; keep the k/v cache store path identical). Do *
+**not** smuggle FP16 activation staging into the first cut — that's #30's 
+mechanism.
+
+### Bet 2 — attn_split partition tuning at 32k (long track)
+
+- **Mechanism:** The §3 leftovers that were **listed but never tried**: sm
+smaller `kAttnSubChunk` and/or fewer Q-heads per WG, cutting LDS 25824 → ≤
+16 KB and occupancy 2 → 3–4, to hide latency on the 32k K/V stream.
+- **Not a reopen:** #31 *kept* the overlay; these tile knobs were explicitl
+explicitly deferred, never measured.
+- **Red test:** Fresh 32k rocprof — go if attn ≥ ~20% of token time and a
+achieved occ ≤ ~2.5. A/B: 2×2 of {sub-chunk × heads/WG}, layer-3 attn ke
+kernel µs + 32k e2e.
+- **Sensitivity:** Post-#31 attn ≈ 2.4 ms of 8.91 ms `[est: 3.42 × 0.705]
+0.705]`. Occ 2→4 on a stream-bound kernel plausibly −20–30% of attn → **
+**+5–8% at 32k**, ~0 short change. Gate: ≥5% at 32k, ≤1% short/4k/pp512.
+short/4k/pp512.
+- **Risk:** ~2× loop iterations → more barriers (cheap vs 
+HBM latency); VGPR/spill unchanged; accuracy untouched.
+
+### Bet 3 — Launch/gap purge (short track)
+
+- **Mechanism:** From the timeline audit, two signatures: (a) **many small 
+gaps** (~250–300 launches/token `[assumption]` × 1–2 µs) → capture the 
+decode step in a **hipGraph** (static shapes per ctx bucket, exec-update fo
+for KV pointers) or merge the elementwise chain — residual add + RMSNorm i
+in one kernel, which is **producer-side** (the closed M8a fusion was consum
+consumer-side); (b) **one big per-token gap** → logits D2H/sampling sync —
+ move sampling on-GPU or async the copy.
+- **Not a reopen:** Nothing in the closed list touches launch mechanics. hi
+hipGraph is in the existing HIP runtime, no new dependency — flag it if yo
+you count otherwise.
+- **Red test:** Gap ≥5% of wall over 256 tokens. A/B: graph (or merged ele
+elementwise) vs baseline, short e2e paired.
+- **Sensitivity:** −0.2 to −0.6 ms → **+3–8% short**, scaling with launch
+launch count. `[speculative until the audit]`
+- **Risk:** Capture plumbing (memory pools, dynamic pointers); zero math ch
+change. Fallback is the elementwise merge.
+
+**In the pocket (post-profile, conditional):**
+- *RMSNorm single-pass / deferred scale*: norm kernel computes only s; cons
+consumers apply x·(s·g) inline, g pre-folded or L2-read, ×s in epilogue.
+epilogue. ~0.25–0.35 ms potential — **but** ~11 µs/norm for 16 KB of traf
+traffic says launch/latency-bound, in which case this saves little and Bet 
+3 is the right lever. Decide off the per-kernel µs.
+- *moe_down occupancy shaping*: LDS 9296 allows occ ~6 but you're at 3/2 —
+ if fresh counters show a VGPR cap or wave quantization, shrink the K-tile.
+K-tile. ~0.1–0.2 ms; different knobs than the closed split-K/LDS-drop item
+items, but only touch with counters in hand.
+- *LM head* (0.57 ms): check achieved GB/s first; only after MoE/dense/laun
+MoE/dense/launch bets resolve.
+
+Prefill: nothing above the gate — pp512 is flat and no share data suggests
+suggests otherwise; revisit only if the pp profile shows ungrouped MoE GEMM
+GEMMs.
+
+---
+
+## 3. Do-not-try additions
+
+- **No int-atomic grid-barrier / persistent variants** to fuse router+top-k
+router+top-k into gate/up — M8a-adjacent and ADR_006-risky.
+- **No FP16 activation staging inside Bet 1's first cut** (#30's mechanism;
+mechanism; keep it as a separate follow-up only if fusion alone wins).
+- **No new precision reductions** (DeltaNet FP16 state, FP16 KV) without an
+an accuracy sign-off — M7d precedent.
+- **No spend on LM head / router / short-ctx attn** (<1 ms families, ≤0.2 
+ms ceilings) before the big three resolve.
+- **No hipGraph refactor before the gap audit says ≥5%.**
+
+---
+
+## 4. Attn tile/head-partition, one sentence
+
+Yes for the 32k track only — the untried §3 knobs are the last lever on w
+what's plausibly still ~25% of 32k token time at occupancy 2 `[est]`, so re
+re-baseline the fresh 32k attn share first and kill the track if it's now u
+under ~15%.
+
+**Expectation check:** the three bets sum to ~1.0–1.6 ms best-case against
+against the 1.59 ms needed for 190 tok/s — reachable only if Bet 1 hits it
+its upper half *and* Bet 3 lands, so treat 190 as a two-cycle goal, not one
+one.

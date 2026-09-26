@@ -1,0 +1,8 @@
+command: ['/tmp/gemv-k4096-r2/candidate_context_probe', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf', 'tests/golden/ornith-layers.gguf', '17']
+run 1 utc 2026-09-26T17:01:00.355379+00:00
+warm-up round=0 ctx=17..81 tokens=64 ms=443.001587 tok_s=144.469 ids_match=yes
+measured round=1 ctx=17..81 tokens=64 ms=443.263550 tok_s=144.384 ids_match=yes
+measured round=2 ctx=17..81 tokens=64 ms=443.106018 tok_s=144.435 ids_match=yes
+measured round=3 ctx=17..81 tokens=64 ms=443.408417 tok_s=144.336 ids_match=yes
+median ctx=17 ms_token=6.925993 tok_s=144.384
+exit: 0

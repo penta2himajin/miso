@@ -1,0 +1,8 @@
+command: ['/tmp/miso-post31/context_probe', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf', 'tests/golden/ornith-layers.gguf', '17']
+run 1 utc 2026-09-26T16:03:10.611590+00:00
+warm-up round=0 ctx=17..81 tokens=64 ms=441.548187 tok_s=144.945 ids_match=yes
+measured round=1 ctx=17..81 tokens=64 ms=443.350311 tok_s=144.355 ids_match=yes
+measured round=2 ctx=17..81 tokens=64 ms=443.114716 tok_s=144.432 ids_match=yes
+measured round=3 ctx=17..81 tokens=64 ms=443.166504 tok_s=144.415 ids_match=yes
+median ctx=17 ms_token=6.924477 tok_s=144.415
+exit: 0

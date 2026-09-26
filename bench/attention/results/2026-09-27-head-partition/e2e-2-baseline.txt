@@ -1,0 +1,9 @@
+command: ['/tmp/attn-head-part/baseline_bench_decode']
+run 1 utc 2026-09-26T16:43:30.204803+00:00
+model load: 11.2 s
+warm-up: pp512 356.8 ms, 1435.0 tok/s
+measured: pp512 355.8 ms, 1439.2 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.82 ms/token, 146.7 tok/s
+measured: 256 tokens at ctx 273..529: 6.84 ms/token, 146.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
