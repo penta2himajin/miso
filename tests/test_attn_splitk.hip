@@ -89,8 +89,8 @@ void check(unsigned len, unsigned max_splits) {
 }  // namespace
 
 TEST_CASE("split-K decode attention matches an FP64 reference across chunk boundaries") {
-  for (unsigned len : {1u, 31u, 32u, 33u, 257u, 1000u})
-    check(len, 120);
+  for (unsigned len : {1u, 31u, 32u, 33u, 257u, 1000u, 4096u})
+    check(len, 60);
 }
 
 // Causal prefill attention: token pos0 + t sees keys [0, pos0 + t]. Same FP64 reference as decode,
@@ -173,9 +173,13 @@ TEST_CASE("prefill attention matches an FP64 reference, causal, across block tai
 }
 
 TEST_CASE("split-K decode attention with long contexts and few splits") {
-  check(5000, 120);
-  check(3872, 120);  // 121 sub-chunks: 61 splits of 2, none empty
-  check(5000, 3);    // many 32-position sub-chunks per workgroup
-  CHECK(miso::kernels::attn_n_splits(3872, 120) == 61);
-  CHECK(miso::kernels::attn_n_splits(33, 120) == 2);
+  check(5000, 60);
+  check(3872, 60);
+  check(5000, 3);  // many 32-position sub-chunks per workgroup
+  // 121 sub-chunks → prefer 6/split → 21 splits; short tail still non-empty.
+  CHECK(miso::kernels::attn_n_splits(3872, 60) == 21);
+  CHECK(miso::kernels::attn_n_splits(33, 60) == 2);  // one split per sub-chunk when few
+  CHECK(miso::kernels::attn_n_splits(4096, 60) == 22);
+  CHECK(miso::kernels::attn_n_splits(16384, 60) == 57);
+  CHECK(miso::kernels::attn_n_splits(288, 60) == 9);  // short decode: do not collapse
 }

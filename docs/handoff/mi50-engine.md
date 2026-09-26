@@ -7,28 +7,27 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m7c-gemv-eff` (PR against `main`)
-- Last work commit: (M7c shape-tuned GEMV R/grid + q+k fusion)
-- Working tree: dirty until the handoff commit (`.venv/` is git-ignored)
+- Branch: `ai-written/m7d-attn-score` (PR against `main`)
+- Last work commit: (M7d attention score / split policy)
+- Working tree: dirty until the handoff commit
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
 
 ## Status
 
-ready-for-review (M7c: shape-tuned decode GEMV + attn q+k fusion)
+ready-for-review (M7d: attention V-in-LDS + split policy)
 
 ## Next action
 
-After the M7c PR is merged, branch `ai-written/m7d-*` from `main` and start M7d (`docs/roadmap.md`: attention score loop / long-context decode). Decode is 126.0 tok/s (past stage 2, 115); stage 3 is 190.
+After the M7d PR is merged, branch `ai-written/m7e-*` from `main` and start M7e (`docs/roadmap.md`: measure grid-barrier cost / ADR_001 D4 megakernel). Decode is 129.1 tok/s (past stage 2, 115); stage 3 is 190.
 
 ## Verification
 
-- `ctest --preset default` all green (run alone: concurrent GPU suites can abort).
-- `test_gemv_dispatch`: engine `gemv()` bit-identical to R=1 reference for ssm_out and Q6_K qkv.
-- `test_fused_gemv`: DeltaNet L5 qkv+z_ab and attention L11 q/k/v bit-identical to separate GEMVs; L3 now fuses q+k (8704 rows) and keeps v (Q6_K) separate; L0 stays split.
-- `test_deltanet` / `test_attention` / `test_prefill` / `test_model` / `cli_golden_prompt` pass; first generated ids unchanged.
-- DeltaNet L0 85.0 µs, L5 74.5 µs (`bench/deltanet/results/2026-09-26-run6-qk-fuse.txt`).
-- End to end: 7.94 ms/token, **126.0 tok/s**; pp512 357.6 ms, 1431.8 tok/s. sclk 1725 MHz, junction 57 °C, 224 W peak (`bench/model/results/2026-09-26-run12-qk-fuse.txt`, `-smi.csv`).
+- `ctest --preset default` all green (run alone: concurrent GPU suites can OOM).
+- `test_attn_splitk`: FP64 relative L2 ≤ 2e-6 through 5k positions; `attn_n_splits(4096)=22`, `(16384)=57`.
+- `test_attention` / `test_prefill` / `test_model` / `cli_golden_prompt` pass; first generated ids unchanged.
+- Attention L3: 93.4 / 95.4 / **126.1** / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`; was 103.5 / 110.4 / 173.3 / 325.6).
+- End to end: 7.75 ms/token, **129.1 tok/s**; pp512 357.2 ms, 1433.2 tok/s. sclk 1725 MHz, junction 56 °C, 192 W peak (`bench/model/results/2026-09-26-run13-m7d.txt`, `-smi.csv`).
 
 ## Context pointers
 
@@ -64,10 +63,12 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - Concatenating attention k+v across mixed Q4_K/Q6_K types throws at load; only same-type rows can share a GEMV. attn_q and attn_k are both Q4_K in all 11 attention layers, so q+k can always fuse (8704 rows); only v may need its own launch.
 - Microbenchmark-optimal GEMV settings are not end-to-end optimal. An isolated R x grid sweep said R=5/R=6 and small grids beat R=4/240 (ssm_out 21.9 → 14.5 µs at R=5/grid 480), but A/B on `bench_decode` (in-process `MISO_GEMV_VARIANT` switch) showed the microbench winner 1.1 tok/s *slower* (123.8 vs 125.0). Small-grid-latency variants were +0.3%. Tune on `bench_decode`, not on the sweep.
 - Double-buffering the Q6_K weight loads to hide HBM latency on decode-sized qkv launches spilled `w[2][R][kIters]` to scratch (112 B); reverted. Prefer shape-tuned R/grid over register pipelines that spill.
+- FP16 Q + `v_dot2` in the attention score loop dropped split error from ≤2e-6 to ~5e-4 vs FP64; keep float Q. Transposing `part_o` to split-major for combine made the split kernel’s strided stores slower than the combine win.
+- Collapsing `attn_n_splits` below one-per-sub-chunk on short contexts (ctx ~300 → 2 splits) cost ~2 tok/s end to end; keep min parallelism = min(subs, 16).
 
 ## Open questions for user
 
-- Merge the M7c PR when ready. M6 stays a draft (#19) until asked for.
+- Merge the M7d PR when ready. Next is M7e (megakernel / barrier cost). M6 stays a draft (#19) until asked for.
 
 ## Session log
 
@@ -96,3 +97,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M7b review): Further fuse when types match: DeltaNet qkv+z_ab for the 16 Q4_K-qkv layers (one 12352-row GEMV); attention q+k+v for the 4 all-Q4_K layers (9216 rows). Prefill uses a shared proj buffer with `qkv_stride` / `proj_stride`. Decode 119.2 → **123.4 tok/s**; DeltaNet L5 77.9 µs. Mixed-type layers unchanged. `test_fused_gemv` checks bit-identity vs separate GEMVs. Merged as #21.
 - 2026-09-26 (M7c): On `ai-written/m7c-gemv-eff`, `gemv()` picks rows-per-wave and grid by shape (K=4096 and K=2048 with N≥2048 use R=4; Q6_K qkv uses R=2 at grid 480; LM head uses grid 1920). ssm_out 21.9 → 18.5 µs; decode 123.4 → **125.5 tok/s**. A Q6_K next-row weight prefetch spilled and was reverted.
 - 2026-09-26 (M7c review): attn_q and attn_k are Q4_K in all 11 attention layers, so the 7 layers whose attn_v is Q6_K now fuse q+k into one 8704-row GEMV (3 → 2 projection launches). Decode 125.5 → **126.0 tok/s**. Tried and rejected: R=5/R=6 and small grids (microbench-optimal but 1.1 tok/s *slower* end to end) and a Q6_K double-buffered weight prefetch (112 B scratch spill). The lesson is recorded under Failed approaches: tune GEMV dispatch on `bench_decode`, not on the isolated sweep.
+- 2026-09-26 (M7d): On `ai-written/m7d-attn-score`, staged V alongside K in LDS for split-K decode and retuned `attn_n_splits` (~6 sub-chunks/split, `kMaxSplits=60`) after a max_splits sweep showed combine dominating at 120. Attention L3 173→126 µs at 4k; decode 126.0→**129.1 tok/s**. FP16 Q/fdot2 and a part_o transpose were measured and reverted.
