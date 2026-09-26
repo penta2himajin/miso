@@ -1,0 +1,29 @@
+[1/2] Building HIP object tests/CMakeFiles/test_moe.dir/test_moe_down_staging.hip.o
+FAILED: tests/CMakeFiles/test_moe.dir/test_moe_down_staging.hip.o 
+/opt/rocm-6.3.4/lib/llvm/bin/clang++ -DMISO_FIXTURE_DIR=\"/home/penta/repos/miso/tests/fixtures\" -DMISO_GOLDEN_DIR=\"/home/penta/repos/miso/tests/golden\" -DMISO_ORNITH_GGUF=\"/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf\" -D__HIP_ROCclr__=1 -I/home/penta/repos/miso/kernels -I/home/penta/repos/miso/src -isystem /home/penta/repos/miso/third_party --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 -O3 -DNDEBUG --offload-arch=gfx906 -Wall -Wextra -Werror -std=gnu++20 -MD -MT tests/CMakeFiles/test_moe.dir/test_moe_down_staging.hip.o -MF tests/CMakeFiles/test_moe.dir/test_moe_down_staging.hip.o.d -o tests/CMakeFiles/test_moe.dir/test_moe_down_staging.hip.o -x hip -c /home/penta/repos/miso/tests/test_moe_down_staging.hip
+/home/penta/repos/miso/tests/test_moe_down_staging.hip:28:56: error: cannot initialize a parameter of type 'const float *' with an lvalue of type '_Float16[512]'
+   28 |     rounded[threadIdx.x] = k::moe_detail::Down<T>::act(h, threadIdx.x);
+      |                                                        ^
+/home/penta/repos/miso/tests/test_moe_down_staging.hip:54:5: note: in instantiation of function template specialization '(anonymous namespace)::compare_slot_kernel<miso::kernels::QType::Q4K>' requested here
+   54 |     compare_slot_kernel<T><<<1, 256>>>(x.data(), got.data(), want.data());
+      |     ^
+/home/penta/repos/miso/tests/test_moe_down_staging.hip:99:3: note: in instantiation of function template specialization '(anonymous namespace)::check_slots<miso::kernels::QType::Q4K>' requested here
+   99 |   check_slots<k::QType::Q4K>();
+      |   ^
+/home/penta/repos/miso/kernels/moe_decode.hpp:242:42: note: passing argument to parameter 'a' here
+  242 |   static __device__ Act act(const float* a, int slot) {
+      |                                          ^
+/home/penta/repos/miso/tests/test_moe_down_staging.hip:28:56: error: cannot initialize a parameter of type 'const float *' with an lvalue of type '_Float16[512]'
+   28 |     rounded[threadIdx.x] = k::moe_detail::Down<T>::act(h, threadIdx.x);
+      |                                                        ^
+/home/penta/repos/miso/tests/test_moe_down_staging.hip:54:5: note: in instantiation of function template specialization '(anonymous namespace)::compare_slot_kernel<miso::kernels::QType::Q6K>' requested here
+   54 |     compare_slot_kernel<T><<<1, 256>>>(x.data(), got.data(), want.data());
+      |     ^
+/home/penta/repos/miso/tests/test_moe_down_staging.hip:100:3: note: in instantiation of function template specialization '(anonymous namespace)::check_slots<miso::kernels::QType::Q6K>' requested here
+  100 |   check_slots<k::QType::Q6K>();
+      |   ^
+/home/penta/repos/miso/kernels/moe_decode.hpp:254:42: note: passing argument to parameter 'a' here
+  254 |   static __device__ Act act(const float* a, int slot) { return q6k_detail::load_slot(a, slot); }
+      |                                          ^
+2 errors generated when compiling for gfx906.
+ninja: build stopped: subcommand failed.

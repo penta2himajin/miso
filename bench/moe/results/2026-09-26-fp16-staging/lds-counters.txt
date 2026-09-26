@@ -1,0 +1,2 @@
+pmc : LDSBankConflict SQ_WAVES SQ_INSTS_LDS SQ_LDS_BANK_CONFLICT
+kernel: moe_down_kernel

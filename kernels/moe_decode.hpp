@@ -242,6 +242,18 @@ struct Down<QType::Q4K> {
   static __device__ Act act(const float* a, int slot) {
     return q4k_detail::load_slot<ActFormat::Fp16>(a, slot);
   }
+  static __device__ Act act(const _Float16* a, int slot) {
+    const int b = slot >> 3, i = slot & 7;
+    const _Float16* x = a + 256 * b + 64 * (i >> 1) + 16 * (i & 1);
+    const auto lo = gemv::fp16x16(x), hi = gemv::fp16x16(x + 32);
+    Act r;
+    for (int c = 0; c < 4; ++c) {
+      r.a_lo[c] = lo.a[c], r.b_lo[c] = lo.b[c];
+      r.a_hi[c] = hi.a[c], r.b_hi[c] = hi.b[c];
+    }
+    r.s_lo = lo.s16, r.s_hi = hi.s16;
+    return r;
+  }
   static __device__ float dot(const std::uint8_t* row, int slot, const Act& a) {
     return q4k_detail::slot_dot<ActFormat::Fp16>(q4k_detail::load_w(row, slot), slot, a);
   }
@@ -252,6 +264,11 @@ struct Down<QType::Q6K> {
   static constexpr unsigned kRowBytes = (moe::kFf / 256 * 210 + 15) / 16 * 16;
   using Act = q6k_detail::SlotAct;
   static __device__ Act act(const float* a, int slot) { return q6k_detail::load_slot(a, slot); }
+  static __device__ Act act(const _Float16* a, int slot) {
+    const int b = slot >> 3, i = slot & 7;
+    const _Float16* x = a + 256 * b + 128 * (i >> 2) + 16 * (i & 3);
+    return {gemv::fp16x16(x), gemv::fp16x16(x + 64)};
+  }
   static __device__ float dot(const std::uint8_t* row, int slot, const Act& a) {
     return q6k_detail::slot_dot(q6k_detail::load_w<moe::kFf>(row, slot), slot, a);
   }
@@ -265,11 +282,18 @@ template <QType T, int kBlock>
 __device__ void moe_down_op(const MoeDownParams& p, unsigned first, unsigned count) {
   using D = moe_detail::Down<T>;
   constexpr int kSteps = (moe::kSlots + 3) / 4;
-  __shared__ float a[moe::kSlots][moe::kFf];
+  // Down already consumes FP16 activations. Round once per staged value; preserve the
+  // original rounded offset sums in Down::act. Vector stores avoid scalar half writes.
+  typedef _Float16 half4_t __attribute__((ext_vector_type(4)));
+  __shared__ __align__(16) _Float16 a[moe::kSlots][moe::kFf];
   __shared__ int sid[moe::kTopK];
   __shared__ float coef[moe::kSlots];
-  for (unsigned i = threadIdx.x; i < moe::kSlots * moe::kFf; i += kBlock)
-    a[i / moe::kFf][i % moe::kFf] = p.h[i];
+  for (unsigned i = threadIdx.x; i < moe::kSlots * moe::kFf / 4; i += kBlock) {
+    const float4 v = reinterpret_cast<const float4*>(p.h)[i];
+    reinterpret_cast<half4_t*>(a)[i] =
+        half4_t{static_cast<_Float16>(v.x), static_cast<_Float16>(v.y), static_cast<_Float16>(v.z),
+                static_cast<_Float16>(v.w)};
+  }
   if (threadIdx.x < moe::kTopK)
     sid[threadIdx.x] = p.ids[threadIdx.x], coef[threadIdx.x] = p.weights[threadIdx.x];
   if (threadIdx.x == 0)

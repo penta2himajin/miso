@@ -1,0 +1,4 @@
+# LDS bank-conflict counters (rocprof; scheduling-altered — diagnostic only)
+# filter: moe_down_kernel only (bench_moe), median per launch
+baseline Q4 med=8.1  Q6 med=7.4
+vector   Q4 med=4.7  Q6 med=1.5

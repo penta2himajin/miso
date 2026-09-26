@@ -1,0 +1,55 @@
+{
+  "baseline 0000000000008000 <void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams)>:": {
+    "ds_write_b32": 2,
+    "ds_write2_b32": 1,
+    "v_cvt_i32_f32_e32": 1,
+    "ds_read_b128": 24,
+    "v_cvt_f16_f32_e32": 96,
+    "v_cvt_f32_f16_e32": 99,
+    "ds_read2_b32": 2,
+    "ds_read_b32": 1,
+    "v_dot2_f32_f16": 48,
+    "v_cvt_f32_f16_sdwa": 3,
+    "v_cvt_f32_ubyte0_e32": 12
+  },
+  "baseline 0000000000009200 <void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams)>:": {
+    "ds_write_b32": 2,
+    "ds_write2_b32": 1,
+    "v_cvt_i32_f32_e32": 1,
+    "ds_read_b128": 24,
+    "v_cvt_f16_f32_e32": 96,
+    "v_cvt_f32_f16_e32": 99,
+    "ds_read2_b32": 2,
+    "ds_read_b32": 1,
+    "v_dot2_f32_f16": 48,
+    "v_cvt_f32_i32_sdwa": 6
+  },
+  "candidate 0000000000008000 <void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams)>:": {
+    "v_cvt_f16_f32_e32": 1,
+    "ds_write_b16": 1,
+    "ds_write2_b32": 1,
+    "v_cvt_i32_f32_e32": 1,
+    "ds_write_b32": 1,
+    "ds_read_b128": 12,
+    "v_cvt_f32_f16_e32": 51,
+    "v_cvt_f32_f16_sdwa": 51,
+    "ds_read2_b32": 2,
+    "ds_read_b32": 1,
+    "v_dot2_f32_f16": 48,
+    "v_cvt_f32_ubyte0_e32": 12
+  },
+  "candidate 0000000000009100 <void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams)>:": {
+    "v_cvt_f16_f32_e32": 1,
+    "ds_write_b16": 1,
+    "ds_write2_b32": 1,
+    "v_cvt_i32_f32_e32": 1,
+    "ds_write_b32": 1,
+    "ds_read_b128": 12,
+    "v_cvt_f32_f16_e32": 51,
+    "v_cvt_f32_f16_sdwa": 48,
+    "ds_read2_b32": 2,
+    "ds_read_b32": 1,
+    "v_dot2_f32_f16": 48,
+    "v_cvt_f32_i32_sdwa": 6
+  }
+}
