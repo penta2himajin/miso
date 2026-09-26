@@ -1,0 +1,9 @@
+command: ['build/tests/test_gemv_dispatch']
+run 1 utc 2026-09-26T17:45:21.506086+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:      2 |      2 passed | 0 failed | 0 skipped
+[doctest] assertions: 172611 | 172611 passed | 0 failed |
+[doctest] Status: SUCCESS!
+exit: 0

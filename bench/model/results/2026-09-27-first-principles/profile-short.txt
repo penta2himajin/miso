@@ -1,0 +1,207 @@
+command: ['/opt/rocm/bin/rocprof', '--timestamp', 'on', '--stats', '-o', '/tmp/miso-first-principles/profile-short.csv', '/tmp/miso-first-principles/combined_decode']
+run 1 utc 2026-09-26T17:59:35.609318+00:00
+RPL: on '260927_025935' from '/opt/rocm-6.3.4' in '/home/penta/repos/miso'
+RPL: profiling '"/tmp/miso-first-principles/combined_decode"'
+RPL: input file ''
+RPL: output dir '/tmp/rpl_data_260927_025935_1806524'
+RPL: result dir '/tmp/rpl_data_260927_025935_1806524/input_results_260927_025935'
+ROCProfiler: input from "/tmp/rpl_data_260927_025935_1806524/input.xml"
+  0 metrics
+model load: 10.3 s
+warm-up: pp512 356.3 ms, 1437.2 tok/s
+measured: pp512 355.5 ms, 1440.3 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.45 ms/token, 155.1 tok/s
+measured: 256 tokens at ctx 273..529: 6.46 ms/token, 154.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+
+ROCPRofiler: 183965 contexts collected, output directory /tmp/rpl_data_260927_025935_1806524/input_results_260927_025935
+File '/tmp/miso-first-principles/profile-short.csv' is generating
+File '/tmp/miso-first-principles/profile-short.stats.csv' is generating
+
+dump json 0:183965
+dump json 1000:183965
+dump json 2000:183965
+dump json 3000:183965
+dump json 4000:183965
+dump json 5000:183965
+dump json 6000:183965
+dump json 7000:183965
+dump json 8000:183965
+dump json 9000:183965
+dump json 10000:183965
+dump json 11000:183965
+dump json 12000:183965
+dump json 13000:183965
+dump json 14000:183965
+dump json 15000:183965
+dump json 16000:183965
+dump json 17000:183965
+dump json 18000:183965
+dump json 19000:183965
+dump json 20000:183965
+dump json 21000:183965
+dump json 22000:183965
+dump json 23000:183965
+dump json 24000:183965
+dump json 25000:183965
+dump json 26000:183965
+dump json 27000:183965
+dump json 28000:183965
+dump json 29000:183965
+dump json 30000:183965
+dump json 31000:183965
+dump json 32000:183965
+dump json 33000:183965
+dump json 34000:183965
+dump json 35000:183965
+dump json 36000:183965
+dump json 37000:183965
+dump json 38000:183965
+dump json 39000:183965
+dump json 40000:183965
+dump json 41000:183965
+dump json 42000:183965
+dump json 43000:183965
+dump json 44000:183965
+dump json 45000:183965
+dump json 46000:183965
+dump json 47000:183965
+dump json 48000:183965
+dump json 49000:183965
+dump json 50000:183965
+dump json 51000:183965
+dump json 52000:183965
+dump json 53000:183965
+dump json 54000:183965
+dump json 55000:183965
+dump json 56000:183965
+dump json 57000:183965
+dump json 58000:183965
+dump json 59000:183965
+dump json 60000:183965
+dump json 61000:183965
+dump json 62000:183965
+dump json 63000:183965
+dump json 64000:183965
+dump json 65000:183965
+dump json 66000:183965
+dump json 67000:183965
+dump json 68000:183965
+dump json 69000:183965
+dump json 70000:183965
+dump json 71000:183965
+dump json 72000:183965
+dump json 73000:183965
+dump json 74000:183965
+dump json 75000:183965
+dump json 76000:183965
+dump json 77000:183965
+dump json 78000:183965
+dump json 79000:183965
+dump json 80000:183965
+dump json 81000:183965
+dump json 82000:183965
+dump json 83000:183965
+dump json 84000:183965
+dump json 85000:183965
+dump json 86000:183965
+dump json 87000:183965
+dump json 88000:183965
+dump json 89000:183965
+dump json 90000:183965
+dump json 91000:183965
+dump json 92000:183965
+dump json 93000:183965
+dump json 94000:183965
+dump json 95000:183965
+dump json 96000:183965
+dump json 97000:183965
+dump json 98000:183965
+dump json 99000:183965
+dump json 100000:183965
+dump json 101000:183965
+dump json 102000:183965
+dump json 103000:183965
+dump json 104000:183965
+dump json 105000:183965
+dump json 106000:183965
+dump json 107000:183965
+dump json 108000:183965
+dump json 109000:183965
+dump json 110000:183965
+dump json 111000:183965
+dump json 112000:183965
+dump json 113000:183965
+dump json 114000:183965
+dump json 115000:183965
+dump json 116000:183965
+dump json 117000:183965
+dump json 118000:183965
+dump json 119000:183965
+dump json 120000:183965
+dump json 121000:183965
+dump json 122000:183965
+dump json 123000:183965
+dump json 124000:183965
+dump json 125000:183965
+dump json 126000:183965
+dump json 127000:183965
+dump json 128000:183965
+dump json 129000:183965
+dump json 130000:183965
+dump json 131000:183965
+dump json 132000:183965
+dump json 133000:183965
+dump json 134000:183965
+dump json 135000:183965
+dump json 136000:183965
+dump json 137000:183965
+dump json 138000:183965
+dump json 139000:183965
+dump json 140000:183965
+dump json 141000:183965
+dump json 142000:183965
+dump json 143000:183965
+dump json 144000:183965
+dump json 145000:183965
+dump json 146000:183965
+dump json 147000:183965
+dump json 148000:183965
+dump json 149000:183965
+dump json 150000:183965
+dump json 151000:183965
+dump json 152000:183965
+dump json 153000:183965
+dump json 154000:183965
+dump json 155000:183965
+dump json 156000:183965
+dump json 157000:183965
+dump json 158000:183965
+dump json 159000:183965
+dump json 160000:183965
+dump json 161000:183965
+dump json 162000:183965
+dump json 163000:183965
+dump json 164000:183965
+dump json 165000:183965
+dump json 166000:183965
+dump json 167000:183965
+dump json 168000:183965
+dump json 169000:183965
+dump json 170000:183965
+dump json 171000:183965
+dump json 172000:183965
+dump json 173000:183965
+dump json 174000:183965
+dump json 175000:183965
+dump json 176000:183965
+dump json 177000:183965
+dump json 178000:183965
+dump json 179000:183965
+dump json 180000:183965
+dump json 181000:183965
+dump json 182000:183965
+dump json 183000:183965
+dump json 183964:183965
+File '/tmp/miso-first-principles/profile-short.json' is generating
+exit: 0

@@ -1,0 +1,12 @@
+{
+  "source": "bench/model/results/2026-09-27-first-principles/profile-short.csv.gz",
+  "tokens": 256,
+  "dispatches": 88320,
+  "first_index": "95645",
+  "last_index": "183964",
+  "kernel_us_per_token": 6452.10734765625,
+  "span_us_per_token": 6461.36753125,
+  "positive_gap_ns": 2398830,
+  "negative_overlap_ns": 28223,
+  "positive_gap_percent": 0.1450223910368897
+}

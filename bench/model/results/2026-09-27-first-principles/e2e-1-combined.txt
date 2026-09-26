@@ -1,0 +1,9 @@
+command: ['/tmp/miso-first-principles/combined_decode']
+run 1 utc 2026-09-26T17:48:41.663019+00:00
+model load: 10.9 s
+warm-up: pp512 356.3 ms, 1437.1 tok/s
+measured: pp512 355.5 ms, 1440.2 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.74 ms/token, 148.4 tok/s
+measured: 256 tokens at ctx 273..529: 6.75 ms/token, 148.2 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

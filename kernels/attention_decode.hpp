@@ -244,33 +244,68 @@ struct AttnCombineParams {
   unsigned n_splits;
 };
 
-// Query heads [first, first + count), one 256-thread workgroup per head.
-template <int kBlock>
+// Head/dimension tiles [first, first + count). Each workgroup handles kBlock adjacent dimensions;
+// smaller workgroups expose more parallel work without changing any FP32 accumulation order.
+template <int kBlock, bool kPrepared = false, int kPipeline = 1>
 __device__ void attn_combine_op(const AttnCombineParams& p, unsigned first, unsigned count) {
   using namespace attn;
-  constexpr int kGroup = kQHeads / kKvHeads;
-  static_assert(kBlock == kDim);
-  const unsigned d = threadIdx.x;
-  for (unsigned h = first + blockIdx.x; h < first + count; h += gridDim.x) {
+  constexpr int kGroup = kQHeads / kKvHeads, kTiles = kDim / kBlock;
+  static_assert(kBlock % kWave == 0 && kDim % kBlock == 0);
+  static_assert(!kPrepared || kBlock == kWave);
+  static_assert(kPipeline == 1 || (kPrepared && kPipeline == 4));
+  for (unsigned item = first + blockIdx.x; item < first + count; item += gridDim.x) {
+    const unsigned h = item / kTiles, d = (item % kTiles) * kBlock + threadIdx.x;
     const unsigned kvh = h / kGroup, hl = h % kGroup;
-    float M = -__builtin_inff();
-    for (unsigned c = 0; c < p.n_splits; ++c)
-      M = fmaxf(M, p.part_m[(kvh * p.n_splits + c) * kGroup + hl]);
     float L = 0, o = 0;
-    for (unsigned c = 0; c < p.n_splits; ++c) {
+    if (kPrepared && p.n_splits <= kWave) {
+      // One lane owns one split's coefficient. Parallel preparation removes the serial
+      // global-load / max / exp chain; broadcasts keep the original L and output sum order.
+      const unsigned c = threadIdx.x;
       const std::size_t i = (std::size_t{kvh} * p.n_splits + c) * kGroup + hl;
-      const float w = __expf(p.part_m[i] - M);
-      L += w * p.part_l[i];
-      o += w * p.part_o[i * kDim + d];
+      const float m = c < p.n_splits ? p.part_m[i] : -__builtin_inff();
+      const float M = __shfl(wave_max(m), kWave - 1);
+      const float lane_w = c < p.n_splits ? __expf(m - M) : 0.0f;
+      const float lane_l = c < p.n_splits ? p.part_l[i] : 0.0f;
+      unsigned split = 0;
+      for (; split + kPipeline <= p.n_splits; split += kPipeline) {
+        float values[kPipeline];
+#pragma unroll
+        for (int r = 0; r < kPipeline; ++r) {
+          const std::size_t at = (std::size_t{kvh} * p.n_splits + split + r) * kGroup + hl;
+          values[r] = p.part_o[at * kDim + d];
+        }
+#pragma unroll
+        for (int r = 0; r < kPipeline; ++r) {
+          const float w = __shfl(lane_w, split + r), l = __shfl(lane_l, split + r);
+          L += w * l;
+          o += w * values[r];
+        }
+      }
+      for (; split < p.n_splits; ++split) {
+        const float w = __shfl(lane_w, split), l = __shfl(lane_l, split);
+        const std::size_t at = (std::size_t{kvh} * p.n_splits + split) * kGroup + hl;
+        L += w * l;
+        o += w * p.part_o[at * kDim + d];
+      }
+    } else {
+      float M = -__builtin_inff();
+      for (unsigned c = 0; c < p.n_splits; ++c)
+        M = fmaxf(M, p.part_m[(kvh * p.n_splits + c) * kGroup + hl]);
+      for (unsigned c = 0; c < p.n_splits; ++c) {
+        const std::size_t i = (std::size_t{kvh} * p.n_splits + c) * kGroup + hl;
+        const float w = __expf(p.part_m[i] - M);
+        L += w * p.part_l[i];
+        o += w * p.part_o[i * kDim + d];
+      }
     }
     const float gate = p.qg[h * 2 * kDim + kDim + d];
     p.core[h * kDim + d] = o / L / (1.0f + __expf(-gate));
   }
 }
 
-template <int kBlock>
+template <int kBlock, bool kPrepared = false, int kPipeline = 1>
 __global__ void __launch_bounds__(kBlock) attn_combine_kernel(AttnCombineParams p) {
-  attn_combine_op<kBlock>(p, 0, attn::kQHeads);
+  attn_combine_op<kBlock, kPrepared, kPipeline>(p, 0, attn::kQHeads * (attn::kDim / kBlock));
 }
 
 }  // namespace miso::kernels

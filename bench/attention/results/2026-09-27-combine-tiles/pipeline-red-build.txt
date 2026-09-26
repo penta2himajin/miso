@@ -1,0 +1,38 @@
+[1/2] Building HIP object tests/CMakeFiles/test_attn_splitk.dir/test_attn_splitk.hip.o
+FAILED: tests/CMakeFiles/test_attn_splitk.dir/test_attn_splitk.hip.o
+/opt/rocm-6.3.4/lib/llvm/bin/clang++ -D__HIP_ROCclr__=1 -I/home/penta/repos/miso/kernels -I/home/penta/repos/miso/src -isystem /home/penta/repos/miso/third_party --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 -O3 -DNDEBUG --offload-arch=gfx906 -Wall -Wextra -Werror -std=gnu++20 -MD -MT tests/CMakeFiles/test_attn_splitk.dir/test_attn_splitk.hip.o -MF tests/CMakeFiles/test_attn_splitk.dir/test_attn_splitk.hip.o.d -o tests/CMakeFiles/test_attn_splitk.dir/test_attn_splitk.hip.o -x hip -c /home/penta/repos/miso/tests/test_attn_splitk.hip
+/home/penta/repos/miso/tests/test_attn_splitk.hip:87:5: error: no matching function for call to 'attn_combine_kernel'
+   87 |     k::attn_combine_kernel<64, true, 4><<<kQ * (kD / 64), 64>>>(p);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/penta/repos/miso/kernels/attention_decode.hpp:291:43: note: candidate template ignored: substitution failure: too many template arguments for function template 'attn_combine_kernel'
+  291 | __global__ void __launch_bounds__(kBlock) attn_combine_kernel(AttnCombineParams p) {
+      |                                           ^
+/home/penta/repos/miso/tests/test_attn_splitk.hip:44:3: error: no matching function for call to 'attn_combine_op'
+   44 |   k::attn_combine_op<64, kPrepared, kPipeline>(p, first, count);
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/penta/repos/miso/tests/test_attn_splitk.hip:81:5: note: in instantiation of function template specialization '(anonymous namespace)::combine_range<true, 4>' requested here
+   81 |     combine_range<true, 4><<<13, 64>>>(p, first, count);
+      |     ^
+/home/penta/repos/miso/kernels/attention_decode.hpp:250:17: note: candidate template ignored: substitution failure: too many template arguments for function template 'attn_combine_op'
+  250 | __device__ void attn_combine_op(const AttnCombineParams& p, unsigned first, unsigned count) {
+      |                 ^
+/home/penta/repos/miso/tests/test_attn_splitk.hip:44:3: error: no matching function for call to 'attn_combine_op'
+   44 |   k::attn_combine_op<64, kPrepared, kPipeline>(p, first, count);
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/penta/repos/miso/tests/test_attn_splitk.hip:83:5: note: in instantiation of function template specialization '(anonymous namespace)::combine_range<true, 1>' requested here
+   83 |     combine_range<true><<<13, 64>>>(p, first, count);
+      |     ^
+/home/penta/repos/miso/kernels/attention_decode.hpp:250:17: note: candidate template ignored: substitution failure: too many template arguments for function template 'attn_combine_op'
+  250 | __device__ void attn_combine_op(const AttnCombineParams& p, unsigned first, unsigned count) {
+      |                 ^
+/home/penta/repos/miso/tests/test_attn_splitk.hip:44:3: error: no matching function for call to 'attn_combine_op'
+   44 |   k::attn_combine_op<64, kPrepared, kPipeline>(p, first, count);
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/penta/repos/miso/tests/test_attn_splitk.hip:85:5: note: in instantiation of function template specialization '(anonymous namespace)::combine_range<false, 1>' requested here
+   85 |     combine_range<false><<<13, 64>>>(p, first, count);
+      |     ^
+/home/penta/repos/miso/kernels/attention_decode.hpp:250:17: note: candidate template ignored: substitution failure: too many template arguments for function template 'attn_combine_op'
+  250 | __device__ void attn_combine_op(const AttnCombineParams& p, unsigned first, unsigned count) {
+      |                 ^
+4 errors generated when compiling for gfx906.
+ninja: build stopped: subcommand failed.

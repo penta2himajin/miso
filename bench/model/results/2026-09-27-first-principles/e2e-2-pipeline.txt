@@ -1,0 +1,9 @@
+command: ['/tmp/miso-first-principles/pipeline_decode']
+run 1 utc 2026-09-26T17:49:13.304411+00:00
+model load: 10.7 s
+warm-up: pp512 356.2 ms, 1437.3 tok/s
+measured: pp512 355.4 ms, 1440.4 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.81 ms/token, 146.8 tok/s
+measured: 256 tokens at ctx 273..529: 6.82 ms/token, 146.6 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

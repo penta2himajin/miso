@@ -1,0 +1,105 @@
+command: ['build/tests/test_attn_splitk']
+run 1 utc 2026-09-26T18:01:02.728941+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+/home/penta/repos/miso/tests/test_attn_splitk.hip:189:
+TEST CASE:  split-K decode attention matches an FP64 reference across chunk boundaries
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 1 splits 1: max relative L2 error 4.69271e-08
+  logged: len := 1
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 31 splits 1: max relative L2 error 1.23217e-06
+  logged: len := 31
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 32 splits 1: max relative L2 error 1.04023e-06
+  logged: len := 32
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 33 splits 2: max relative L2 error 7.41502e-07
+  logged: len := 33
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 257 splits 9: max relative L2 error 2.01804e-06
+  logged: len := 257
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 1000 splits 16: max relative L2 error 1.46937e-06
+  logged: len := 1000
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 4096 splits 22: max relative L2 error 1.52863e-06
+  logged: len := 4096
+          max_splits := 60
+
+===============================================================================
+/home/penta/repos/miso/tests/test_attn_splitk.hip:197:
+TEST CASE:  split-K decode attention matches FP64 at 32k and nearby tile boundaries
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 32767 splits 57: max relative L2 error 1.81607e-06
+  logged: len := 32767
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 32768 splits 57: max relative L2 error 1.41828e-06
+  logged: len := 32768
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 32769 splits 57: max relative L2 error 1.82082e-06
+  logged: len := 32769
+          max_splits := 60
+
+===============================================================================
+/home/penta/repos/miso/tests/test_attn_splitk.hip:271:
+TEST CASE:  prefill attention matches an FP64 reference, causal, across block tails
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 0 n 1: max relative L2 error 4.74857e-08
+  logged: pos0 := 0
+          n := 1
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 0 n 3: max relative L2 error 2.99193e-07
+  logged: pos0 := 0
+          n := 3
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 0 n 4: max relative L2 error 7.72855e-07
+  logged: pos0 := 0
+          n := 4
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 0 n 5: max relative L2 error 4.93854e-07
+  logged: pos0 := 0
+          n := 5
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 0 n 33: max relative L2 error 1.34719e-06
+  logged: pos0 := 0
+          n := 33
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 40 n 17: max relative L2 error 1.63816e-06
+  logged: pos0 := 40
+          n := 17
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:268: MESSAGE: pos0 0 n 128: max relative L2 error 2.03151e-06
+  logged: pos0 := 0
+          n := 128
+
+===============================================================================
+/home/penta/repos/miso/tests/test_attn_splitk.hip:281:
+TEST CASE:  split-K decode attention with long contexts and few splits
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 5000 splits 27: max relative L2 error 1.57708e-06
+  logged: len := 5000
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 3872 splits 21: max relative L2 error 2.14171e-06
+  logged: len := 3872
+          max_splits := 60
+
+/home/penta/repos/miso/tests/test_attn_splitk.hip:175: MESSAGE: len 5000 splits 3: max relative L2 error 1.86288e-06
+  logged: len := 5000
+          max_splits := 3
+
+===============================================================================
+[doctest] test cases:      5 |      5 passed | 0 failed | 0 skipped
+[doctest] assertions: 569369 | 569369 passed | 0 failed |
+[doctest] Status: SUCCESS!
+exit: 0

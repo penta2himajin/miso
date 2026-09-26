@@ -1,0 +1,301 @@
+0000000000005e00 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)>:
+	s_cmp_gt_u32 s6, 63                                        // 000000005E00: BF08BF06
+	s_cbranch_scc1 387                                         // 000000005E04: BF850183 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x614>
+	s_load_dword s16, s[4:5], 0x28                             // 000000005E08: C0020402 00000028
+	s_load_dwordx2 s[18:19], s[4:5], 0x20                      // 000000005E10: C0060482 00000020
+	s_load_dwordx8 s[8:15], s[4:5], 0x0                        // 000000005E18: C00E0202 00000000
+	s_load_dword s7, s[4:5], 0x30                              // 000000005E20: C00201C2 00000030
+	s_mov_b32 s21, 0                                           // 000000005E28: BE950080
+	s_waitcnt lgkmcnt(0)                                       // 000000005E2C: BF8CC07F
+	s_cmp_gt_u32 s16, 64                                       // 000000005E30: BF08C010
+	s_cselect_b64 s[2:3], -1, 0                                // 000000005E34: 858280C1
+	s_mov_b32 s17, s21                                         // 000000005E38: BE910015
+	s_cmp_gt_u32 s16, 3                                        // 000000005E3C: BF088310
+	v_cndmask_b32_e64 v2, 0, 1, s[2:3]                         // 000000005E40: D1000002 00090280
+	s_cselect_b64 s[22:23], -1, 0                              // 000000005E48: 859680C1
+	s_lshl_b32 s33, s16, 3                                     // 000000005E4C: 8E218310
+	s_lshl_b64 s[24:25], s[16:17], 5                           // 000000005E50: 8E988510
+	s_lshl_b64 s[26:27], s[16:17], 13                          // 000000005E54: 8E9A8D10
+	s_lshl_b32 s17, s6, 6                                      // 000000005E58: 8E118606
+	s_lshl_b32 s34, s7, 6                                      // 000000005E5C: 8E228607
+	v_cmp_ne_u32_e64 s[2:3], 1, v2                             // 000000005E60: D0CD0002 00020481
+	v_mbcnt_lo_u32_b32 v2, -1, 0                               // 000000005E68: D28C0002 000100C1
+	v_mov_b32_e32 v3, 0                                        // 000000005E70: 7E060280
+	s_add_u32 s35, s12, 0x6000                                 // 000000005E74: 8023FF0C 00006000
+	v_mbcnt_hi_u32_b32 v6, -1, v2                              // 000000005E7C: D28D0006 000204C1
+	v_mov_b32_e32 v2, 0xfc                                     // 000000005E84: 7E0402FF 000000FC
+	v_mov_b32_e32 v1, v3                                       // 000000005E8C: 7E020303
+	v_cmp_gt_u32_e64 s[0:1], s16, v0                           // 000000005E90: D0CC0000 00020010
+	s_addc_u32 s36, s13, 0                                     // 000000005E98: 8224800D
+	v_lshl_or_b32 v7, v6, 2, v2                                // 000000005E9C: D2000007 04090506
+	s_branch 70                                                // 000000005EA4: BF820046 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x1c0>
+	s_lshl_b32 s4, s6, 6                                       // 000000005EA8: 8E048606
+	s_and_b32 s4, s4, 0xc0                                     // 000000005EAC: 8604FF04 000000C0
+	v_or_b32_e32 v10, s4, v0                                   // 000000005EB4: 28140004
+	v_lshl_or_b32 v2, s37, 9, v10                              // 000000005EB8: D2000002 04291225
+	v_or_b32_e32 v2, 0x100, v2                                 // 000000005EC0: 280404FF 00000100
+	v_lshlrev_b64 v[4:5], 2, v[2:3]                            // 000000005EC8: D28F0004 00020482
+	v_mov_b32_e32 v2, s15                                      // 000000005ED0: 7E04020F
+	v_add_co_u32_e32 v4, vcc, s14, v4                          // 000000005ED4: 3208080E
+	v_addc_co_u32_e32 v5, vcc, v2, v5, vcc                     // 000000005ED8: 380A0B02
+	global_load_dword v2, v[4:5], off                          // 000000005EDC: DC508000 027F0004
+	v_div_scale_f32 v4, s[4:5], v8, v8, v9                     // 000000005EE4: D1E00404 04261108
+	v_div_scale_f32 v5, vcc, v9, v8, v9                        // 000000005EEC: D1E06A05 04261109
+	s_add_i32 s6, s6, s7                                       // 000000005EF4: 81060706
+	s_add_i32 s17, s17, s34                                    // 000000005EF8: 81112211
+	s_cmp_lt_u32 s6, 64                                        // 000000005EFC: BF0AC006
+	v_rcp_f32_e32 v11, v4                                      // 000000005F00: 7E164504
+	s_waitcnt vmcnt(1)                                         // 000000005F04: BF8C0F71
+	v_fma_f32 v12, -v4, v11, 1.0                               // 000000005F08: D1CB000C 23CA1704
+	v_fmac_f32_e32 v11, v12, v11                               // 000000005F10: 7616170C
+	v_mul_f32_e32 v12, v5, v11                                 // 000000005F14: 0A181705
+	v_fma_f32 v13, -v4, v12, v5                                // 000000005F18: D1CB000D 24161904
+	v_fmac_f32_e32 v12, v13, v11                               // 000000005F20: 7618170D
+	v_fma_f32 v4, -v4, v12, v5                                 // 000000005F24: D1CB0004 24161904
+	v_div_fmas_f32 v4, v4, v11, v12                            // 000000005F2C: D1E20004 04321704
+	v_div_fixup_f32 v8, v4, v8, v9                             // 000000005F34: D1DE0008 04261104
+	s_waitcnt vmcnt(0)                                         // 000000005F3C: BF8C0F70
+	v_mul_f32_e32 v2, 0xbfb8aa3b, v2                           // 000000005F40: 0A0404FF BFB8AA3B
+	v_exp_f32_e32 v2, v2                                       // 000000005F48: 7E044102
+	v_add_f32_e32 v9, 1.0, v2                                  // 000000005F4C: 021204F2
+	v_div_scale_f32 v2, s[4:5], v9, v9, v8                     // 000000005F50: D1E00402 04221309
+	v_div_scale_f32 v4, vcc, v8, v9, v8                        // 000000005F58: D1E06A04 04221308
+	v_rcp_f32_e32 v5, v2                                       // 000000005F60: 7E0A4502
+	v_fma_f32 v11, -v2, v5, 1.0                                // 000000005F64: D1CB000B 23CA0B02
+	v_fmac_f32_e32 v5, v11, v5                                 // 000000005F6C: 760A0B0B
+	v_mul_f32_e32 v11, v4, v5                                  // 000000005F70: 0A160B04
+	v_fma_f32 v12, -v2, v11, v4                                // 000000005F74: D1CB000C 24121702
+	v_fmac_f32_e32 v11, v12, v5                                // 000000005F7C: 76160B0C
+	v_fma_f32 v2, -v2, v11, v4                                 // 000000005F80: D1CB0002 24121702
+	v_div_fmas_f32 v11, v2, v5, v11                            // 000000005F88: D1E2000B 042E0B02
+	v_lshl_or_b32 v2, s37, 8, v10                              // 000000005F90: D2000002 04291025
+	v_lshlrev_b64 v[4:5], 2, v[2:3]                            // 000000005F98: D28F0004 00020482
+	v_mov_b32_e32 v12, s19                                     // 000000005FA0: 7E180213
+	v_add_co_u32_e32 v4, vcc, s18, v4                          // 000000005FA4: 32080812
+	v_addc_co_u32_e32 v5, vcc, v12, v5, vcc                    // 000000005FA8: 380A0B0C
+	v_div_fixup_f32 v2, v11, v9, v8                            // 000000005FAC: D1DE0002 0422130B
+	global_store_dword v[4:5], v2, off                         // 000000005FB4: DC708000 007F0204
+	s_cbranch_scc0 277                                         // 000000005FBC: BF840115 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x614>
+	s_lshl_b32 s4, s6, 8                                       // 000000005FC0: 8E048806
+	s_lshr_b32 s38, s6, 5                                      // 000000005FC4: 8F268506
+	s_and_b32 s28, s4, 0x1c00                                  // 000000005FC8: 861CFF04 00001C00
+	s_and_b32 s4, s17, 0xc0                                    // 000000005FD0: 8604FF11 000000C0
+	v_or_b32_e32 v2, s4, v0                                    // 000000005FD8: 28040004
+	s_mul_i32 s4, s27, s38                                     // 000000005FDC: 9204261B
+	s_mul_hi_u32 s5, s26, s38                                  // 000000005FE0: 9605261A
+	s_lshr_b32 s37, s6, 2                                      // 000000005FE4: 8F258206
+	s_add_i32 s5, s5, s4                                       // 000000005FE8: 81050405
+	s_mul_i32 s4, s26, s38                                     // 000000005FEC: 9204261A
+	s_add_u32 s4, s4, s28                                      // 000000005FF0: 80041C04
+	v_lshlrev_b32_e32 v2, 2, v2                                // 000000005FF4: 24040482
+	s_addc_u32 s5, s5, 0                                       // 000000005FF8: 82058005
+	v_mov_b32_e32 v4, s5                                       // 000000005FFC: 7E080205
+	v_add_co_u32_e64 v10, s[4:5], s4, v2                       // 000000006000: D119040A 00020404
+	s_mov_b32 s29, s21                                         // 000000006008: BE9D0015
+	s_and_b64 vcc, exec, s[2:3]                                // 00000000600C: 86EA027E
+	v_addc_co_u32_e64 v11, s[4:5], 0, v4, s[4:5]               // 000000006010: D11C040B 00120880
+	s_cbranch_vccnz 64                                         // 000000006018: BF870040 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x31c>
+	s_mul_i32 s5, s33, s38                                     // 00000000601C: 92052621
+	s_and_b32 s20, s37, 7                                      // 000000006020: 86148725
+	s_bfe_u32 s4, s6, 0x30002                                  // 000000006024: 9284FF06 00030002
+	s_add_i32 s20, s5, s20                                     // 00000000602C: 81141405
+	v_mov_b32_e32 v12, 0xff800000                              // 000000006030: 7E1802FF FF800000
+	s_mov_b32 s5, s16                                          // 000000006038: BE850010
+	s_lshl_b64 s[30:31], s[20:21], 2                           // 00000000603C: 8E9E8214
+	s_add_u32 s30, s8, s30                                     // 000000006040: 801E1E08
+	s_addc_u32 s31, s9, s31                                    // 000000006044: 821F1F09
+	global_load_dword v4, v3, s[30:31]                         // 000000006048: DC508000 041E0003
+	v_max_f32_e32 v5, v12, v12                                 // 000000006050: 160A190C
+	s_add_i32 s5, s5, -1                                       // 000000006054: 8105C105
+	s_add_i32 s20, s20, 8                                      // 000000006058: 81148814
+	s_cmp_eq_u32 s5, 0                                         // 00000000605C: BF068005
+	s_waitcnt vmcnt(0)                                         // 000000006060: BF8C0F70
+	v_max_f32_e32 v4, v4, v4                                   // 000000006064: 16080904
+	v_max_f32_e32 v12, v5, v4                                  // 000000006068: 16180905
+	s_cbranch_scc0 65523                                       // 00000000606C: BF84FFF3 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x23c>
+	s_mul_i32 s5, s25, s38                                     // 000000006070: 92052619
+	s_mul_hi_u32 s20, s24, s38                                 // 000000006074: 96142618
+	s_add_i32 s20, s20, s5                                     // 000000006078: 81140514
+	s_mul_i32 s5, s24, s38                                     // 00000000607C: 92052618
+	s_lshl_b32 s4, s4, 2                                       // 000000006080: 8E048204
+	s_add_u32 s30, s5, s4                                      // 000000006084: 801E0405
+	s_addc_u32 s20, s20, 0                                     // 000000006088: 82148014
+	s_add_u32 s4, s8, s30                                      // 00000000608C: 80041E08
+	s_addc_u32 s5, s9, s20                                     // 000000006090: 82051409
+	s_add_u32 s30, s10, s30                                    // 000000006094: 801E1E0A
+	v_mov_b32_e32 v5, s13                                      // 000000006098: 7E0A020D
+	v_add_co_u32_e32 v4, vcc, s12, v10                         // 00000000609C: 3208140C
+	s_addc_u32 s31, s11, s20                                   // 0000000060A0: 821F140B
+	v_addc_co_u32_e32 v5, vcc, v5, v11, vcc                    // 0000000060A4: 380A1705
+	v_mov_b32_e32 v8, 0                                        // 0000000060A8: 7E100280
+	s_mov_b32 s20, s16                                         // 0000000060AC: BE940010
+	v_mov_b32_e32 v9, 0                                        // 0000000060B0: 7E120280
+	global_load_dword v13, v3, s[4:5]                          // 0000000060B4: DC508000 0D040003
+	global_load_dword v14, v3, s[30:31]                        // 0000000060BC: DC508000 0E1E0003
+	global_load_dword v15, v[4:5], off                         // 0000000060C4: DC508000 0F7F0004
+	s_add_i32 s20, s20, -1                                     // 0000000060CC: 8114C114
+	s_add_u32 s4, s4, 32                                       // 0000000060D0: 8004A004
+	s_addc_u32 s5, s5, 0                                       // 0000000060D4: 82058005
+	s_add_u32 s30, s30, 32                                     // 0000000060D8: 801EA01E
+	v_add_co_u32_e32 v4, vcc, 0x2000, v4                       // 0000000060DC: 320808FF 00002000
+	s_addc_u32 s31, s31, 0                                     // 0000000060E4: 821F801F
+	v_addc_co_u32_e32 v5, vcc, 0, v5, vcc                      // 0000000060E8: 380A0A80
+	s_cmp_lg_u32 s20, 0                                        // 0000000060EC: BF078014
+	s_waitcnt vmcnt(2)                                         // 0000000060F0: BF8C0F72
+	v_sub_f32_e32 v13, v13, v12                                // 0000000060F4: 041A190D
+	v_mul_f32_e32 v13, 0x3fb8aa3b, v13                         // 0000000060F8: 0A1A1AFF 3FB8AA3B
+	v_exp_f32_e32 v13, v13                                     // 000000006100: 7E1A410D
+	s_waitcnt vmcnt(1)                                         // 000000006104: BF8C0F71
+	v_fmac_f32_e32 v8, v14, v13                                // 000000006108: 76101B0E
+	s_waitcnt vmcnt(0)                                         // 00000000610C: BF8C0F70
+	v_fmac_f32_e32 v9, v15, v13                                // 000000006110: 76121B0F
+	s_cbranch_scc1 65511                                       // 000000006114: BF85FFE7 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x2b4>
+	s_branch 65379                                             // 000000006118: BF82FF63 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0xa8>
+	s_cbranch_execz 65378                                      // 00000000611C: BF88FF62 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0xa8>
+	v_mov_b32_e32 v4, s16                                      // 000000006120: 7E080210
+	v_mad_u64_u32 v[4:5], s[4:5], s38, v4, v[0:1]              // 000000006124: D1E80404 04020826
+	v_mov_b32_e32 v9, 0xff800000                               // 00000000612C: 7E1202FF FF800000
+	v_lshlrev_b64 v[4:5], 3, v[4:5]                            // 000000006134: D28F0004 00020883
+	v_and_or_b32 v4, s37, 7, v4                                // 00000000613C: D2010004 04110E25
+	v_lshlrev_b64 v[4:5], 2, v[4:5]                            // 000000006144: D28F0004 00020882
+	s_and_saveexec_b64 s[4:5], s[0:1]                          // 00000000614C: BE842000
+	s_cbranch_execz 5                                          // 000000006150: BF880005 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x368>
+	v_mov_b32_e32 v9, s9                                       // 000000006154: 7E120209
+	v_add_co_u32_e32 v8, vcc, s8, v4                           // 000000006158: 32100808
+	v_addc_co_u32_e32 v9, vcc, v9, v5, vcc                     // 00000000615C: 38120B09
+	global_load_dword v9, v[8:9], off                          // 000000006160: DC508000 097F0008
+	s_or_b64 exec, exec, s[4:5]                                // 000000006168: 87FE047E
+	v_mov_b32_e32 v8, 0xff800000                               // 00000000616C: 7E1002FF FF800000
+	s_waitcnt vmcnt(0)                                         // 000000006174: BF8C0F70
+	v_max_f32_e32 v12, v9, v9                                  // 000000006178: 16181309
+	v_mov_b32_dpp v8, v9 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf// 00000000617C: 7E1002FA FF00B109
+	v_max_f32_e32 v8, v8, v8                                   // 000000006184: 16101108
+	v_max_f32_e32 v8, v12, v8                                  // 000000006188: 1610110C
+	v_mov_b32_e32 v12, 0xff800000                              // 00000000618C: 7E1802FF FF800000
+	s_nop 1                                                    // 000000006194: BF800001
+	v_mov_b32_dpp v12, v8 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf// 000000006198: 7E1802FA FF004E08
+	v_max_f32_e32 v12, v12, v12                                // 0000000061A0: 1618190C
+	v_max_f32_e32 v8, v8, v12                                  // 0000000061A4: 16101908
+	v_mov_b32_e32 v12, 0xff800000                              // 0000000061A8: 7E1802FF FF800000
+	s_nop 1                                                    // 0000000061B0: BF800001
+	v_mov_b32_dpp v12, v8 row_half_mirror row_mask:0xf bank_mask:0xf// 0000000061B4: 7E1802FA FF014108
+	v_max_f32_e32 v12, v12, v12                                // 0000000061BC: 1618190C
+	v_max_f32_e32 v8, v8, v12                                  // 0000000061C0: 16101908
+	v_mov_b32_e32 v12, 0xff800000                              // 0000000061C4: 7E1802FF FF800000
+	s_nop 1                                                    // 0000000061CC: BF800001
+	v_mov_b32_dpp v12, v8 row_mirror row_mask:0xf bank_mask:0xf// 0000000061D0: 7E1802FA FF014008
+	v_max_f32_e32 v12, v12, v12                                // 0000000061D8: 1618190C
+	v_max_f32_e32 v8, v8, v12                                  // 0000000061DC: 16101908
+	v_mov_b32_e32 v12, 0xff800000                              // 0000000061E0: 7E1802FF FF800000
+	s_nop 1                                                    // 0000000061E8: BF800001
+	v_mov_b32_dpp v12, v8 row_bcast:15 row_mask:0xa bank_mask:0xf// 0000000061EC: 7E1802FA AF014208
+	v_max_f32_e32 v12, v12, v12                                // 0000000061F4: 1618190C
+	v_max_f32_e32 v8, v8, v12                                  // 0000000061F8: 16101908
+	v_mov_b32_e32 v12, 0xff800000                              // 0000000061FC: 7E1802FF FF800000
+	s_nop 1                                                    // 000000006204: BF800001
+	v_mov_b32_dpp v12, v8 row_bcast:31 row_mask:0xc bank_mask:0xf// 000000006208: 7E1802FA CF014308
+	v_max_f32_e32 v12, v12, v12                                // 000000006210: 1618190C
+	v_max_f32_e32 v8, v8, v12                                  // 000000006214: 16101908
+	ds_bpermute_b32 v13, v7, v8                                // 000000006218: D87E0000 0D000807
+	v_mov_b32_e32 v8, 0                                        // 000000006220: 7E100280
+	v_mov_b32_e32 v12, 0                                       // 000000006224: 7E180280
+	s_and_saveexec_b64 s[4:5], s[0:1]                          // 000000006228: BE842000
+	s_cbranch_execz 5                                          // 00000000622C: BF880005 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x444>
+	v_mov_b32_e32 v12, s11                                     // 000000006230: 7E18020B
+	v_add_co_u32_e32 v4, vcc, s10, v4                          // 000000006234: 3208080A
+	v_addc_co_u32_e32 v5, vcc, v12, v5, vcc                    // 000000006238: 380A0B0C
+	global_load_dword v12, v[4:5], off                         // 00000000623C: DC508000 0C7F0004
+	s_or_b64 exec, exec, s[4:5]                                // 000000006244: 87FE047E
+	s_waitcnt lgkmcnt(0)                                       // 000000006248: BF8CC07F
+	v_sub_f32_e32 v4, v9, v13                                  // 00000000624C: 04081B09
+	v_mul_f32_e32 v4, 0x3fb8aa3b, v4                           // 000000006250: 0A0808FF 3FB8AA3B
+	v_exp_f32_e32 v4, v4                                       // 000000006258: 7E084104
+	v_and_b32_e32 v13, 64, v6                                  // 00000000625C: 261A0CC0
+	s_mov_b32 s4, 0                                            // 000000006260: BE840080
+	s_andn2_b64 vcc, exec, s[22:23]                            // 000000006264: 89EA167E
+	v_cndmask_b32_e64 v14, 0, v4, s[0:1]                       // 000000006268: D100000E 00020880
+	v_mov_b32_e32 v9, 0                                        // 000000006270: 7E120280
+	s_cbranch_vccnz 69                                         // 000000006274: BF870045 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x58c>
+	v_mov_b32_e32 v5, s36                                      // 000000006278: 7E0A0224
+	v_add_co_u32_e32 v4, vcc, s35, v10                         // 00000000627C: 32081423
+	v_addc_co_u32_e32 v5, vcc, v5, v11, vcc                    // 000000006280: 380A1705
+	v_mov_b32_e32 v8, 0                                        // 000000006284: 7E100280
+	v_mov_b32_e32 v9, 0                                        // 000000006288: 7E120280
+	v_add_co_u32_e32 v10, vcc, 0xffffa000, v4                  // 00000000628C: 321408FF FFFFA000
+	v_addc_co_u32_e32 v11, vcc, -1, v5, vcc                    // 000000006294: 38160AC1
+	v_add_co_u32_e32 v15, vcc, 0xffffc000, v4                  // 000000006298: 321E08FF FFFFC000
+	global_load_dword v17, v[10:11], off                       // 0000000062A0: DC508000 117F000A
+	v_addc_co_u32_e32 v16, vcc, -1, v5, vcc                    // 0000000062A8: 38200AC1
+	v_add_co_u32_e32 v10, vcc, 0xffffe000, v4                  // 0000000062AC: 321408FF FFFFE000
+	v_addc_co_u32_e32 v11, vcc, -1, v5, vcc                    // 0000000062B4: 38160AC1
+	global_load_dword v18, v[15:16], off                       // 0000000062B8: DC508000 127F000F
+	global_load_dword v19, v[10:11], off                       // 0000000062C0: DC508000 137F000A
+	global_load_dword v20, v[4:5], off                         // 0000000062C8: DC508000 147F0004
+	s_mov_b32 s5, s4                                           // 0000000062D0: BE850004
+	v_and_or_b32 v10, s5, 60, v13                              // 0000000062D4: D201000A 04357805
+	v_lshlrev_b32_e32 v10, 2, v10                              // 0000000062DC: 24141482
+	ds_bpermute_b32 v11, v10, v14                              // 0000000062E0: D87E0000 0B000E0A
+	s_waitcnt vmcnt(4)                                         // 0000000062E8: BF8C0F74
+	ds_bpermute_b32 v15, v10, v12                              // 0000000062EC: D87E0000 0F000C0A
+	v_or_b32_e32 v16, 4, v10                                   // 0000000062F4: 28201484
+	v_or_b32_e32 v21, 8, v10                                   // 0000000062F8: 282A1488
+	ds_bpermute_b32 v22, v16, v14                              // 0000000062FC: D87E0000 16000E10
+	ds_bpermute_b32 v16, v16, v12                              // 000000006304: D87E0000 10000C10
+	v_or_b32_e32 v10, 12, v10                                  // 00000000630C: 2814148C
+	ds_bpermute_b32 v23, v21, v14                              // 000000006310: D87E0000 17000E15
+	ds_bpermute_b32 v21, v21, v12                              // 000000006318: D87E0000 15000C15
+	ds_bpermute_b32 v24, v10, v14                              // 000000006320: D87E0000 18000E0A
+	ds_bpermute_b32 v10, v10, v12                              // 000000006328: D87E0000 0A000C0A
+	s_waitcnt lgkmcnt(6)                                       // 000000006330: BF8CC67F
+	v_fmac_f32_e32 v8, v11, v15                                // 000000006334: 76101F0B
+	s_waitcnt lgkmcnt(4)                                       // 000000006338: BF8CC47F
+	v_fmac_f32_e32 v8, v22, v16                                // 00000000633C: 76102116
+	s_add_i32 s4, s4, 4                                        // 000000006340: 81048404
+	s_add_i32 s5, s5, 8                                        // 000000006344: 81058805
+	v_add_co_u32_e32 v4, vcc, 0x8000, v4                       // 000000006348: 320808FF 00008000
+	s_waitcnt lgkmcnt(2)                                       // 000000006350: BF8CC27F
+	v_fmac_f32_e32 v8, v23, v21                                // 000000006354: 76102B17
+	s_cmp_gt_u32 s5, s16                                       // 000000006358: BF081005
+	v_addc_co_u32_e32 v5, vcc, 0, v5, vcc                      // 00000000635C: 380A0A80
+	s_waitcnt lgkmcnt(0)                                       // 000000006360: BF8CC07F
+	v_fmac_f32_e32 v8, v24, v10                                // 000000006364: 76101518
+	s_waitcnt vmcnt(3)                                         // 000000006368: BF8C0F73
+	v_fmac_f32_e32 v9, v17, v11                                // 00000000636C: 76121711
+	s_waitcnt vmcnt(2)                                         // 000000006370: BF8C0F72
+	v_fmac_f32_e32 v9, v18, v22                                // 000000006374: 76122D12
+	s_waitcnt vmcnt(1)                                         // 000000006378: BF8C0F71
+	v_fmac_f32_e32 v9, v19, v23                                // 00000000637C: 76122F13
+	s_waitcnt vmcnt(0)                                         // 000000006380: BF8C0F70
+	v_fmac_f32_e32 v9, v20, v24                                // 000000006384: 76123114
+	s_cbranch_scc0 65472                                       // 000000006388: BF84FFC0 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x48c>
+	s_cmp_ge_u32 s4, s16                                       // 00000000638C: BF091004
+	s_cbranch_scc1 65221                                       // 000000006390: BF85FEC5 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0xa8>
+	s_mul_i32 s20, s16, s38                                    // 000000006394: 92142610
+	s_mul_hi_u32 s5, s16, s38                                  // 000000006398: 96052610
+	s_add_u32 s30, s20, s4                                     // 00000000639C: 801E0414
+	s_addc_u32 s31, s5, 0                                      // 0000000063A0: 821F8005
+	s_lshl_b64 s[30:31], s[30:31], 13                          // 0000000063A4: 8E9E8D1E
+	s_or_b64 s[28:29], s[30:31], s[28:29]                      // 0000000063A8: 879C1C1E
+	s_add_u32 s5, s12, s28                                     // 0000000063AC: 80051C0C
+	s_addc_u32 s20, s13, s29                                   // 0000000063B0: 82141D0D
+	v_mov_b32_e32 v5, s20                                      // 0000000063B4: 7E0A0214
+	v_add_co_u32_e32 v4, vcc, s5, v2                           // 0000000063B8: 32080405
+	v_addc_co_u32_e32 v5, vcc, 0, v5, vcc                      // 0000000063BC: 380A0A80
+	global_load_dword v2, v[4:5], off                          // 0000000063C0: DC508000 027F0004
+	v_and_or_b32 v10, s4, 63, v13                              // 0000000063C8: D201000A 04357E04
+	v_lshlrev_b32_e32 v10, 2, v10                              // 0000000063D0: 24141482
+	ds_bpermute_b32 v11, v10, v14                              // 0000000063D4: D87E0000 0B000E0A
+	s_waitcnt vmcnt(1)                                         // 0000000063DC: BF8C0F71
+	ds_bpermute_b32 v10, v10, v12                              // 0000000063E0: D87E0000 0A000C0A
+	s_add_i32 s4, s4, 1                                        // 0000000063E8: 81048104
+	v_add_co_u32_e32 v4, vcc, 0x2000, v4                       // 0000000063EC: 320808FF 00002000
+	v_addc_co_u32_e32 v5, vcc, 0, v5, vcc                      // 0000000063F4: 380A0A80
+	s_cmp_ge_u32 s4, s16                                       // 0000000063F8: BF091004
+	s_waitcnt lgkmcnt(0)                                       // 0000000063FC: BF8CC07F
+	v_fmac_f32_e32 v8, v11, v10                                // 000000006400: 7610150B
+	s_waitcnt vmcnt(0)                                         // 000000006404: BF8C0F70
+	v_fmac_f32_e32 v9, v2, v11                                 // 000000006408: 76121702
+	s_cbranch_scc0 65516                                       // 00000000640C: BF84FFEC <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0x5c0>
+	s_branch 65189                                             // 000000006410: BF82FEA5 <void miso::kernels::attn_combine_kernel<64, true, 4>(miso::kernels::AttnCombineParams)+0xa8>
+	s_endpgm                                                   // 000000006414: BF810000
+		...

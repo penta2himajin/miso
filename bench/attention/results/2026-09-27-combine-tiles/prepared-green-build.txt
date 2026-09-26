@@ -1,0 +1,12 @@
+[1/2] Building HIP object tests/CMakeFiles/test_attn_splitk.dir/test_attn_splitk.hip.o
+[2/2] Linking HIP executable tests/test_attn_splitk
+# test_attn_splitk (gfx906)
+VGPR SGPR    LDS scratch spill   wg occ  kernel
+  10   28      0       0     0 1024   8  (anonymous namespace)::combine_reference(miso::kernels::AttnCombineParams, unsigned int, unsigned int)
+  12   35      0       0     0 1024   8  void (anonymous namespace)::combine_range<false>(miso::kernels::AttnCombineParams, unsigned int, unsigned int)
+  15   40      0       0     0 1024   8  void (anonymous namespace)::combine_range<true>(miso::kernels::AttnCombineParams, unsigned int, unsigned int)
+  13   28      0       0     0  256  10  void miso::kernels::attn_combine_kernel<256, false>(miso::kernels::AttnCombineParams)
+  10   36      0       0     0   64  10  void miso::kernels::attn_combine_kernel<64, false>(miso::kernels::AttnCombineParams)
+  15   39      0       0     0   64  10  void miso::kernels::attn_combine_kernel<64, true>(miso::kernels::AttnCombineParams)
+ 108   62  53760     144     0  256   1  void miso::kernels::attn_prefill_kernel<256>(miso::kernels::AttnPrefillParams)
+  94   33  25824       0     0  256   2  void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams)

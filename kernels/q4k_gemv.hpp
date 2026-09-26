@@ -188,15 +188,17 @@ __device__ inline float slot_dot(const SlotW& w, int slot, const SlotAct<A>& s) 
 // Rows [first, first + count). Each wavefront takes kRows consecutive rows per step, issuing all of
 // their loads before computing, and strides over the grid's wavefronts.
 template <ActFormat A, unsigned K, int kBlock, int kRows = 1>
-__device__ void q4k_gemv_op(const Q4kGemvParams& p, unsigned first, unsigned count) {
+__device__ void q4k_gemv_op(const Q4kGemvParams& p, unsigned first, unsigned count,
+                            unsigned logical_block = blockIdx.x,
+                            unsigned logical_grid = gridDim.x) {
   using namespace q4k_detail;
   static_assert(K % (32 * kWave) == 0, "K must be a multiple of 2048");
   static_assert(kBlock % kWave == 0);
   constexpr int kIters = K / (32 * kWave);
   constexpr unsigned kRowBytes = K / 256 * kBlockBytes;
   const int lane = threadIdx.x % kWave;
-  const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
-  const unsigned n_waves = gridDim.x * (kBlock / kWave);
+  const unsigned wave = logical_block * (kBlock / kWave) + threadIdx.x / kWave;
+  const unsigned n_waves = logical_grid * (kBlock / kWave);
 
   SlotAct<A> act[kIters];
   for (int it = 0; it < kIters; ++it)
