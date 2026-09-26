@@ -8,8 +8,8 @@ Current-state sections (everything above "Session log") are overwritten each ses
 ## Snapshot
 
 - Branch: `ai-written/m7d-attn-score` (PR against `main`)
-- Last work commit: (M7d attention score / split policy)
-- Working tree: dirty until the handoff commit
+- Last work commit: 3dc777d @ 2026-09-26
+- Working tree: clean
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
 
