@@ -3,9 +3,9 @@
 ## Snapshot
 
 - Branch: `ai-written/gemv-fp16-act-reuse`
-- Last work commit: (pending) @ 2026-09-26 JST
+- Last work commit: 8ed9dda @ 2026-09-26 JST
 - Base: `b9defbe` (main after MoE-down FP16 staging PR #29)
-- Working tree: dirty until commit
+- Working tree: clean after handoff commit
 - Last session: 2026-09-26 JST
 
 ## Status
