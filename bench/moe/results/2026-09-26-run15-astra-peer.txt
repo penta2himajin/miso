@@ -1,0 +1,11 @@
+1) **Loop2: REJECT** — correct, but 136.1 tok/s misses the keep gate; unchanged resources leave the live-range hypothesis unproven.
+
+2) **Loop3 bet: bounded unrolling in Q4 `moe_down`.**
+- **Attach:** Q4 step/reduction loop on the restored baseline; leave Q6 unchanged.
+- **Mechanics:** load SlotAct per step; replace full step unrolling with a rolled outer loop and two-step unrolled body. Preserve accumulation order and handle any remainder.
+- **Rationale:** directly test whether full unrolling prevents activation lifetimes from shrinking. Low HBM utilization alone does not establish the bottleneck.
+- **Risk:** lost instruction-level parallelism and added loop/address overhead may outweigh register savings; other live values may dominate VGPR usage.
+- **Mechanism check:** inspect emitted ISA and resources for bounded unrolling, reduced VGPRs, occupancy change, and spills. Unchanged VGPRs would undermine this rationale.
+- **Success gate:** correctness passes; paired baseline/candidate runs under ADR_002 D12 show median **≥138 tok/s**, with improvement exceeding observed run-to-run variation. Microbenchmark gains alone do not qualify.
+
+3) **Avoid:** previously failed variants; soft-pipeline or weight double-buffer retries; reload-only rewrites under full unrolling; simultaneous Q6/other-kernel changes; megakernel, MTP, batching; treating occupancy or HBM utilization as proof of an e2e win.
