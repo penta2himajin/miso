@@ -1,0 +1,12 @@
+{
+  "source": "bench/model/results/2026-09-26-decode-investigation/profile-32k.csv.gz",
+  "tokens": 64,
+  "dispatches": 23360,
+  "first_index": "108532",
+  "last_index": "131891",
+  "kernel_us_per_token": 10064.771046875,
+  "span_us_per_token": 10074.927921875,
+  "positive_gap_ns": 662743,
+  "negative_overlap_ns": 12703,
+  "positive_gap_percent": 0.10278345865399313
+}
