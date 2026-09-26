@@ -7,31 +7,26 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m7f-parallel-repack` (PR against `main`)
-- Last work commit: (M7f: overlapped staged weight upload)
+- Branch: `ai-written/m8a-moe-topk-norm` (draft PR against `main`)
+- Last work commit: (M8a: fuse post-attn RMSNorm into MoE router)
 - Working tree: dirty until the handoff commit
 - Last session: 2026-09-26 JST
-- Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
+- Background: M7a–M7f done. Stage-3 decode work continues (peer-review loop with astra/mimo/deepseek).
 
 ## Status
 
-ready-for-review (M7f: load 27.6 -> 9.7 s via staged overlap)
+in-progress (M8a: post-attn RMSNorm fused into router; 127.6 → 128.4 tok/s)
 
 ## Next action
 
-After the M7f PR is merged, the M7 decode-optimisation phase is done (M7a-M7f). The next step is stage 3 (>= 190 tok/s), which must come from per-kernel work in the MoE (19.6% + 13.1% of decode), dense GEMV (19.5%) and norms (10.5%) - not from dispatch (ADR_006) and no longer from load. Decode is 127.6 tok/s at short context.
+Peer-review the M8a draft with astra/mimo/deepseek, then iterate: fuse mixer input norms, or other high-EV decode kernel work from the consultation. Do not reopen cooperative top-k-in-router without a new measurement that beats 128.4.
 
 ## Verification
 
-- `ctest --preset default` all green (run alone: concurrent GPU suites can OOM).
-- `bench/mi50/grid_barrier.hip`: barrier 1.81 µs at 60×256 vs boundary 1.69 µs; 20-step chain 3.21 µs/step as launches vs 2.12 µs/step cooperative.
-- Decode gaps (`bench/mi50/results/2026-09-26-m7e-decode-gaps.txt`): 186 887 kernels, positive gaps 6.86 ms = **0.177%** of decode span.
-- Load: **9.7-9.8 s** in `bench_decode` (was 27.6 s). `test_load_stage`: staged uploads byte-identical to the pageable path for Q4_K/Q6_K/F32 and for the `attn_q + attn_k` concat. `ctest` 21/21 green.
-- A/B for the load fix: `bench/model/results/2026-09-26-m7f-load-ab.txt`.
-- `test_attn_splitk`: FP64 relative L2 ≤ 2e-6 through 5k positions; `attn_n_splits(4096)=22`, `(16384)=57`.
-- `test_attention` / `test_prefill` / `test_model` / `cli_golden_prompt` pass; first generated ids unchanged.
-- Attention L3: 93.4 / 95.4 / 126.1 / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`).
-- End to end: 7.84 ms/token, **127.6 tok/s**; pp512 357.3 ms, 1433.0 tok/s. sclk 1725 MHz, junction 64 °C, 228 W peak (`bench/model/results/2026-09-26-run14-m7f-load.txt`, `-smi.csv`).
+- Cooperative top-k-in-router: correct but **slower** (121.1 tok/s); reverted (`bench/moe/results/2026-09-26-run3-m8a-topk-failed-coop.txt`, `bench/model/results/2026-09-26-run16-m8a-topk.txt`).
+- Fused post-attn RMSNorm into `moe_router`: `test_moe` fused-vs-separate rel L2 ≤ 1e-6; `test_model` green.
+- End to end: 7.79 ms/token, **128.4 tok/s**; pp512 1430 tok/s (`bench/model/results/2026-09-26-run17-m8a-normfuse.txt`). Prior M7f baseline 127.6 tok/s.
+- `ctest` MoE/model green for this change; full suite still expects solo GPU runs.
 
 ## Context pointers
 
@@ -70,6 +65,8 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - FP16 Q + `v_dot2` in the attention score loop dropped split error from ≤2e-6 to ~5e-4 vs FP64; keep float Q. Transposing `part_o` to split-major for combine made the split kernel’s strided stores slower than the combine win.
 - Collapsing `attn_n_splits` below one-per-sub-chunk on short contexts (ctx ~300 → 2 splits) cost ~2 tok/s end to end; keep min parallelism = min(subs, 16).
 
+- Cooperative `moe_router` + `grid.sync` + WG0 top-k (gate_up loads ids): correct but 102.6/99.2 µs MoE and **121.1 tok/s** e2e (was 85.6/82.5 and 127.6). Cost matches the rejected separate top-k launch (~25 µs). Reverted.
+
 ## Open questions for user
 
 - Merge the M7e PR when ready. Next is M7f (parallel weight repack). M6 stays a draft (#19) until asked for.
@@ -103,3 +100,6 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M7c review): attn_q and attn_k are Q4_K in all 11 attention layers, so the 7 layers whose attn_v is Q6_K now fuse q+k into one 8704-row GEMV (3 → 2 projection launches). Decode 125.5 → **126.0 tok/s**. Tried and rejected: R=5/R=6 and small grids (microbench-optimal but 1.1 tok/s *slower* end to end) and a Q6_K double-buffered weight prefetch (112 B scratch spill). The lesson is recorded under Failed approaches: tune GEMV dispatch on `bench_decode`, not on the isolated sweep.
 - 2026-09-26 (M7d): On `ai-written/m7d-attn-score`, staged V alongside K in LDS for split-K decode and retuned `attn_n_splits` (~6 sub-chunks/split, `kMaxSplits=60`) after a max_splits sweep showed combine dominating at 120. Attention L3 173→126 µs at 4k; decode 126.0→**129.1 tok/s**. FP16 Q/fdot2 and a part_o transpose were measured and reverted.
 - 2026-09-26 (M7f): On `ai-written/m7f-parallel-repack`, load went 27.6 → **9.7 s**. The cost was repacking into a freshly faulted pageable buffer per tensor (fresh 28.3 s vs reused 13.6 s for the same 21.8 GB), not pinned-vs-pageable (both 3.05 GB/s warm). Added `LoadStage`: 4 pinned slots with event-gated reuse, copies on a side stream, and a 4-chunk repack/copy pipeline. `test_load_stage` proves staged == pageable byte-for-byte; the first chunk loop copied only the last chunk and the test caught it. Decode unchanged at 127.6 tok/s.
+
+- 2026-09-26 (M8a): Started stage-3 decode loop. Cooperative top-k-in-router measured slower and reverted. Fused post-attention RMSNorm into `moe_router` (40 launches/token removed); decode 127.6 → **128.4 tok/s**. Draft PR + peer review next.
+

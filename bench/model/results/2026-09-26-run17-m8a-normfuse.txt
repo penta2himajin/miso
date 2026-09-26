@@ -1,0 +1,10 @@
+# M8a. Fuse post_attention RMSNorm into moe_router (decode). Removes 40 add_rmsnorm launches
+# per token. Cooperative top-k-in-router was tried first and reverted (121.1 tok/s, see
+# bench/moe/results/2026-09-26-run3-m8a-topk-failed-coop.txt).
+# Baseline M7f: 127.6 tok/s. This run: 128.4 tok/s (+0.8).
+model load: 10.4 s
+warm-up: pp512 358.7 ms, 1427.2 tok/s
+measured: pp512 358.0 ms, 1430.2 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.76 ms/token, 128.9 tok/s
+measured: 256 tokens at ctx 273..529: 7.79 ms/token, 128.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

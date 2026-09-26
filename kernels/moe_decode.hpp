@@ -26,8 +26,13 @@ constexpr int kExperts = 256, kTopK = 8, kSlots = kTopK + 1, kHidden = 2048, kFf
 
 struct MoeRouterParams {
   const std::uint16_t* w;  // [257][2048] BF16: 256 router rows, then the shared-expert gate
-  const float* x;          // [2048]
+  const float* x;          // [2048] pre-normalised activation (used when fuse_norm == 0)
+  float* residual;         // [2048], updated in place when fuse_norm != 0
+  const float* mixer;      // [2048] post-attention delta, or nullptr
+  const float* norm_w;     // [2048] post_attention_norm, or nullptr to skip fusion
+  float* xn;               // [2048] fused norm output for gate/up (when fuse_norm != 0)
   float* logits;           // [257]
+  float eps;
 };
 
 namespace moe_detail {
@@ -51,12 +56,45 @@ __device__ inline float router_lane_dot(const uint4 (&v)[4], const float* x) {
 }  // namespace moe_detail
 
 // Rows [first, first + count) of 257; one wavefront per row, 32 contiguous weights per lane.
+// When p.norm_w != nullptr every workgroup rebuilds the post-attention RMSNorm into LDS (same
+// inputs ⇒ same xn) so the dedicated add_rmsnorm launch can be skipped; workgroup 0 also commits
+// residual and global xn for gate/up.
 template <int kBlock>
 __device__ void moe_router_op(const MoeRouterParams& p, unsigned first, unsigned count) {
+  static_assert(kBlock == 256);
+  __shared__ float xn_s[moe::kHidden];
+  __shared__ float red[kBlock / kWave];
+  const float* x_ptr;
+  if (p.norm_w != nullptr) {
+    constexpr int kPer = moe::kHidden / kBlock;
+    float h[kPer];
+    float ss = 0;
+#pragma unroll
+    for (int k = 0; k < kPer; ++k) {
+      const unsigned i = threadIdx.x + k * kBlock;
+      h[k] = p.mixer != nullptr ? p.residual[i] + p.mixer[i] : p.residual[i];
+      ss += h[k] * h[k];
+    }
+    const float r = rsqrtf(block_sum<kBlock>(ss, red) / moe::kHidden + p.eps);
+#pragma unroll
+    for (int k = 0; k < kPer; ++k) {
+      const unsigned i = threadIdx.x + k * kBlock;
+      const float v = h[k] * r * p.norm_w[i];
+      xn_s[i] = v;
+      if (blockIdx.x == 0) {
+        p.residual[i] = h[k];
+        p.xn[i] = v;
+      }
+    }
+    __syncthreads();
+    x_ptr = xn_s;
+  } else {
+    x_ptr = p.x;
+  }
   const int lane = threadIdx.x % kWave;
   const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
   const unsigned n_waves = gridDim.x * (kBlock / kWave);
-  const float* x = p.x + lane * 32;
+  const float* x = x_ptr + lane * 32;
   auto load4 = [&](unsigned row_i, uint4(&v)[4]) {
     const uint4* row =
         reinterpret_cast<const uint4*>(p.w + std::size_t{row_i} * moe::kHidden + lane * 32);

@@ -1,0 +1,5 @@
+# M8a attempt 1: move top-k into cooperative moe_router (grid.sync + WG0 topk;
+# gate_up loads ids from global). Correct (test_moe green) but slower.
+# MoE microbench: 102.6/99.2 us (was 85.6/82.5). e2e: 121.1 tok/s (was 127.6).
+# Cooperative surcharge ≈ the +25 us separate top-k launch we already rejected.
+# Reverted 2026-09-26. Next: fuse post_attention_norm into the router prologue.
