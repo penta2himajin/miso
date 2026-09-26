@@ -8,23 +8,24 @@ Current-state sections (everything above "Session log") are overwritten each ses
 ## Snapshot
 
 - Branch: `ai-written/m8a-moe-topk-norm` (draft PR against `main`)
-- Last work commit: (M8a: fuse post-attn RMSNorm into MoE router)
-- Working tree: dirty until the handoff commit
+- Last work commit: (M8a: wave0 top-k; three Astra-high bets failed)
+- Working tree: clean after handoff commit
 - Last session: 2026-09-26 JST
 - Background: M7a–M7f done. Stage-3 decode work continues (peer-review loop with astra/mimo/deepseek).
 
 ## Status
 
-in-progress (M8a: wave0 top-k; median **136.4 tok/s**, MoE 69.3 µs)
+in-progress (M8a: wave0 top-k still best; median **136.4 tok/s**. Three Astra-high bets failed this session.)
 
 ## Next action
 
-Wave0 top-k landed (134→136.4). Three failed follow-ups documented (down-skip, hdr-shfl, float4 norm, grid retune). Next still MoE/GEMV bandwidth or producer-epilogue norms.
+Session stopped after 3 loops (Astra high consult). All three bets rejected (expert-major down, Q4 r2 SoA, residual GEMV epilogue). Next: MoE/GEMV bandwidth ideas beyond these — measure before coding.
 
 ## Verification
 
 - Wave-0-only `moe_topk`: MoE **69.3** µs; e2e median **136.4 tok/s** (`run21`, `run8-m8a-wave0-topk`).
-- Failed A/Bs (reverted): down-skip, header __shfl, float4 RMSNorm, MoE grid retune (`run5`–`run7`, `run20`).
+- Failed A/Bs this session (reverted): expert-major moe_down (`run9`/`run10`/`run22`), Q4_K r2 SoA (`run11`/`run23`), residual GEMV epilogue (`run24`).
+- Failed A/Bs earlier (reverted): down-skip, header __shfl, float4 RMSNorm, MoE grid retune (`run5`–`run7`, `run20`).
 - `moe_topk` 8× masked argmax: MoE 85.6→**70.4** µs; e2e median **134.2 tok/s** (main 127.7) (`run19`, `run4-m8a-topk-algo`).
 - Cooperative top-k-in-router: **121.1 tok/s** — reverted.
 - Consumer-side post-attn RMSNorm fusion: first build +0.8 tok/s but **raced on residual**; race-fixed median **126.7** vs main **127.7** (−1) — reverted (`run17`/`run18`).
@@ -111,4 +112,4 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M8a cont.): Replaced O(n²) top-k with 8× masked argmax per astra peer review; decode median 127.7 → **134.2 tok/s**.
 
 - 2026-09-26 (M8a ×3 loops): down-skip / hdr-shfl / float4-norm / grid retune all no e2e win; wave0 top-k +~2 tok/s → median **136.4**. Stopped after 3 loops as requested.
-
+- 2026-09-26 (M8a ×3 after Astra --high): consult ranked (1) expert-major down (2) Q4 r2 SoA (3) residual GEMV epilogue. All measured and rejected (run9–11, run22–24). Baseline unchanged at **136.4 tok/s**. Stopped.
