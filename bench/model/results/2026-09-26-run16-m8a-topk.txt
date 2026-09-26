@@ -1,0 +1,6 @@
+model load: 13.7 s
+warm-up: pp512 358.2 ms, 1429.5 tok/s
+measured: pp512 357.6 ms, 1431.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.22 ms/token, 121.7 tok/s
+measured: 256 tokens at ctx 273..529: 8.26 ms/token, 121.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

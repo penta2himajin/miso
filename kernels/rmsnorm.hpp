@@ -10,6 +10,10 @@
 
 namespace miso::kernels {
 
+// Decode add+RMSNorm workgroup size. 512 beat 256 end-to-end on MI50 (run18: median 141.5 vs
+// 136.3 tok/s); 128 regressed. kN=2048 requires a multiple of kWave that divides 2048.
+inline constexpr int kRmsNormBlock = 512;
+
 struct AddRmsNormParams {
   float* residual;      // [tokens][kN], updated in place
   const float* delta;   // [tokens][kN], or nullptr for a plain RMSNorm

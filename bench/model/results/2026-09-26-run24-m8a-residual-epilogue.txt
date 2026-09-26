@@ -1,0 +1,4 @@
+# M8a loop3 (Astra bet3): dense output GEMV accumulate into residual; post-attn norm delta=null.
+# Correct (test_deltanet/attn/q4k/moe). Decode path: y=nullptr → gemv += into h.
+# e2e median 135.6 (135.7/134.4/135.6) vs baseline 136.4. Reject (≥1 tok/s). Reverted.
+model: measured median ~7.38 ms/token, 135.6 tok/s

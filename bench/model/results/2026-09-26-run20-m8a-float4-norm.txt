@@ -1,0 +1,1 @@
+# M8a loop2b: float4 add_rmsnorm. Correct. e2e median ~132.3 vs 134.2 baseline. Reverted.

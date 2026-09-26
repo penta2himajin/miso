@@ -1,0 +1,6 @@
+# M8a. Replace O(n²) moe_topk with 8× masked block-argmax (lower-index ties).
+# MoE microbench: 70.4/67.2 us (was 85.6/82.5). e2e median of 3: 134.2 tok/s
+# (132.2 / 134.2 / 135.0). Main median same day: 127.7.
+model load: (see individual runs)
+measured median: ~7.45 ms/token, **134.2 tok/s**
+first generated ids: unchanged in tests

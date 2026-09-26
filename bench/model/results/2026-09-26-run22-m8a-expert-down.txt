@@ -1,0 +1,3 @@
+# M8a loop1 expert-major+combine e2e (before revert).
+# measured tok/s: 136.4 / 136.1 / 136.3 → median 136.3 (baseline 136.4). Rejected.
+model: measured median ~7.34 ms/token, 136.3 tok/s

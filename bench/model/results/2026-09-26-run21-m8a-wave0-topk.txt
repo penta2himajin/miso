@@ -1,0 +1,3 @@
+# M8a loop3: wave-0-only top-k (64 lanes × 4 logits, 8× wave argmax).
+# MoE 70.4/67.2 → 69.3/66.0 µs. e2e median **136.4** (136.4/137.2/135.5) vs ~134.2.
+model: measured median ~7.33 ms/token, 136.4 tok/s

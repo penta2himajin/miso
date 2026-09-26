@@ -1,0 +1,2 @@
+# M8a loop2: load_w_hdr_shfl in moe_gate_up (4 lanes fetch header, __shfl to 8).
+# Correct (test_moe). MoE 70.4→76.5 µs; e2e median ~128.4 (was 134.2). Reverted.

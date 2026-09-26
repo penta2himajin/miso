@@ -1,0 +1,6 @@
+layer 0: tokens=17 selections=136 distinct_experts=69 mean_unique_per_tok=8.00
+  top10 counts: e181=7 e254=5 e208=5 e139=5 e81=5 e11=5 e191=4 e85=4 e203=3 e187=3
+  experts covering 80% of selections: 42 / 69
+layer 3: tokens=17 selections=136 distinct_experts=58 mean_unique_per_tok=8.00
+  top10 counts: e39=9 e209=7 e225=6 e224=6 e67=6 e27=6 e171=5 e163=5 e206=4 e21=4
+  experts covering 80% of selections: 32 / 58

@@ -1,0 +1,6 @@
+# M8a race-fixed fused post-attn RMSNorm (residual commit deferred to gate_up WG0).
+# Correct (fused-vs-separate output+residual rel L2 = 0 with nonzero mixer).
+# Median of 3 bench_decode: 126.4 / 126.7 / 126.8 tok/s.
+# Same machine main median: 127.3 / 127.7 / 128.0 tok/s.
+# Net: ~−1 tok/s vs main. Fusion reverted from the production path; keep as a
+# measured negative result (launch savings eaten by 65× redundant RMSNorm + gate_up commit).

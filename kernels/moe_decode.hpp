@@ -86,24 +86,66 @@ __global__ void __launch_bounds__(kBlock) moe_router_kernel(MoeRouterParams p) {
   moe_router_op<kBlock>(p, 0, moe::kExperts + 1);
 }
 
-// Top-8 of the 256 router logits, by rank (ties broken by lower index), with renormalised softmax
-// weights. Needs all 256 threads of the workgroup.
+// Top-8 of the 256 router logits (ties → lower index), renormalised softmax weights.
+// Wave 0 owns selection: each of its 64 lanes holds four logits (lane + 64*j), and eight
+// wave-local argmaxes replace the previous eight block-wide reductions (peer review loop3).
 template <int kBlock>
 __device__ inline void moe_topk(const float* logits, int* ids, float* weights) {
   static_assert(kBlock == moe::kExperts);
-  __shared__ float l[moe::kExperts], red[kBlock / kWave];
-  const unsigned t = threadIdx.x;
-  const float mine = logits[t];
-  l[t] = mine;
-  __syncthreads();
-  unsigned rank = 0;
-  for (unsigned u = 0; u < moe::kExperts; ++u)
-    rank += l[u] > mine || (l[u] == mine && u < t);
-  const float mx = block_max<kBlock>(mine, red);
-  const float e = rank < moe::kTopK ? expf(mine - mx) : 0.0f;
-  const float sum = block_sum<kBlock>(e, red);
-  if (rank < moe::kTopK)
-    ids[rank] = static_cast<int>(t), weights[rank] = e / sum;
+  const int lane = threadIdx.x % kWave;
+  const int wave = threadIdx.x / kWave;
+  if (wave == 0) {
+    float v[4];
+    int idx[4];
+    bool alive[4];
+    int pi[moe::kTopK];
+    float pv[moe::kTopK];
+#pragma unroll
+    for (int j = 0; j < 4; ++j) {
+      idx[j] = lane + kWave * j;
+      v[j] = logits[idx[j]];
+      alive[j] = true;
+    }
+    for (int k = 0; k < moe::kTopK; ++k) {
+      float local_mx = -__builtin_inff();
+      int local_i = moe::kExperts;
+#pragma unroll
+      for (int j = 0; j < 4; ++j) {
+        if (alive[j] && (v[j] > local_mx || (v[j] == local_mx && idx[j] < local_i))) {
+          local_mx = v[j];
+          local_i = idx[j];
+        }
+      }
+      const float mx = __shfl(wave_max(local_mx), kWave - 1);
+      const float idx_f =
+          (local_mx == mx) ? static_cast<float>(local_i) : static_cast<float>(moe::kExperts);
+      const float best_f = __shfl(wave_reduce(
+                                      idx_f, [](float a, float b) { return fminf(a, b); },
+                                      static_cast<float>(moe::kExperts)),
+                                  kWave - 1);
+      const int best = static_cast<int>(best_f);
+#pragma unroll
+      for (int j = 0; j < 4; ++j)
+        if (idx[j] == best)
+          alive[j] = false;
+      pi[k] = best;
+      pv[k] = logits[best];
+    }
+    float mx = pv[0];
+#pragma unroll
+    for (int k = 1; k < moe::kTopK; ++k)
+      mx = fmaxf(mx, pv[k]);
+    float e = 0;
+#pragma unroll
+    for (int k = 0; k < moe::kTopK; ++k)
+      e += lane == k ? expf(pv[k] - mx) : 0.0f;
+    float sum = e;
+    sum += __shfl_xor(sum, 4);
+    sum += __shfl_xor(sum, 2);
+    sum += __shfl_xor(sum, 1);
+    if (lane < moe::kTopK)
+      ids[lane] = pi[lane], weights[lane] = expf(pv[lane] - mx) / sum;
+  }
   __syncthreads();
 }
 

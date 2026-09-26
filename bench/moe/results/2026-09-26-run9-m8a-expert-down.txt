@@ -1,0 +1,7 @@
+# M8a loop1 (Astra bet1): expert-major moe_down.
+# Variant A: 9×128 blocks write part[9][2048] + combine. Correct (test_moe).
+#   MoE 69.3/66.0 → 71.3/67.3 µs; e2e median 136.3 (136.4/136.1/136.3) vs 136.4.
+#   Resources: Q4 83vgpr/18512lds/occ3 → 46/2056/5; Q6 106/18512/2 → 62/2056/4.
+# Variant B (improve): sequential slot accum into out, 128 blocks, 2KiB LDS.
+#   MoE → 79.9/76.4 µs. Reverted both.
+# Reject: need ≥3 µs down+norm and ≥2 tok/s; neither met.

@@ -1,0 +1,4 @@
+# M8a loop1: skip discarded final-step dots in moe_down (grp 1..3 on slot 8).
+# Correct (test_moe green). MoE 70.4/67.2 → 70.0/66.2 µs (tiny).
+# e2e median n=3: 133.4 (134.3/133.4/132.5) vs top-k baseline median 134.2 — no win.
+# Reverted 2026-09-26.

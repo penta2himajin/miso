@@ -55,7 +55,8 @@ TEST_CASE("add + RMSNorm reproduces the golden post-attention norm" *
 
     miso::DeviceBuffer<float> res(in), delta(mixer), weight(w), out(in.size());
     miso::kernels::AddRmsNormParams prm{res.data(), delta.data(), weight.data(), out.data(), eps};
-    miso::kernels::add_rmsnorm_kernel<kHidden, kBlock><<<5, kBlock>>>(prm, n_tok);
+    miso::kernels::add_rmsnorm_kernel<kHidden, miso::kernels::kRmsNormBlock>
+        <<<5, miso::kernels::kRmsNormBlock>>>(prm, n_tok);
     MISO_HIP_CHECK(hipGetLastError());
     const auto h = res.to_host(), y = out.to_host();
 

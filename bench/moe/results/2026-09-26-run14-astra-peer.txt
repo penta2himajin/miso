@@ -1,0 +1,11 @@
+1) **Verdict:** Reject loop1: its local MoE gain did not survive end-to-end measurement (134.7 versus 136.3 tok/s), with Q4 down’s occupancy dropping from 3 to 2.
+
+2) **Loop2 bet: occupancy-first Q4 down, without prefetch.**
+- **Attach point:** baseline `moe_down` Q4 kernel’s quantized dot loop.
+- **Change:** shorten unpack/dequant temporary lifetimes by unpacking and immediately accumulating one quant group at a time; preserve weight layout, thread mapping, and accumulator order.
+- **Why room remains:** baseline Q4 down uses 83 VGPRs and achieves only ~24% HBM utilization. Test whether reducing register pressure exposes more latency hiding; low bandwidth alone does not establish the bottleneck.
+- **Resource target:** ≤64 VGPRs, zero scratch, and confirmed occupancy increase. Inspect emitted ISA for extra loads or unpack instructions.
+- **Risk:** tighter lifetimes may sacrifice instruction parallelism or duplicate unpack work; the register target may be unreachable without slowing the dot loop.
+- **Success gate:** correctness passes and ≥138 tok/s median in repeated, interleaved comparisons against restored run25 code under the same clock/temperature/power protocol. A microbenchmark win alone does not qualify.
+
+3) **Do not try next:** another weight double-buffer or deeper software pipeline, another layout/grid-only permutation, or revisiting the listed failed fusions and GEMV microbenchmark winners.

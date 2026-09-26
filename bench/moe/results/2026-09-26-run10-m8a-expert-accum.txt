@@ -1,0 +1,2 @@
+# M8a loop1 improve: expert-major sequential-slot accum (no partials).
+# MoE 79.9/76.4 µs. Reverted with run9.

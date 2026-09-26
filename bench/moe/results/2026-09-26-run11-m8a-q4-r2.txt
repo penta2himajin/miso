@@ -1,0 +1,4 @@
+# M8a loop2 (Astra bet2): Q4_K r2 SoA [nb×16 hdr | nb×128 qs] per row.
+# Lossless (test_repack/q4k_gemv/norm_embed/moe/qgemm green). Lane map/grid unchanged.
+# MoE 69.3/66.0 → 69.6/66.5 µs (no save). e2e median 135.6 (135.6/135.2/136.8) vs 136.4.
+# Reject (≥2 µs gate/up and ≥1.5 tok/s). Reverted.

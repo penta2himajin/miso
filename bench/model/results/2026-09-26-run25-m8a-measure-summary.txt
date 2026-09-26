@@ -1,0 +1,47 @@
+# 2026-09-26 run25: C除外の計測キャンペーン要約 (A/B/D)
+
+## e2e (D12)
+- measured decode: 136.3 / 134.7 / 136.5 tok/s → median **136.3 tok/s** (7.33 ms/tok)
+- pp512 ~1436 tok/s
+- floor 379 tok/s @ 797 GB/s → 現在は floor の **36%**
+- クロック: 稼働時 sclk med/max 1725 MHz、junction max 63 C、power max 221 W（スロットルなし）
+
+## rocprof (`bench_decode` = warm+pp+decode; decode系 ≈84% of GPU time)
+上位 decode:
+| kernel | % | avg µs |
+|---|---:|---:|
+| moe_gate_up | 14.2 | 30.0 |
+| q4k_gemv N=2048 | 11.1 | 23.5 |
+| add_rmsnorm | 11.0 | 11.5 |
+| q4k_gemv N=4096 | 9.6 | 20.2 |
+| moe_down Q6 | 7.7 | 32.4 |
+| q6k_gemv R=1 | 7.4 | 88.7 |
+| moe_down Q4 | 6.6 | 27.9 |
+| deltanet_step | 5.1 | 14.4 |
+| q6k_gemv R=2 | 4.5 | 27.2 |
+| moe_router | 3.7 | 7.8 |
+
+家族: GEMV_proj 32.6% / MoE_decode 32.1% / Norm 11.0% / DeltaNet 8.1% / Attn 3.7%
+
+## 成分 microbench
+- MoE L0 69.5 / L5 66.2 µs/tok
+- DeltaNet L0 84.4 / L5 73.9 µs/tok
+- Attn L3: 93.7 (ctx16) → 259 µs (ctx16k)
+
+## GEMV BW (weight bytes vs 797 GB/s)
+- 層サイズ Q4 4.7–9.4 MB: ~240–420 GB/s (30–53%)
+- 大行列 / LM head: 65–90%
+- → 小 GEMV は BW 未達
+
+## gate_up / down ALU vs BW（重みバイトのみ推定）
+| kernel | bytes | floor@797 | avg | eff GB/s | %peak |
+|---|---:|---:|---:|---:|---:|
+| moe_gate_up | 10.62 MB | 13.3 µs | 30.0 µs | 354 | 44% |
+| moe_down Q4 | 5.31 MB | 6.7 µs | 28.0 µs | 190 | 24% |
+| moe_down Q6 | 7.74 MB | 9.7 µs | 32.4 µs | 239 | 30% |
+→ MoE は **BW 頭打ちではない**。down の方が gate_up より悪い。
+
+## expert 局所性 (golden 17 tok)
+- L0: distinct 69, 80% cover 42, unique/tok=8.00
+- L3: distinct 58, 80% cover 32, unique/tok=8.00
+→ 短プロンプトでは hot-expert キャッシュ / top-k 削減の根拠は弱い

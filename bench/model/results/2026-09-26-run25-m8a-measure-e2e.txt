@@ -1,0 +1,23 @@
+# 2026-09-26 run25-m8a-measure: D12 e2e baseline (wave0 top-k branch), C excluded measurement campaign
+# Protocol: idle GPU warm-up discarded; 3 measured runs; smi in 2026-09-26-run25-m8a-measure-smi.csv
+## run 1
+model load: 10.2 s
+warm-up: pp512 357.2 ms, 1433.4 tok/s
+measured: pp512 356.5 ms, 1436.1 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.30 ms/token, 136.9 tok/s
+measured: 256 tokens at ctx 273..529: 7.33 ms/token, 136.3 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 11.1 s
+warm-up: pp512 357.3 ms, 1433.0 tok/s
+measured: pp512 356.2 ms, 1437.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.39 ms/token, 135.2 tok/s
+measured: 256 tokens at ctx 273..529: 7.42 ms/token, 134.7 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 11.1 s
+warm-up: pp512 357.2 ms, 1433.2 tok/s
+measured: pp512 356.4 ms, 1436.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.30 ms/token, 137.0 tok/s
+measured: 256 tokens at ctx 273..529: 7.33 ms/token, 136.5 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

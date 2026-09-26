@@ -1,0 +1,8 @@
+1) **Loop3: reject.** VGPR 83→54 did not raise occupancy: `a[9][512]` keeps LDS at 18,512 B/block, so four blocks exceed 64 KiB. Rolling sacrificed ILP without gaining residency; both Q4 MoE and end-to-end regressed.
+
+2) **Loop4 bet: tune `add_rmsnorm` block size**, starting from the accepted baseline.
+- Test 128/256/512 threads with unchanged math; the hypothesis is lower reduction/synchronization cost.
+- Its reported 11% share gives a concrete target: ≥12% lower kernel latency could yield ≈138.1 tok/s, assuming that share translates into end-to-end savings.
+- Verify correctness and measure end-to-end under the same clock/temperature/power protocol. Keep only at median **≥138 tok/s**; kernel timing alone cannot qualify it.
+
+3) **Avoid:** further down unrolling/rolling, SlotAct, activation reload, soft-pipelining, or VGPR-only occupancy bets. Also avoid megakernel/MTP/batching/weight-pipeline work and combining unrelated changes in this final loop.

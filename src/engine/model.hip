@@ -90,7 +90,8 @@ namespace {
 void head_argmax(const Model& m, Session& s, float* h, const float* delta, unsigned pos,
                  hipStream_t stream) {
   const kernels::AddRmsNormParams final_norm{h, delta, m.output_norm.data(), s.xn.data(), m.eps};
-  kernels::add_rmsnorm_kernel<kHidden, kBlock><<<1, kBlock, 0, stream>>>(final_norm, 1);
+  kernels::add_rmsnorm_kernel<kHidden, kernels::kRmsNormBlock>
+      <<<1, kernels::kRmsNormBlock, 0, stream>>>(final_norm, 1);
   gemv(m.lm_head, s.xn.data(), s.logits.data(), stream);
   const kernels::ArgmaxParams ap{s.logits.data(),       m.vocab,
                                  s.argmax_v.data(),     s.argmax_i.data(),
@@ -120,7 +121,8 @@ void decode_step(const Model& m, Session& s, const int* token, hipStream_t strea
     }
     const kernels::AddRmsNormParams post{s.h.data(), s.mixer_out.data(),
                                          l.post_attention_norm.data(), s.xn.data(), m.eps};
-    kernels::add_rmsnorm_kernel<kHidden, kBlock><<<1, kBlock, 0, stream>>>(post, 1);
+    kernels::add_rmsnorm_kernel<kHidden, kernels::kRmsNormBlock>
+        <<<1, kernels::kRmsNormBlock, 0, stream>>>(post, 1);
     moe_decode(l.moe, s.moe_scratch, s.xn.data(), s.moe_out.data(), stream);
   }
 
@@ -150,7 +152,8 @@ void prefill(const Model& m, Session& s, const int* tokens, unsigned n, unsigned
       }
       const kernels::AddRmsNormParams post{s.chunk_h.data(), s.chunk_mixer.data(),
                                            l.post_attention_norm.data(), s.chunk_xn.data(), m.eps};
-      kernels::add_rmsnorm_kernel<kHidden, kBlock><<<c, kBlock, 0, stream>>>(post, c);
+      kernels::add_rmsnorm_kernel<kHidden, kernels::kRmsNormBlock>
+          <<<c, kernels::kRmsNormBlock, 0, stream>>>(post, c);
       moe_prefill(l.moe, s.moe_prefill, s.chunk_xn.data(), s.chunk_moe.data(), c, stream);
     }
     s.pos += c;

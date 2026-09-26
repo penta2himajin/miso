@@ -1,0 +1,4 @@
+MoE layer 0 (down Q6_K) decode: 69.3 us/token
+MoE layer 0 prefill 512 tokens: 4.880 ms (9.5 us/token, 5.94 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 66.0 us/token
+MoE layer 5 prefill 512 tokens: 4.051 ms (7.9 us/token, 7.16 TFLOP/s experts)

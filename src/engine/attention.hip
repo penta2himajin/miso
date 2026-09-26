@@ -81,7 +81,8 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
   if (cache.len >= cache.max_ctx)
     throw std::runtime_error("attention_decode: KV cache is full");
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
-  kernels::add_rmsnorm_kernel<2048, kBlock><<<1, kBlock, 0, stream>>>(norm, 1);
+  kernels::add_rmsnorm_kernel<2048, kernels::kRmsNormBlock>
+      <<<1, kernels::kRmsNormBlock, 0, stream>>>(norm, 1);
   gemv(w.q, sc.xn.data(), sc.qg(), stream);
   if (w.k.n != 0)
     gemv(w.k, sc.xn.data(), sc.k(), stream);
@@ -115,7 +116,8 @@ void attention_prefill(const AttentionLayer& w, AttentionCache& cache, Attention
   if (cache.len + n > cache.max_ctx)
     throw std::runtime_error("attention_prefill: KV cache is full");
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), ps.xn.data(), eps};
-  kernels::add_rmsnorm_kernel<2048, kBlock><<<n, kBlock, 0, stream>>>(norm, n);
+  kernels::add_rmsnorm_kernel<2048, kernels::kRmsNormBlock>
+      <<<n, kernels::kRmsNormBlock, 0, stream>>>(norm, n);
   gemm_input(ps.xn.data(), 2048, n, ps.in, stream);
   gemm(w.q, ps.in, ps.qg(), kProj, stream);
   if (w.k.n != 0)
