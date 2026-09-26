@@ -16,10 +16,9 @@ Test project /home/penta/repos/miso/build
       Start  8: test_prefill
  8/21 Test  #8: test_prefill .....................   Passed
       Start  9: test_model
- 9/21 Test  #9: test_model .......................   Passed   12.31 sec
+ 9/21 Test  #9: test_model .......................   Passed
       Start 10: test_moe
-10/21 Test #10: test_moe .........................   Passed    4.16 sec
-     10/21 Test #10: test_moe .........................   Passed    4.49 sec
+10/21 Test #10: test_moe .........................   Passed    4.49 sec
       Start 11: test_attn_splitk
 11/21 Test #11: test_attn_splitk .................   Passed   14.73 sec
       Start 12: test_attention
