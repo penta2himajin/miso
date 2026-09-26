@@ -1,0 +1,414 @@
+{
+  "candidate": {
+    "baseline": {
+      "decode": [
+        141.9,
+        139.6,
+        140.9
+      ],
+      "median_decode": 140.9,
+      "pp512": [
+        1440.9,
+        1440.5,
+        1440.5
+      ],
+      "median_pp512": 1440.5
+    },
+    "candidate": {
+      "decode": [
+        142.6,
+        142.1,
+        140.7
+      ],
+      "median_decode": 142.1,
+      "pp512": [
+        1439.1,
+        1440.5,
+        1439.3
+      ],
+      "median_pp512": 1439.3
+    },
+    "gain_percent": 0.8516678495386731
+  },
+  "vector": {
+    "baseline": {
+      "decode": [
+        140.7,
+        142.2,
+        141.1
+      ],
+      "median_decode": 141.1,
+      "pp512": [
+        1440.2,
+        1439.7,
+        1439.0
+      ],
+      "median_pp512": 1439.7
+    },
+    "vector": {
+      "decode": [
+        146.5,
+        144.5,
+        145.9
+      ],
+      "median_decode": 145.9,
+      "pp512": [
+        1441.2,
+        1440.6,
+        1440.2
+      ],
+      "median_pp512": 1440.6
+    },
+    "gain_percent": 3.4018426647767663
+  },
+  "contexts": {
+    "context-17-baseline.txt": {
+      "ctx": 17,
+      "ms_token": 7.08589,
+      "tok_s": 141.126
+    },
+    "context-17-vector.txt": {
+      "ctx": 17,
+      "ms_token": 6.914785,
+      "tok_s": 144.618
+    },
+    "context-32768-baseline.txt": {
+      "ctx": 32768,
+      "ms_token": 10.326735,
+      "tok_s": 96.836
+    },
+    "context-32768-vector.txt": {
+      "ctx": 32768,
+      "ms_token": 10.126279,
+      "tok_s": 98.753
+    },
+    "context-4096-baseline.txt": {
+      "ctx": 4096,
+      "ms_token": 7.656946,
+      "tok_s": 130.6
+    },
+    "context-4096-vector.txt": {
+      "ctx": 4096,
+      "ms_token": 7.47824,
+      "tok_s": 133.721
+    }
+  },
+  "telemetry": {
+    "context-17-baseline.txt.smi.jsonl": {
+      "samples": 18,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 55.0,
+      "power_max_W": 184.0
+    },
+    "context-17-vector.txt.smi.jsonl": {
+      "samples": 11,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 56.0,
+      "power_max_W": 186.0
+    },
+    "context-32768-baseline.txt.smi.jsonl": {
+      "samples": 146,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 76.0,
+      "power_max_W": 265.0
+    },
+    "context-32768-vector.txt.smi.jsonl": {
+      "samples": 141,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 78.0,
+      "power_max_W": 261.0
+    },
+    "context-4096-baseline.txt.smi.jsonl": {
+      "samples": 20,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        900.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 253.0
+    },
+    "context-4096-vector.txt.smi.jsonl": {
+      "samples": 23,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 66.0,
+      "power_max_W": 259.0
+    },
+    "e2e-1-baseline.txt.smi.jsonl": {
+      "samples": 16,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 56.0,
+      "power_max_W": 189.0
+    },
+    "e2e-1-candidate.txt.smi.jsonl": {
+      "samples": 22,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 61.0,
+      "power_max_W": 186.0
+    },
+    "e2e-2-baseline.txt.smi.jsonl": {
+      "samples": 17,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 63.0,
+      "power_max_W": 223.0
+    },
+    "e2e-2-candidate.txt.smi.jsonl": {
+      "samples": 20,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 244.0
+    },
+    "e2e-3-baseline.txt.smi.jsonl": {
+      "samples": 19,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 261.0
+    },
+    "e2e-3-candidate.txt.smi.jsonl": {
+      "samples": 22,
+      "sclk_MHz_min_median_max": [
+        1606.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 238.0
+    },
+    "micro-baseline.txt.smi.jsonl": {
+      "samples": 1,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        1000.0,
+        1000.0,
+        1000.0
+      ],
+      "junction_max_C": 50.0,
+      "power_max_W": 205.0
+    },
+    "micro-candidate.txt.smi.jsonl": {
+      "samples": 4,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        1000.0,
+        1000.0,
+        1000.0
+      ],
+      "junction_max_C": 51.0,
+      "power_max_W": 222.0
+    },
+    "micro-vector.txt.smi.jsonl": {
+      "samples": 2,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        1000.0,
+        1000.0,
+        1000.0
+      ],
+      "junction_max_C": 48.0,
+      "power_max_W": 237.0
+    },
+    "vector-e2e-1-baseline.txt.smi.jsonl": {
+      "samples": 17,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 63.0,
+      "power_max_W": 214.0
+    },
+    "vector-e2e-1-vector.txt.smi.jsonl": {
+      "samples": 13,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        1000.0,
+        1000.0
+      ],
+      "junction_max_C": 62.0,
+      "power_max_W": 191.0
+    },
+    "vector-e2e-2-baseline.txt.smi.jsonl": {
+      "samples": 20,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 188.0
+    },
+    "vector-e2e-2-vector.txt.smi.jsonl": {
+      "samples": 16,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        900.0,
+        1000.0
+      ],
+      "junction_max_C": 64.0,
+      "power_max_W": 249.0
+    },
+    "vector-e2e-3-baseline.txt.smi.jsonl": {
+      "samples": 18,
+      "sclk_MHz_min_median_max": [
+        1725.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 173.0
+    },
+    "vector-e2e-3-vector.txt.smi.jsonl": {
+      "samples": 19,
+      "sclk_MHz_min_median_max": [
+        1485.0,
+        1725.0,
+        1725.0
+      ],
+      "mclk_MHz_min_median_max": [
+        800.0,
+        800.0,
+        1000.0
+      ],
+      "junction_max_C": 65.0,
+      "power_max_W": 189.0
+    }
+  },
+  "counters": {}
+}

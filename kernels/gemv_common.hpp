@@ -44,4 +44,20 @@ __device__ inline Fp16x16 fp16x16(const float* x) {
   return r;
 }
 
+// Already-rounded activations: retain the pair layout and the exact FP32 sum order above.
+// Four adjacent halves are read together, without loading a temporary FP32 activation vector.
+__device__ inline Fp16x16 fp16x16(const _Float16* x) {
+  typedef _Float16 half4_t __attribute__((ext_vector_type(4)));
+  Fp16x16 r;
+  r.s16 = 0;
+  for (int c = 0; c < 4; ++c) {
+    const half4_t v = reinterpret_cast<const half4_t*>(x)[c];
+    r.a[c] = half2_t{v[0], v[2]};
+    r.b[c] = half2_t{v[1], v[3]};
+    r.s16 += static_cast<float>(r.a[c].x) + static_cast<float>(r.a[c].y) +
+             static_cast<float>(r.b[c].x) + static_cast<float>(r.b[c].y);
+  }
+  return r;
+}
+
 }  // namespace miso::kernels::gemv

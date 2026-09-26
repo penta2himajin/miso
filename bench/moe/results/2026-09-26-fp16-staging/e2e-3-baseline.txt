@@ -1,0 +1,9 @@
+command: ['/tmp/miso-fp16-staging/baseline_decode']
+run 1 utc 2026-09-26T14:13:28.359615+00:00
+model load: 10.7 s
+warm-up: pp512 356.3 ms, 1437.1 tok/s
+measured: pp512 355.4 ms, 1440.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.06 ms/token, 141.7 tok/s
+measured: 256 tokens at ctx 273..529: 7.10 ms/token, 140.9 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

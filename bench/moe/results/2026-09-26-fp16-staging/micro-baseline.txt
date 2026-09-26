@@ -1,0 +1,19 @@
+command: ['/tmp/miso-fp16-staging/baseline_moe']
+run 1 utc 2026-09-26T14:11:45.852173+00:00
+MoE layer 0 (down Q6_K) decode: 69.2 us/token
+MoE layer 0 prefill 512 tokens: 4.865 ms (9.5 us/token, 5.96 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 66.1 us/token
+MoE layer 5 prefill 512 tokens: 4.048 ms (7.9 us/token, 7.16 TFLOP/s experts)
+exit: 0
+run 2 utc 2026-09-26T14:11:47.695744+00:00
+MoE layer 0 (down Q6_K) decode: 69.3 us/token
+MoE layer 0 prefill 512 tokens: 4.882 ms (9.5 us/token, 5.94 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 66.1 us/token
+MoE layer 5 prefill 512 tokens: 4.056 ms (7.9 us/token, 7.15 TFLOP/s experts)
+exit: 0
+run 3 utc 2026-09-26T14:11:49.517769+00:00
+MoE layer 0 (down Q6_K) decode: 69.4 us/token
+MoE layer 0 prefill 512 tokens: 4.868 ms (9.5 us/token, 5.96 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 66.0 us/token
+MoE layer 5 prefill 512 tokens: 4.048 ms (7.9 us/token, 7.16 TFLOP/s experts)
+exit: 0
