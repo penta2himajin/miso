@@ -12,6 +12,10 @@
 
 ready-for-review — measurement and implementation plan complete; production kernels unchanged.
 
+PR: https://github.com/penta2himajin/miso/pull/28 (ready, pushed). Automatic subscription
+could not be set: the GitHub token lacks `notifications` scope and the in-app browser
+is signed out. Do not claim that notifications or a background monitor are active.
+
 ## Next action
 
 Start a bounded MoE-down FP16 LDS-staging experiment: first add failing Q4/Q6 equivalence tests, then keep current launch geometry and arithmetic order while replacing FP32 staging/conversion temporaries; accept only a paired end-to-end gain under the investigation's gates.
