@@ -57,6 +57,10 @@ A megakernel is the limit of fusion: one launch that runs every operator of a to
 5. **Grid-size independence.** Operators loop over work items (grid-stride) rather than assuming one block per tile, because a cooperative launch is limited to co-resident blocks.
 
 Grid-barrier cost on gfx906 has not been measured yet and is a prerequisite for the D4 trigger.
+**Measured 2026-09-26** (`bench/mi50/results/2026-09-26-m7e-grid-barrier.txt`): a grid barrier
+costs 1.81 µs at 60×256 against 1.69 µs for a kernel boundary. With dependent-kernel gaps at
+0.18% of decode time after per-layer fusion, the trigger is measured false and decode stays
+kernel-per-operator — see ADR_006.
 
 ### D5 → offline internal format
 

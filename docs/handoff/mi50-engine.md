@@ -98,3 +98,15 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M7c): On `ai-written/m7c-gemv-eff`, `gemv()` picks rows-per-wave and grid by shape (K=4096 and K=2048 with N≥2048 use R=4; Q6_K qkv uses R=2 at grid 480; LM head uses grid 1920). ssm_out 21.9 → 18.5 µs; decode 123.4 → **125.5 tok/s**. A Q6_K next-row weight prefetch spilled and was reverted.
 - 2026-09-26 (M7c review): attn_q and attn_k are Q4_K in all 11 attention layers, so the 7 layers whose attn_v is Q6_K now fuse q+k into one 8704-row GEMV (3 → 2 projection launches). Decode 125.5 → **126.0 tok/s**. Tried and rejected: R=5/R=6 and small grids (microbench-optimal but 1.1 tok/s *slower* end to end) and a Q6_K double-buffered weight prefetch (112 B scratch spill). The lesson is recorded under Failed approaches: tune GEMV dispatch on `bench_decode`, not on the isolated sweep.
 - 2026-09-26 (M7d): On `ai-written/m7d-attn-score`, staged V alongside K in LDS for split-K decode and retuned `attn_n_splits` (~6 sub-chunks/split, `kMaxSplits=60`) after a max_splits sweep showed combine dominating at 120. Attention L3 173→126 µs at 4k; decode 126.0→**129.1 tok/s**. FP16 Q/fdot2 and a part_o transpose were measured and reverted.
+
+- 2026-09-26 (M7e): On `ai-written/m7e-megakernel`, measured the ADR_001 D4 megakernel prerequisite
+  and trigger. `bench/mi50/grid_barrier.hip` shows a cooperative `grid.sync()` costs 1.81 us at
+  60x256 against 1.69 us for a kernel boundary (within 0.1-0.2 us across 60-480 blocks), i.e. a
+  barrier is not cheaper than the boundary it would replace. A 20-step dependency chain over 256
+  floats runs 3.21 us/step as 20 stream launches vs 2.12 us/step inside one cooperative kernel, so
+  the ~1.1 us/step win only exists for micro-operators with hard dependencies. rocprof of the full
+  model shows dependent-kernel gaps at **0.18% of decode time** (186 887 kernels, 506 gapped
+  boundaries, 6.86 ms of 3 873 ms) after the M7a-M7d fusion; the attention layer is 0.14%. Per-
+  operator resources are also spread (0-42 KiB LDS, 20-256 VGPR), so a single-shape megakernel
+  would inherit `attn_split`/`deltanet_seq` occupancy. Recorded **ADR_006: no megakernel**; stage 3
+  must come from per-kernel work. The D4 prerequisites stay in force so the option stays open.

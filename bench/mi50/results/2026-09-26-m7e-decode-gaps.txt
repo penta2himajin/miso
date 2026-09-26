@@ -1,0 +1,23 @@
+# M7e: dependent-kernel gaps in real decode (rocprof of the M7d build, full model)
+# Source: rocprof --stats on ./build/miso -n 256 (run 2026-09-26); json re-analysed with
+#   gap = BeginNs[i] - EndNs[i-1] for kernels sorted by BeginNs.
+# Decode region = 531 x 256 kernels after pp512; timestamps are GPU clock, ns.
+
+Decode region: 186887 kernels, span 3873.2 ms
+boundaries 186886, positive 506 (0.27%), sum 6.86 ms = 0.177% of span, mean 0.037 us/boundary
+513 decode steps -> 132.5 tok/s by span (includes profiling overhead)
+
+Largest gap pairs (us):
+   1624.2  argmax_final_kernel<256> -> embed_q4k_kernel<2048u, 256>
+    722.0  moe_gate_up_kernel<256> -> moe_down_kernel<
+    697.9  moe_down_kernel< -> add_rmsnorm_kernel<2048u, 256>
+    636.9  q4k_gemv_kernel< -> add_rmsnorm_kernel<2048u, 256>
+    520.5  add_rmsnorm_kernel<2048u, 256> -> moe_router_kernel<256>
+    474.9  moe_router_kernel<256> -> moe_gate_up_kernel<256>
+
+Attention layer 3 at 4k, separate rocprof run: 16448 kernels, positive gaps 5.2 ms = 0.142% of wall.
+
+Kernel time shares in the decode region (top):
+  19.6% moe_gate_up_kernel     19.5% q4k_gemv_kernel      13.1% moe_down_kernel
+  10.5% add_rmsnorm_kernel      7.0% q6k_gemv_kernel<1>    4.7% qgemm_kernel (prefill only)
+   4.3% deltanet_step_kernel    4.2% q6k_gemv_kernel<2>    3.5% moe_router_kernel

@@ -1,0 +1,18 @@
+# M7e: grid-barrier cost vs kernel boundary (bench/mi50/grid_barrier.hip)
+# gfx906, MI50, 256-thread blocks, idle GPU. sclk 930 MHz idle at start (auto profile),
+# junction 36 C, 16 W. Host clang 18 via ROCm 6.3.4.
+# max co-resident blocks at block=256: barrier 480, chain 480 (60 CUs x 8).
+
+CUs 60, block 256, max co-resident blocks: barrier 480, chain 480
+
+=== A / A': 20 syncs, cooperative vs separate launches ===
+grid   60: coop  36.19 us/launch = 1.809 us/barrier | 20 plain launches  33.74 = 1.687 us/boundary
+grid  120: coop  39.72 us/launch = 1.986 us/barrier | 20 plain launches  37.80 = 1.890 us/boundary
+grid  240: coop  43.71 us/launch = 2.185 us/barrier | 20 plain launches  39.60 = 1.980 us/boundary
+grid  480: coop  54.85 us/launch = 2.743 us/barrier | 20 plain launches  53.53 = 2.676 us/boundary
+
+=== B: 20 dependent steps over 256 floats ===
+K separate launches:  64.23 us/chain (3.212 us/step)
+coop 1 launch grid   60:  42.38 us/chain (2.119 us/step)
+coop 1 launch grid  120:  46.48 us/chain (2.324 us/step)
+coop 1 launch grid  240:  55.55 us/chain (2.778 us/step)
