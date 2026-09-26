@@ -11,7 +11,11 @@
 namespace miso {
 
 struct DeltaNetLayer {
-  QMatrix qkv, z, a, b, out;  // attn_qkv, attn_gate, ssm_alpha, ssm_beta, ssm_out
+  // When attn_qkv is Q4_K (same as gate/alpha/beta), qkv holds all 12352 rows and z_ab.n == 0.
+  // Otherwise qkv is 8192 rows (often Q6_K) and z_ab is the 4160-row gate+alpha+beta concat.
+  QMatrix qkv;
+  QMatrix z_ab;
+  QMatrix out;  // ssm_out
   DeviceBuffer<float> attn_norm, conv_w, ssm_a, dt_bias, ssm_norm;
 
   static DeltaNetLayer load(const gguf::File& f, int layer);
@@ -28,22 +32,27 @@ struct DeltaNetState {
   void reset();
 };
 
+// Per-token projection buffer: [qkv 8192 | z 4096 | a 32 | b 32] = 12352 floats.
 struct DeltaNetScratch {
-  DeviceBuffer<float> xn{2048}, qkv{8192}, z{4096}, a{32}, b{32}, o{4096};
+  static constexpr unsigned kProj = 12352;
+  DeviceBuffer<float> xn{2048}, proj{kProj}, o{4096};
+  float* qkv() { return proj.data(); }
+  float* z() { return proj.data() + 8192; }
+  float* a() { return proj.data() + 12288; }
+  float* b() { return proj.data() + 12320; }
 };
 
-// Chunk buffers of the prefill path, for up to max_tok tokens.
+// Chunk buffers of the prefill path, for up to max_tok tokens. Same proj layout per token.
 struct DeltaNetPrefillScratch {
   explicit DeltaNetPrefillScratch(unsigned max_tok)
       : in(max_tok, 4096),
         xn(max_tok * 2048),
-        qkv(max_tok * 8192),
-        z(max_tok * 4096),
-        a(max_tok * 32),
-        b(max_tok * 32),
+        proj(max_tok * DeltaNetScratch::kProj),
         o(max_tok * 4096) {}
   GemmInput in;
-  DeviceBuffer<float> xn, qkv, z, a, b, o;
+  DeviceBuffer<float> xn, proj, o;
+  float* qkv() { return proj.data(); }
+  float* z(unsigned t) { return proj.data() + std::size_t{t} * DeltaNetScratch::kProj + 8192; }
 };
 
 // h += delta (if delta != nullptr), then y = DeltaNet(RMSNorm(h)) for one token. h, delta and y are

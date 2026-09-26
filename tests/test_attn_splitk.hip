@@ -122,7 +122,8 @@ void check_prefill(unsigned pos0, unsigned n) {
                                 core.data(),
                                 pos0,
                                 n,
-                                max_ctx};
+                                max_ctx,
+                                /*qg_stride=*/kQ * 2 * kD};
   k::attn_prefill_kernel<256><<<k::attn_prefill_items(n), 256>>>(ap);
   MISO_HIP_CHECK(hipGetLastError());
   const auto got = core.to_host();

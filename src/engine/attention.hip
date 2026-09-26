@@ -10,9 +10,44 @@
 #include "rmsnorm.hpp"
 
 namespace miso {
+namespace {
+
+QMatrix empty_qmatrix() {
+  return {DeviceBuffer<std::uint8_t>(1), gguf::GgmlType::F32, 0, 0};
+}
+
+const gguf::TensorInfo& require_tensor(const gguf::File& f, const std::string& name) {
+  const auto* t = f.find_tensor(name);
+  if (t == nullptr)
+    throw std::runtime_error("missing tensor " + name);
+  return *t;
+}
+
+}  // namespace
 
 AttentionLayer AttentionLayer::load(const gguf::File& f, int layer) {
   const std::string p = "blk." + std::to_string(layer) + ".";
+  const auto& qt = require_tensor(f, p + "attn_q.weight");
+  const auto& kt = require_tensor(f, p + "attn_k.weight");
+  const auto& vt = require_tensor(f, p + "attn_v.weight");
+  if (qt.type == kt.type && kt.type == vt.type) {
+    return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight", p + "attn_v.weight"}),
+            empty_qmatrix(),
+            empty_qmatrix(),
+            upload_qmatrix(f, p + "attn_output.weight"),
+            upload_f32(f, p + "attn_norm.weight"),
+            upload_f32(f, p + "attn_q_norm.weight"),
+            upload_f32(f, p + "attn_k_norm.weight")};
+  }
+  if (kt.type == vt.type) {
+    return {upload_qmatrix(f, p + "attn_q.weight"),
+            concat_rows(f, {p + "attn_k.weight", p + "attn_v.weight"}),
+            empty_qmatrix(),
+            upload_qmatrix(f, p + "attn_output.weight"),
+            upload_f32(f, p + "attn_norm.weight"),
+            upload_f32(f, p + "attn_q_norm.weight"),
+            upload_f32(f, p + "attn_k_norm.weight")};
+  }
   return {upload_qmatrix(f, p + "attn_q.weight"), upload_qmatrix(f, p + "attn_k.weight"),
           upload_qmatrix(f, p + "attn_v.weight"), upload_qmatrix(f, p + "attn_output.weight"),
           upload_f32(f, p + "attn_norm.weight"),  upload_f32(f, p + "attn_q_norm.weight"),
@@ -44,15 +79,16 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
     throw std::runtime_error("attention_decode: KV cache is full");
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kBlock><<<1, kBlock, 0, stream>>>(norm, 1);
-  gemv(w.q, sc.xn.data(), sc.qg.data(), stream);
-  gemv(w.k, sc.xn.data(), sc.k.data(), stream);
-  gemv(w.v, sc.xn.data(), sc.v.data(), stream);
+  gemv(w.q, sc.xn.data(), sc.qg(), stream);
+  if (w.k.n != 0)
+    gemv(w.k, sc.xn.data(), sc.k(), stream);
+  if (w.v.n != 0)
+    gemv(w.v, sc.xn.data(), sc.v(), stream);
   auto* kc = reinterpret_cast<half_t*>(cache.k.data());
   auto* vc = reinterpret_cast<half_t*>(cache.v.data());
   const kernels::AttnPrepParams prep{
-      sc.qg.data(),         sc.k.data(), sc.v.data(), w.q_norm.data(), w.k_norm.data(),
-      rope.inv_freq.data(), kc,          vc,          sc.q.data(),     cache.len,
-      cache.max_ctx,        eps};
+      sc.qg(), sc.k(), sc.v(),      w.q_norm.data(), w.k_norm.data(), rope.inv_freq.data(),
+      kc,      vc,     sc.q.data(), cache.len,       cache.max_ctx,   eps};
   kernels::attn_prep_kernel<kBlock><<<18, kBlock, 0, stream>>>(prep);
   ++cache.len;
   const unsigned n_splits = kernels::attn_n_splits(cache.len, AttentionScratch::kMaxSplits);
@@ -61,7 +97,7 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
       cache.max_ctx, n_splits};
   kernels::attn_split_kernel<kBlock><<<dim3(n_splits, 2), kBlock, 0, stream>>>(split);
   const kernels::AttnCombineParams comb{sc.part_m.data(), sc.part_l.data(), sc.part_o.data(),
-                                        sc.qg.data(),     sc.core.data(),   n_splits};
+                                        sc.qg(),          sc.core.data(),   n_splits};
   kernels::attn_combine_kernel<kBlock><<<16, kBlock, 0, stream>>>(comb);
   MISO_HIP_CHECK(hipGetLastError());
   gemv(w.o, sc.core.data(), y, stream);
@@ -72,26 +108,30 @@ void attention_prefill(const AttentionLayer& w, AttentionCache& cache, Attention
                        const float* delta, float* y, unsigned n, float eps, hipStream_t stream) {
   using kernels::attn::half_t;
   constexpr int kBlock = 256;
+  constexpr unsigned kProj = AttentionScratch::kProj;
   if (cache.len + n > cache.max_ctx)
     throw std::runtime_error("attention_prefill: KV cache is full");
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), ps.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kBlock><<<n, kBlock, 0, stream>>>(norm, n);
   gemm_input(ps.xn.data(), 2048, n, ps.in, stream);
-  gemm(w.q, ps.in, ps.qg.data(), 8192, stream);
-  gemm(w.k, ps.in, ps.k.data(), 512, stream);
-  gemm(w.v, ps.in, ps.v.data(), 512, stream);
+  gemm(w.q, ps.in, ps.qg(), kProj, stream);
+  if (w.k.n != 0)
+    gemm(w.k, ps.in, ps.k(), kProj, stream);
+  if (w.v.n != 0)
+    gemm(w.v, ps.in, ps.v(), kProj, stream);
   auto* kc = reinterpret_cast<half_t*>(cache.k.data());
   auto* vc = reinterpret_cast<half_t*>(cache.v.data());
   (void)sc;
   const unsigned pos0 = cache.len;
   const kernels::AttnPrepBatchParams prep{
-      {ps.qg.data(), ps.k.data(), ps.v.data(), w.q_norm.data(), w.k_norm.data(),
-       rope.inv_freq.data(), kc, vc, ps.q.data(), pos0, cache.max_ctx, eps},
-      n};
+      {ps.qg(), ps.k(), ps.v(), w.q_norm.data(), w.k_norm.data(), rope.inv_freq.data(), kc, vc,
+       ps.q.data(), pos0, cache.max_ctx, eps},
+      n,
+      kProj};
   kernels::attn_prep_batch_kernel<kBlock><<<n * 18, kBlock, 0, stream>>>(prep);
   cache.len += n;
-  const kernels::AttnPrefillParams ap{ps.q.data(),    ps.qg.data(), kc, vc,
-                                      ps.core.data(), pos0,         n,  cache.max_ctx};
+  const kernels::AttnPrefillParams ap{ps.q.data(), ps.qg(),       kc,   vc, ps.core.data(), pos0,
+                                      n,           cache.max_ctx, kProj};
   kernels::attn_prefill_kernel<kBlock><<<kernels::attn_prefill_items(n), kBlock, 0, stream>>>(ap);
   MISO_HIP_CHECK(hipGetLastError());
   gemm_input(ps.core.data(), 4096, n, ps.in, stream);

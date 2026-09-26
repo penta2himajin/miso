@@ -1,0 +1,4 @@
+# After also concatenating attn_qkv with gate/alpha/beta when attn_qkv is Q4_K (16 of 30
+# DeltaNet layers). Layer 0 stays split (Q6_K qkv). Layer 5 (Q4_K) drops to one projection GEMV.
+DeltaNet layer 0 decode: 88.2 us/token (qkv.n=8192 z_ab.n=4160, 1000 tokens)
+DeltaNet layer 5 decode: 77.9 us/token (qkv.n=12352 z_ab.n=0, 1000 tokens)

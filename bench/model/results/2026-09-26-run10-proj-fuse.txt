@@ -1,0 +1,8 @@
+# After fusing Q4_K DeltaNet qkv+z_ab (16 layers) and Attention q+k+v (4 layers) into one GEMV
+# each. sclk 1725 MHz, junction 61 C, 206 W peak (`-smi.csv`).
+model load: 28.1 s
+warm-up: pp512 359.0 ms, 1426.3 tok/s
+measured: pp512 358.6 ms, 1427.7 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.09 ms/token, 123.6 tok/s
+measured: 256 tokens at ctx 273..529: 8.10 ms/token, 123.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

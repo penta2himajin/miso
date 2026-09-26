@@ -144,10 +144,10 @@ __global__ void __launch_bounds__(kBlock) deltanet_step_kernel(DeltaNetStepParam
 // the per-token inputs and outputs touch memory. Per token the arithmetic is that of
 // deltanet_step_op, so the result is bit-identical to n steps.
 struct DeltaNetSeqParams {
-  const float* qkv;  // [n][8192]
-  const float* z;    // [n][4096]
-  const float* a;    // [n][32]
-  const float* b;    // [n][32]
+  const float* qkv;  // [n][qkv_stride], first 8192 columns are q/k/v
+  const float* z;    // [n][zab_stride], first 4096 rows
+  const float* a;    // [n][zab_stride], rows 4096..4127
+  const float* b;    // [n][zab_stride], rows 4128..4159
   const float* conv_w;
   const float* conv_in;  // [8192][3] before the first token
   float* conv_out;       // [8192][3] after the last token
@@ -158,13 +158,15 @@ struct DeltaNetSeqParams {
   float* out;  // [n][4096]
   unsigned n;
   float eps;
+  unsigned zab_stride;  // 4160, or qkv_stride when z_ab shares the proj buffer
+  unsigned qkv_stride;  // 8192, or larger when qkv shares a buffer with z_ab
 };
 
 template <int kBlock>
 __device__ void deltanet_seq_op(const DeltaNetSeqParams& p, unsigned first, unsigned count) {
   using namespace deltanet_detail;
   static_assert(kBlock == 2 * kDim, "thread t owns v column t % 128 and k half t / 128");
-  constexpr unsigned kQkv = 2 * kKHeads * kDim + kVHeads * kDim, kO = kVHeads * kDim;
+  constexpr unsigned kO = kVHeads * kDim;
   __shared__ float q[kDim], k[kDim], v[kDim], red[kBlock / kWave], part[2][kDim];
   const unsigned t = threadIdx.x, vi = t % kDim, half = t / kDim, wave = t / kWave;
 
@@ -188,7 +190,7 @@ __device__ void deltanet_seq_op(const DeltaNetSeqParams& p, unsigned first, unsi
       s[j] = S[(half * (kDim / 2) + j) * kDim + vi];
 
     for (unsigned tok = 0; tok < p.n; ++tok) {
-      const float* x = p.qkv + std::size_t{tok} * kQkv;
+      const float* x = p.qkv + std::size_t{tok} * p.qkv_stride;
       const float x0 = x[c0];
       const float y0 = silu(w0[0] * s0[0] + w0[1] * s0[1] + w0[2] * s0[2] + w0[3] * x0);
       s0[0] = s0[1], s0[1] = s0[2], s0[2] = x0;
@@ -214,8 +216,8 @@ __device__ void deltanet_seq_op(const DeltaNetSeqParams& p, unsigned first, unsi
       }
       __syncthreads();
 
-      const float beta = 1.0f / (1.0f + __expf(-p.b[tok * kVHeads + h]));
-      const float decay = __expf(p.ssm_a[h] * softplus(p.a[tok * kVHeads + h] + p.dt_bias[h]));
+      const float beta = 1.0f / (1.0f + __expf(-p.b[tok * p.zab_stride + h]));
+      const float decay = __expf(p.ssm_a[h] * softplus(p.a[tok * p.zab_stride + h] + p.dt_bias[h]));
       float kv = 0;
 #pragma unroll
       for (int j = 0; j < kDim / 2; ++j) {
@@ -244,7 +246,7 @@ __device__ void deltanet_seq_op(const DeltaNetSeqParams& p, unsigned first, unsi
       if (t < kDim) {
         const float r = rsqrtf((red[0] + red[1]) / kDim + p.eps);
         p.out[std::size_t{tok} * kO + h * kDim + t] =
-            oh * r * p.norm_w[t] * silu(p.z[std::size_t{tok} * kO + h * kDim + t]);
+            oh * r * p.norm_w[t] * silu(p.z[std::size_t{tok} * p.zab_stride + h * kDim + t]);
       }
       __syncthreads();
     }
