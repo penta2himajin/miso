@@ -15,14 +15,15 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Status
 
-in-progress (M8a: norm fusion race-fixed but ~−1 tok/s vs main; reverted; peer review done)
+in-progress (M8a: 8× argmax top-k; median **134.2 tok/s**, MoE 70.4 µs)
 
 ## Next action
 
-After peer review (astra/mimo/deepseek): do not ship consumer-side 65× RMSNorm fusion (race-fixed median 126.7 vs main 127.7). Next bets: (1) replace O(n²) moe_topk with 8× argmax inside gate/up, (2) MoE/GEMV bandwidth, (3) producer-epilogue norm (not consumer redundant). Keep cooperative top-k closed.
+O(n²) moe_topk → 8× masked argmax landed (+~6.5 tok/s). Next: MoE/GEMV bandwidth and/or producer-epilogue norms. Keep coop top-k and consumer 65× RMSNorm fusion closed.
 
 ## Verification
 
+- `moe_topk` 8× masked argmax: MoE 85.6→**70.4** µs; e2e median **134.2 tok/s** (main 127.7) (`run19`, `run4-m8a-topk-algo`).
 - Cooperative top-k-in-router: **121.1 tok/s** — reverted.
 - Consumer-side post-attn RMSNorm fusion: first build +0.8 tok/s but **raced on residual**; race-fixed median **126.7** vs main **127.7** (−1) — reverted (`run17`/`run18`).
 - Peer reviews agree: ship+fix then drop this pattern; stage 3 needs MoE/GEMV work, not launch fusion.
@@ -104,4 +105,6 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M8a): Started stage-3 decode loop. Cooperative top-k-in-router measured slower and reverted. Fused post-attention RMSNorm into `moe_router` (40 launches/token removed); decode 127.6 → **128.4 tok/s**. Draft PR + peer review next.
 
 - 2026-09-26 (M8a peer loop): astra found residual race; fixed then median −1 tok/s vs main → reverted fusion. Peer consensus: next is top-k algorithm / MoE bandwidth / producer-epilogue norms — not more redundant consumer norms.
+
+- 2026-09-26 (M8a cont.): Replaced O(n²) top-k with 8× masked argmax per astra peer review; decode median 127.7 → **134.2 tok/s**.
 

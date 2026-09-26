@@ -88,22 +88,52 @@ __global__ void __launch_bounds__(kBlock) moe_router_kernel(MoeRouterParams p) {
 
 // Top-8 of the 256 router logits, by rank (ties broken by lower index), with renormalised softmax
 // weights. Needs all 256 threads of the workgroup.
+// Eight masked block-argmax passes replace the previous O(n²) rank scan (each of 120 gate/up WGs
+// used to do 256×256 compares). Tie-break: lower index wins.
 template <int kBlock>
 __device__ inline void moe_topk(const float* logits, int* ids, float* weights) {
   static_assert(kBlock == moe::kExperts);
-  __shared__ float l[moe::kExperts], red[kBlock / kWave];
+  __shared__ float l[moe::kExperts], red[kBlock / kWave], picked_v[moe::kTopK];
+  __shared__ unsigned dead[moe::kExperts / 32];
+  __shared__ int picked_i[moe::kTopK];
   const unsigned t = threadIdx.x;
-  const float mine = logits[t];
-  l[t] = mine;
+  l[t] = logits[t];
+  if (t < moe::kExperts / 32)
+    dead[t] = 0;
   __syncthreads();
-  unsigned rank = 0;
-  for (unsigned u = 0; u < moe::kExperts; ++u)
-    rank += l[u] > mine || (l[u] == mine && u < t);
-  const float mx = block_max<kBlock>(mine, red);
-  const float e = rank < moe::kTopK ? expf(mine - mx) : 0.0f;
-  const float sum = block_sum<kBlock>(e, red);
-  if (rank < moe::kTopK)
-    ids[rank] = static_cast<int>(t), weights[rank] = e / sum;
+  for (int k = 0; k < moe::kTopK; ++k) {
+    const bool alive = ((dead[t >> 5] >> (t & 31)) & 1u) == 0;
+    const float v = alive ? l[t] : -__builtin_inff();
+    const float mx = block_max<kBlock>(v, red);
+    // Among threads at the max, keep the lowest index (encode as float for block_min).
+    const float idx_f =
+        (alive && v == mx) ? static_cast<float>(t) : static_cast<float>(moe::kExperts);
+    const float best_f = block_reduce<kBlock>(
+        idx_f, red, [](float a, float b) { return fminf(a, b); },
+        static_cast<float>(moe::kExperts));
+    const unsigned best = static_cast<unsigned>(best_f);
+    if (t == 0) {
+      picked_i[k] = static_cast<int>(best);
+      picked_v[k] = l[best];
+      dead[best >> 5] |= 1u << (best & 31);
+    }
+    __syncthreads();
+  }
+  float mx = picked_v[0];
+#pragma unroll
+  for (int k = 1; k < moe::kTopK; ++k)
+    mx = fmaxf(mx, picked_v[k]);
+  float e = 0;
+#pragma unroll
+  for (int k = 0; k < moe::kTopK; ++k)
+    e += t == static_cast<unsigned>(k) ? expf(picked_v[k] - mx) : 0.0f;
+  // One thread owns each of the 8 slots; broadcast the sum via a tiny reduction over the first 8.
+  float sum = e;
+  sum += __shfl_xor(sum, 4);
+  sum += __shfl_xor(sum, 2);
+  sum += __shfl_xor(sum, 1);
+  if (t < moe::kTopK)
+    ids[t] = picked_i[t], weights[t] = expf(picked_v[t] - mx) / sum;
   __syncthreads();
 }
 
