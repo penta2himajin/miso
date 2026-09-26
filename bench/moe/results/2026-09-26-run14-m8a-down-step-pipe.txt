@@ -1,0 +1,30 @@
+# Loop1: moe_down step-level weight soft-pipeline (VGPR Q4 83→98 occ3→2; Q6 106→105)
+## MoE
+MoE layer 0 (down Q6_K) decode: 69.4 us/token
+MoE layer 0 prefill 512 tokens: 4.845 ms (9.5 us/token, 5.98 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 64.8 us/token
+MoE layer 5 prefill 512 tokens: 4.043 ms (7.9 us/token, 7.17 TFLOP/s experts)
+## e2e x3
+## run 1
+model load: 10.6 s
+warm-up: pp512 356.9 ms, 1434.4 tok/s
+measured: pp512 356.1 ms, 1437.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.38 ms/token, 135.4 tok/s
+measured: 256 tokens at ctx 273..529: 7.42 ms/token, 134.7 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 11.5 s
+warm-up: pp512 357.2 ms, 1433.4 tok/s
+measured: pp512 356.4 ms, 1436.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.39 ms/token, 135.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.42 ms/token, 134.7 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 11.1 s
+warm-up: pp512 357.0 ms, 1434.1 tok/s
+measured: pp512 356.2 ms, 1437.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.28 ms/token, 137.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.31 ms/token, 136.7 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+
+# REJECT: e2e median 134.7 < baseline 136.3; Q4 down occ 3→2 (VGPR 83→98). Reverted.
