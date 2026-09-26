@@ -1,0 +1,4 @@
+// After fusing attn_q + attn_k (8704 rows, Q4_K) into one GEMV on the 7 layers whose attn_v is
+// Q6_K (attn_q/attn_k are Q4_K in every layer). Decode: 7.94 ms/token, 126.0 tok/s.
+DeltaNet layer 0 decode: 85.0 us/token (qkv.n=8192 z_ab.n=4160, 1000 tokens)
+DeltaNet layer 5 decode: 74.5 us/token (qkv.n=12352 z_ab.n=0, 1000 tokens)

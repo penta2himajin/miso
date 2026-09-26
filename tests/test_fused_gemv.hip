@@ -78,8 +78,9 @@ TEST_CASE("Attention Q4_K q/k/v fuse and match separate GEMVs" *
   CHECK(max_abs_diff(y_fused.to_host(), y_parts.to_host()) == 0.0);
 }
 
-// Layer 0 stays split (Q6_K qkv); layer 3 keeps k/v separate (v is Q6_K).
-TEST_CASE("mixed-type layers keep projections separate" *
+// Layer 0 stays split (Q6_K qkv). Layer 3 has attn_v Q6_K, but attn_q and attn_k are both Q4_K, so
+// those two still concatenate into one 8704-row GEMV and only v gets its own launch.
+TEST_CASE("mixed-type layers keep v separate and fuse q+k" *
           doctest::skip(!std::filesystem::exists(MISO_ORNITH_GGUF))) {
   const File m = File::open(MISO_ORNITH_GGUF);
   const auto dn = miso::DeltaNetLayer::load(m, 0);
@@ -88,7 +89,21 @@ TEST_CASE("mixed-type layers keep projections separate" *
   CHECK(dn.z_ab.n == 4160);
 
   const auto at = miso::AttentionLayer::load(m, 3);
-  CHECK(at.q.n == 8192);
-  CHECK(at.k.n == 512);
+  CHECK(at.q.type == miso::gguf::GgmlType::Q4_K);
+  CHECK(at.q.n == 8704);
+  CHECK(at.k.n == 0);
+  CHECK(at.v.type == miso::gguf::GgmlType::Q6_K);
   CHECK(at.v.n == 512);
+
+  const auto q = miso::upload_qmatrix(m, "blk.3.attn_q.weight");
+  const auto k = miso::upload_qmatrix(m, "blk.3.attn_k.weight");
+  REQUIRE(q.n == 8192);
+  REQUIRE(k.n == 512);
+  miso::DeviceBuffer<float> x(std::vector<float>(2048, 0.02f));
+  miso::DeviceBuffer<float> y_fused(8704), y_parts(8704);
+  miso::gemv(at.q, x.data(), y_fused.data(), nullptr);
+  miso::gemv(q, x.data(), y_parts.data(), nullptr);
+  miso::gemv(k, x.data(), y_parts.data() + 8192, nullptr);
+  MISO_HIP_CHECK(hipDeviceSynchronize());
+  CHECK(max_abs_diff(y_fused.to_host(), y_parts.to_host()) == 0.0);
 }
