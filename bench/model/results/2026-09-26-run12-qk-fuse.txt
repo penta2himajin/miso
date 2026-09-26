@@ -1,0 +1,9 @@
+# M7c review. attn_q/attn_k are Q4_K in all 11 attention layers, so the 7 layers whose attn_v is
+# Q6_K now fuse q+k into one 8704-row GEMV: 3 projection launches -> 2.
+# Decode 125.5 -> 126.0 tok/s; sclk 1725 MHz, junction 57 C, 224 W peak.
+model load: 27.4 s
+warm-up: pp512 358.6 ms, 1427.9 tok/s
+measured: pp512 357.6 ms, 1431.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.90 ms/token, 126.5 tok/s
+measured: 256 tokens at ctx 273..529: 7.94 ms/token, 126.0 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

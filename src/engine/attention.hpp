@@ -13,8 +13,10 @@
 namespace miso {
 
 struct AttentionLayer {
-  // When attn_q/k/v share a type, q holds all 9216 rows and k.n == v.n == 0. When only k/v match,
-  // k holds 1024 rows and v.n == 0. Otherwise the three stay separate.
+  // attn_q (8192 rows) and attn_k (512) are both Q4_K in every layer, so they are concatenated
+  // into `q` (8704 rows) whenever attn_v differs; when all three match, `q` holds all 9216 rows
+  // and k.n == v.n == 0. Only if q/k ever differ do they stay separate. The projection buffer
+  // layout is the same either way: [q+gate 8192 | k 512 | v 512].
   QMatrix q;
   QMatrix k, v;
   QMatrix o;  // attn_output

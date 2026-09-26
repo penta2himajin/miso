@@ -30,6 +30,8 @@ AttentionLayer AttentionLayer::load(const gguf::File& f, int layer) {
   const auto& qt = require_tensor(f, p + "attn_q.weight");
   const auto& kt = require_tensor(f, p + "attn_k.weight");
   const auto& vt = require_tensor(f, p + "attn_v.weight");
+  // attn_q and attn_k are both Q4_K in every layer of this model, so their 8704 rows share one
+  // GEMV into the [q+gate | k | v] projection buffer; only v may need a launch of its own.
   if (qt.type == kt.type && kt.type == vt.type) {
     return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight", p + "attn_v.weight"}),
             empty_qmatrix(),
@@ -39,10 +41,10 @@ AttentionLayer AttentionLayer::load(const gguf::File& f, int layer) {
             upload_f32(f, p + "attn_q_norm.weight"),
             upload_f32(f, p + "attn_k_norm.weight")};
   }
-  if (kt.type == vt.type) {
-    return {upload_qmatrix(f, p + "attn_q.weight"),
-            concat_rows(f, {p + "attn_k.weight", p + "attn_v.weight"}),
+  if (qt.type == kt.type) {
+    return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight"}),
             empty_qmatrix(),
+            upload_qmatrix(f, p + "attn_v.weight"),
             upload_qmatrix(f, p + "attn_output.weight"),
             upload_f32(f, p + "attn_norm.weight"),
             upload_f32(f, p + "attn_q_norm.weight"),
