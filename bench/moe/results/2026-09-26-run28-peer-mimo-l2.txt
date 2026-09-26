@@ -1,0 +1,8 @@
+**Bet: Split-K for q4k_gemv (workspace partials + separate deterministic tree-reduce pass).**
+
+- Rationale: q4k N2048+N4096 ≈21% HBM and is the one target whose limit is wave/occupancy latency, not LDS (down is LDS-capped at 3 — excluded) and not SlotW (loop1 dead).
+- Split-K raises effective parallelism per GEMV; the reduce pass is pure bandwidth, no atomics.
+- **Success gate:** e2e median ≥143 tok/s under run26 protocol (clock/temp/power logged), AND q4k_gemv time down ≥15% with HBM write volume = partials only (bounded by K/SplitK, not N).
+- **Invalidate check:** if q4k time drops <10%, or the extra reduce pass + workspace traffic pushes e2e below 143 on the first 3 runs — stop, log to FAILED, no tuning iterations.
+- **Avoid:** float global atomics / packed-FP32 / MFMA (gfx906 + ADR bans); any further moe_gate_up SlotW or sequential reshuffle (loop1 FAILED); LDS rework or VGPR-only down; megakernel/MTP/batch.
+- Failure mode to watch: split factor too high → partials exceed cache and the reduce doubles HBM reads; start conservative (split 4–8), measure, don't conjecture.

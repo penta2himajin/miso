@@ -1,0 +1,13 @@
+Bet: Split-K q4k_gemv (N2048+N4096) with workspace partials + deterministic
+deterministic reduce, no float atomics. Leave moe_gate_up sequential path a
+alone.
+
+Success gate: e2e median ≥143 tok/s; MoE ≤69.3 µs; q4k N2048+N4096 slice 
+faster than baseline.
+
+Invalidate check: if e2e <143, or q4k slice not faster, or reduce/workspace
+reduce/workspace/LDS overhead cancels gain; if occ drops or LDS pressure wo
+worsens.
+
+Avoid: loop1 sequential gate_up retry, VGPR-only down, float atomics, ISA/A
+ISA/ADR bans, megakernel/MTP/batch.

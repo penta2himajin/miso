@@ -1,0 +1,7 @@
+**ONE bet:** Split-K=2 for `q4k_gemv` at N2048/N4096. Each partition writes FP32 partials to a preallocated workspace; a separate kernel reduces them. Hypothesis: more independent work improves utilization enough to repay workspace traffic and the extra launch.
+
+**Success gate:** Pass existing correctness checks; e2e median **≥143 tok/s** versus run26’s **140.1**, under ADR_002 D12 with comparable clock/temperature/power and committed raw results. Measure both shapes including reduction overhead.
+
+**Invalidate check:** Compare unsplit versus split **GEMV + reduction** latency. If their aggregate contribution does not fall, reject the utilization hypothesis; if e2e misses 143, reject loop2 regardless of kernel gains.
+
+**Avoid:** Sequential gate-then-up retry, float atomics, forbidden ISA, production vendor BLAS, VGPR-only down tuning, megakernel/MTP/batch, and concurrent unrelated changes.
