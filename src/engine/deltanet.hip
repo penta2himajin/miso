@@ -16,31 +16,34 @@ QMatrix empty_qmatrix() {
 
 }  // namespace
 
-DeltaNetLayer DeltaNetLayer::load(const gguf::File& f, int layer) {
+DeltaNetLayer DeltaNetLayer::load(const gguf::File& f, int layer, LoadStage* st) {
   const std::string p = "blk." + std::to_string(layer) + ".";
   const auto* qkv_t = f.find_tensor(p + "attn_qkv.weight");
   if (qkv_t == nullptr)
     throw std::runtime_error("missing " + p + "attn_qkv.weight");
   // Same type and K as gate/alpha/beta → one GEMV writes q, k, v, z, a, b.
   if (qkv_t->type == gguf::GgmlType::Q4_K) {
-    return {concat_rows(f, {p + "attn_qkv.weight", p + "attn_gate.weight", p + "ssm_alpha.weight",
-                            p + "ssm_beta.weight"}),
+    return {concat_rows(f,
+                        {p + "attn_qkv.weight", p + "attn_gate.weight", p + "ssm_alpha.weight",
+                         p + "ssm_beta.weight"},
+                        st),
             empty_qmatrix(),
-            upload_qmatrix(f, p + "ssm_out.weight"),
-            upload_f32(f, p + "attn_norm.weight"),
-            upload_f32(f, p + "ssm_conv1d.weight"),
-            upload_f32(f, p + "ssm_a"),
-            upload_f32(f, p + "ssm_dt.bias"),
-            upload_f32(f, p + "ssm_norm.weight")};
+            upload_qmatrix(f, p + "ssm_out.weight", st),
+            upload_f32(f, p + "attn_norm.weight", st),
+            upload_f32(f, p + "ssm_conv1d.weight", st),
+            upload_f32(f, p + "ssm_a", st),
+            upload_f32(f, p + "ssm_dt.bias", st),
+            upload_f32(f, p + "ssm_norm.weight", st)};
   }
-  return {upload_qmatrix(f, p + "attn_qkv.weight"),
-          concat_rows(f, {p + "attn_gate.weight", p + "ssm_alpha.weight", p + "ssm_beta.weight"}),
-          upload_qmatrix(f, p + "ssm_out.weight"),
-          upload_f32(f, p + "attn_norm.weight"),
-          upload_f32(f, p + "ssm_conv1d.weight"),
-          upload_f32(f, p + "ssm_a"),
-          upload_f32(f, p + "ssm_dt.bias"),
-          upload_f32(f, p + "ssm_norm.weight")};
+  return {
+      upload_qmatrix(f, p + "attn_qkv.weight", st),
+      concat_rows(f, {p + "attn_gate.weight", p + "ssm_alpha.weight", p + "ssm_beta.weight"}, st),
+      upload_qmatrix(f, p + "ssm_out.weight", st),
+      upload_f32(f, p + "attn_norm.weight", st),
+      upload_f32(f, p + "ssm_conv1d.weight", st),
+      upload_f32(f, p + "ssm_a", st),
+      upload_f32(f, p + "ssm_dt.bias", st),
+      upload_f32(f, p + "ssm_norm.weight", st)};
 }
 
 void DeltaNetState::reset() {

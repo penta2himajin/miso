@@ -23,15 +23,20 @@ bool is_full_attention(const gguf::File& f, unsigned layer) {
   return (layer + 1) % interval == 0;
 }
 
-DeviceBuffer<std::uint8_t> upload_embedding(const gguf::File& f) {
+DeviceBuffer<std::uint8_t> upload_embedding(const gguf::File& f, LoadStage* st) {
   const auto* t = f.find_tensor("token_embd.weight");
   if (t == nullptr || t->type != gguf::GgmlType::Q4_K)
     throw std::runtime_error("token_embd must be Q4_K");
   const auto src = f.tensor_data(*t);
-  std::vector<std::byte> r1(src.size());
-  repack_q4k(src, r1);
-  DeviceBuffer<std::uint8_t> d(r1.size());
-  MISO_HIP_CHECK(hipMemcpy(d.data(), r1.data(), r1.size(), hipMemcpyHostToDevice));
+  DeviceBuffer<std::uint8_t> d(src.size());
+  if (st == nullptr) {
+    std::vector<std::byte> r1(src.size());
+    repack_q4k(src, r1);
+    MISO_HIP_CHECK(hipMemcpy(d.data(), r1.data(), r1.size(), hipMemcpyHostToDevice));
+  } else {
+    const auto* f_t = t;
+    load_split(f, *f_t, reinterpret_cast<std::byte*>(d.data()), st);
+  }
   return d;
 }
 
@@ -41,10 +46,13 @@ Model Model::load(const gguf::File& f) {
   const auto n_layers =
       static_cast<unsigned>(f.get<std::int64_t>("qwen35moe.block_count")) -
       static_cast<unsigned>(f.get<std::int64_t>("qwen35moe.nextn_predict_layers"));
-  Model m{upload_embedding(f),
+  // Weights load through pinned staging chunks (M7f): repacking the next tensor overlaps the copy
+  // of the previous one, and the device read never waits on a cold pageable buffer.
+  LoadStage stage;
+  Model m{upload_embedding(f, &stage),
           {},
-          upload_f32(f, "output_norm.weight"),
-          upload_qmatrix(f, "output.weight"),
+          upload_f32(f, "output_norm.weight", &stage),
+          upload_qmatrix(f, "output.weight", &stage),
           RopeConfig::from(f),
           static_cast<float>(f.get<double>("qwen35moe.attention.layer_norm_rms_epsilon")),
           0};
@@ -52,15 +60,16 @@ Model Model::load(const gguf::File& f) {
   m.layers.reserve(n_layers);
   for (unsigned i = 0; i < n_layers; ++i) {
     Layer l{std::nullopt, std::nullopt,
-            upload_f32(f, "blk." + std::to_string(i) + ".post_attention_norm.weight"),
-            MoeLayer::load(f, static_cast<int>(i))};
+            upload_f32(f, "blk." + std::to_string(i) + ".post_attention_norm.weight", &stage),
+            MoeLayer::load(f, static_cast<int>(i), &stage)};
     if (is_full_attention(f, i)) {
-      l.attention.emplace(AttentionLayer::load(f, static_cast<int>(i)));
+      l.attention.emplace(AttentionLayer::load(f, static_cast<int>(i), &stage));
     } else {
-      l.deltanet.emplace(DeltaNetLayer::load(f, static_cast<int>(i)));
+      l.deltanet.emplace(DeltaNetLayer::load(f, static_cast<int>(i), &stage));
     }
     m.layers.push_back(std::move(l));
   }
+  stage.sync();  // every weight is on the device before the model is used
   return m;
 }
 

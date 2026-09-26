@@ -25,7 +25,7 @@ const gguf::TensorInfo& require_tensor(const gguf::File& f, const std::string& n
 
 }  // namespace
 
-AttentionLayer AttentionLayer::load(const gguf::File& f, int layer) {
+AttentionLayer AttentionLayer::load(const gguf::File& f, int layer, LoadStage* st) {
   const std::string p = "blk." + std::to_string(layer) + ".";
   const auto& qt = require_tensor(f, p + "attn_q.weight");
   const auto& kt = require_tensor(f, p + "attn_k.weight");
@@ -33,27 +33,28 @@ AttentionLayer AttentionLayer::load(const gguf::File& f, int layer) {
   // attn_q and attn_k are both Q4_K in every layer of this model, so their 8704 rows share one
   // GEMV into the [q+gate | k | v] projection buffer; only v may need a launch of its own.
   if (qt.type == kt.type && kt.type == vt.type) {
-    return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight", p + "attn_v.weight"}),
+    return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight", p + "attn_v.weight"}, st),
             empty_qmatrix(),
             empty_qmatrix(),
-            upload_qmatrix(f, p + "attn_output.weight"),
-            upload_f32(f, p + "attn_norm.weight"),
-            upload_f32(f, p + "attn_q_norm.weight"),
-            upload_f32(f, p + "attn_k_norm.weight")};
+            upload_qmatrix(f, p + "attn_output.weight", st),
+            upload_f32(f, p + "attn_norm.weight", st),
+            upload_f32(f, p + "attn_q_norm.weight", st),
+            upload_f32(f, p + "attn_k_norm.weight", st)};
   }
   if (qt.type == kt.type) {
-    return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight"}),
+    return {concat_rows(f, {p + "attn_q.weight", p + "attn_k.weight"}, st),
             empty_qmatrix(),
-            upload_qmatrix(f, p + "attn_v.weight"),
-            upload_qmatrix(f, p + "attn_output.weight"),
-            upload_f32(f, p + "attn_norm.weight"),
-            upload_f32(f, p + "attn_q_norm.weight"),
-            upload_f32(f, p + "attn_k_norm.weight")};
+            upload_qmatrix(f, p + "attn_v.weight", st),
+            upload_qmatrix(f, p + "attn_output.weight", st),
+            upload_f32(f, p + "attn_norm.weight", st),
+            upload_f32(f, p + "attn_q_norm.weight", st),
+            upload_f32(f, p + "attn_k_norm.weight", st)};
   }
-  return {upload_qmatrix(f, p + "attn_q.weight"), upload_qmatrix(f, p + "attn_k.weight"),
-          upload_qmatrix(f, p + "attn_v.weight"), upload_qmatrix(f, p + "attn_output.weight"),
-          upload_f32(f, p + "attn_norm.weight"),  upload_f32(f, p + "attn_q_norm.weight"),
-          upload_f32(f, p + "attn_k_norm.weight")};
+  return {
+      upload_qmatrix(f, p + "attn_q.weight", st), upload_qmatrix(f, p + "attn_k.weight", st),
+      upload_qmatrix(f, p + "attn_v.weight", st), upload_qmatrix(f, p + "attn_output.weight", st),
+      upload_f32(f, p + "attn_norm.weight", st),  upload_f32(f, p + "attn_q_norm.weight", st),
+      upload_f32(f, p + "attn_k_norm.weight", st)};
 }
 
 RopeConfig RopeConfig::from(const gguf::File& f) {

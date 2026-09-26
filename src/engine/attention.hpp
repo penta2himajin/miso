@@ -22,7 +22,7 @@ struct AttentionLayer {
   QMatrix o;  // attn_output
   DeviceBuffer<float> attn_norm, q_norm, k_norm;
 
-  static AttentionLayer load(const gguf::File& f, int layer);
+  static AttentionLayer load(const gguf::File& f, int layer, LoadStage* st = nullptr);
 };
 
 // Inverse RoPE frequencies for the rotated dims, computed as transformers does (FP32).

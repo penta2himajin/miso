@@ -46,6 +46,11 @@ target_link_libraries(test_fused_gemv PRIVATE miso_engine)
 miso_gpu_test(test_gemv_dispatch test_gemv_dispatch.hip)
 target_compile_definitions(test_gemv_dispatch PRIVATE ${MISO_TEST_DEFINITIONS})
 target_link_libraries(test_gemv_dispatch PRIVATE miso_engine)
+
+# The staged load path must be byte-identical to the plain one (M7f), so it needs the model.
+miso_gpu_test(test_load_stage test_load_stage.hip)
+target_compile_definitions(test_load_stage PRIVATE ${MISO_TEST_DEFINITIONS})
+target_link_libraries(test_load_stage PRIVATE miso_engine)
 miso_gpu_test(test_norm_embed test_norm_embed.hip)
 target_compile_definitions(test_norm_embed PRIVATE ${MISO_TEST_DEFINITIONS})
 
