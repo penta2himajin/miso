@@ -1,0 +1,17 @@
+1) Bet: Split-K two-stage reduction for q4k_gemv N2048/N4096. Attach: q4k_g
+q4k_gemv kernel (N2048/N4096 specializations). Change: K-split=4; each CTA 
+computes partial dot for its N tile over K/4 into FP32 workspace [N,4]; tin
+tiny second reduce kernel sums 4 partials per N (no atomics). Why room: N20
+N2048/4096 with typical N-tile yields ≤32/64 CTAs, under 60 CUs; 22.9/20.0
+22.9/20.0µs is latency-bound, not HBM-bound. Split-K multiplies CTAs, fills
+fills SMs, hides latency.
+2) Success gate: e2e median ≥150 tok/s vs 140.1; or combined q4k_gemv N204
+N2048+N4096 <28µs/layer (from ~43µs).
+3) Invalidate: if q4k_gemv already launches >120 CTAs or occupancy ≥3 wave
+waves; if reduction kernel+workspace overhead >10µs/layer; if A-vector relo
+reload or VGPR spill dominates.
+4) Not: retread failed list—coop top-k, RMSNorm→router, down-skip, hdr sh
+shfl, float4 norm, MoE grid-only, expert-major down, Q4 r2 SoA, residual GE
+GEMV epilogue, Q6 double-buffer spill, megakernel, GEMV R=5/6, soft-pipelin
+soft-pipeline/act-reload/Q4 rolled down, rmsnorm block 128; no VGPR-only do
+down occupancy.

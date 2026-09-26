@@ -1,0 +1,28 @@
+# 2026-09-26 run26: post-PR#26 bottleneck (main @ afc036e, kRmsNormBlock=512)
+
+## e2e (D12)
+- measured: 139.8 / 141.2 / 140.1 → median **140.1 tok/s** (7.13 ms/tok)
+- floor 379 → **37%** of BW floor
+- smi active: sclk 1725 MHz, junc ≤63 C, pwr ≤184 W
+
+## 成分 µs/tok
+- MoE L0/L5: 69.3 / 66.1
+- DeltaNet L0/L5: 82.9 / 72.3
+- Attn L3: 92 (ctx16) → 257 (ctx16k)
+
+## rocprof 上位 (decode寄り)
+| kernel | % | avg µs | vs run25 |
+|---|---:|---:|---|
+| moe_gate_up | 14.3 | 29.1 | ≈ |
+| q4k_gemv N=2048 | 11.3 | 22.9 | ≈ |
+| q4k_gemv N=4096 | 9.9 | 20.0 | ≈ |
+| add_rmsnorm | 8.8 | 8.8 | was 11.0% / 11.5 µs |
+| moe_down Q6 | 8.1 | 32.9 | ≈ |
+| q6k_gemv R1 | 7.6 | 88.6 | ≈ |
+| moe_down Q4 | 7.0 | 28.3 | ≈ |
+| deltanet_step | 5.1 | 13.9 | ≈ |
+
+家族: GEMV_proj **33%** ≈ MoE_decode **33%** ≫ Norm 9% ≫ DeltaNet 8% ≫ Attn 4%
+
+## MoE BW 実効
+- gate_up ~46% peak; down Q4/Q6 ~23%/30% → 依然 ALU/占有側

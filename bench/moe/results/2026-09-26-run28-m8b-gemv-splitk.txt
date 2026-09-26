@@ -1,0 +1,28 @@
+# Loop2: Q4 GEMV Split-K=2 (N>=2048 K=2048 and K=4096); 3-peer consensus
+# Success gate: e2e median >=143 vs 140.1
+## e2e x3
+## run 1
+model load: 10.1 s
+warm-up: pp512 356.6 ms, 1435.7 tok/s
+measured: pp512 355.6 ms, 1439.9 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.58 ms/token, 131.9 tok/s
+measured: 256 tokens at ctx 273..529: 7.61 ms/token, 131.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 11.2 s
+warm-up: pp512 356.5 ms, 1436.1 tok/s
+measured: pp512 355.6 ms, 1439.7 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.56 ms/token, 132.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.59 ms/token, 131.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 11.1 s
+warm-up: pp512 356.6 ms, 1435.6 tok/s
+measured: pp512 355.6 ms, 1439.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.62 ms/token, 131.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.65 ms/token, 130.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+
+# REJECT: e2e ['131.4', '131.8', '130.8'] median << 140.1 (gate was ≥143).
+# Split-K=2 added reduce launch + half-wave idle on K=2048; utilization hypothesis failed.
+# Reverted.

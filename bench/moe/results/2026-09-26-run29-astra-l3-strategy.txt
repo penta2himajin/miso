@@ -1,0 +1,23 @@
+1) **What loops 1–2 established**
+- Loop1: reducing VGPRs without crossing an occupancy threshold bought nothing; removing the dual-SlotW pipeline regressed performance. Preserve that overlap.
+- Loop2: this two-launch Split-K=2 implementation lost more to launch/reduction overhead and reduced wave utilization than it gained from splitting K. Reject that implementation for these shapes.
+- Neither result proves bandwidth saturation. The reported HBM percentages alone cannot distinguish transaction inefficiency, dependencies, or insufficient concurrency.
+
+2) **Ranked remaining classes** — measurement candidates, not established wins:
+- **MoE-down LDS footprint:** attach to Q4/Q6 down-kernel shared-memory declarations and phase boundaries. The measured 18.5 KiB occupancy cap is a concrete resource constraint worth attacking.
+- **Q4 GEMV instruction scheduling:** attach to the N2048/N4096 inner dequantize–dot loops. Preserve launch count, row geometry, and reduction structure; first inspect ISA for repeated decode work or load-use dependencies.
+- **Gate/up memory transactions:** attach to packed-weight and metadata loads, retaining dual SlotW. Measure transaction efficiency before changing load width/layout; ~46% HBM is insufficient evidence by itself.
+
+3) **ONE loop3 bet: reclaim LDS through lifetime aliasing in MoE-down**
+- Exact proposed change: replace separately allocated LDS regions whose lifetimes demonstrably do not overlap with one aligned backing allocation and phase-specific views.
+- Preserve arithmetic, tiles, block geometry, pipeline depth, and launch count; synchronize before reusing storage.
+- Target **compiler-reported allocated LDS ≤16 KiB**, then verify whether actual residency increases. Do not infer increased occupancy from source byte counts.
+- **Immediate invalidate check:** if the live-storage map cannot reach that threshold without removing overlap or adding synchronization inside the hot loop, abandon this bet before benchmarking. The supplied measurements do not establish that such aliasing is possible.
+- Run existing correctness checks, then Q4/Q6 down measurements and paired end-to-end runs under the baseline protocol.
+- **Acceptance: repeated end-to-end median ≥143 tok/s versus paired ~140.1 controls**, with the existing floor criterion preserved and clock/thermal conditions comparable.
+- Rough budget: down accounts for at most ~18.6% of profiled time, so it needs roughly **≥11% latency reduction** to supply the required ~2% total-time reduction alone. Treat this as screening arithmetic, not a prediction.
+
+4) **Abandon for this batch**
+- Both rejected implementations, occupancy-neutral VGPR trimming, and extra-launch partitioning of these small GEMVs.
+- Grid-only tuning, the prohibited row-count winners, and every previously banned class.
+- Any LDS redesign requiring a new down algorithm: if straightforward aliasing fails, move to the next class rather than consuming loops 4–5 rescuing it.

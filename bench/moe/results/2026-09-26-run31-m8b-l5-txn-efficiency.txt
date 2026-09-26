@@ -1,0 +1,32 @@
+# Loop5: measure moe_gate_up / MoE weight-load transaction efficiency — CLOSE (no code change)
+
+## Method
+- `rocprof` pmc pass1: FETCH_SIZE, TCC_EA_RDREQ_sum, TCC_EA_RDREQ_32B_sum, SQ_INSTS_VMEM_RD on `./build/bench/bench_moe`
+- pass2: TCC_HIT_sum, TCC_MISS_sum
+- Ideal unique weight bytes (decode, 1 MoE layer launch):
+  - moe_gate_up: 9×512×1152×2 = 10,616,832 B = 10,368 KiB
+  - moe_down Q4: 9×2048×288 = 5,308,416 B = 5,184 KiB
+  - moe_down Q6: 9×2048×432 = 7,962,624 B = 7,776 KiB
+
+## Results (median per launch)
+| kernel | n | FETCH_SIZE | ideal | fetch/ideal | RDREQ 32B frac | L2 miss |
+|---|---:|---:|---:|---:|---:|---:|
+| moe_gate_up | 2400 | 10434.3 KB | 10368 KB | **1.006× (+0.6%)** | 0.000 | 0.907 |
+| moe_down_Q4 | 1200 | 5246.8 KB | 5184 KB | **1.012× (+1.2%)** | 0.000 | 0.802 |
+| moe_down_Q6 | 1200 | 7846.6 KB | 7776 KB | **1.009× (+0.9%)** | 0.000 | 0.855 |
+
+All RDREQs are 64B (no 32B partials). High L2 miss is expected for cold streaming weights; it is **not** excess DRAM relative to unique bytes.
+
+## Invalidate (peers)
+- deepseek: within ~5% of ideal → dead
+- mimo: sectors/request within ~1.15× ideal + not memory-limited → dead
+- astra: traffic consistent with coalesced loads → no layout edit
+
+**fetch/ideal ≤ 1.012 on all MoE weight kernels → transaction-efficiency hypothesis CLOSED.**
+No layout/source change. Prior ~46% peak HBM was time/bytes estimate, not proof of waste.
+
+## Analytical note
+`load_w` issues 8× redundant header addresses per Q4 block; wave coalescing + 64B TCC transactions keep DRAM traffic at ~ideal unique bytes (measured).
+
+## Verdict
+**CLOSE / no code change** (measurement-only loop). M8b batch ends without a KEEP for loops 1–5.

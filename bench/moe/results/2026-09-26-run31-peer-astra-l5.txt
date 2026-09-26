@@ -1,0 +1,13 @@
+**Confirm CLOSE item #3; no layout change.** FETCH is only 0.6–1.2% above ideal unique weight bytes, with exclusively 64B RDREQs. High L2 miss rates do not contradict near-ideal DRAM byte efficiency; these measurements show no material excess weight traffic to address through layout changes.
+
+If this ends M8b, a future batch may investigate independently measured bottlenecks beyond weight transaction efficiency; nothing is authorized to execute now.
+
+Do-not-try carry-forward:
+
+- L1 sequential SlotW — REJECT.
+- L2 Split-K — REJECT.
+- L3 drop down LDS `a[]` — REJECT.
+- L4 GEMV ISA schedule — ABANDON; results invalidated.
+- L5 gate/up layout changes motivated by excess weight traffic — CLOSE; unsupported by these measurements.
+
+Baseline remains **140.1**; no code change or ≥143 KEEP result this loop.

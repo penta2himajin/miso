@@ -1,0 +1,9 @@
+**Confirm ABANDON.** The supplied ISA findings meet loop4’s invalidate condition: next-row loads already overlap dot work, and ~12 useful ALU instructions separate the weight wait from the first dot. There is no demonstrated reorderable stall to justify an edit. This does not prove optimal scheduling; it closes this specific bet.
+
+**ONE loop5 bet: measure gate/up weight-load transaction efficiency.** Target the production Q4 gate/up GEMV weight-load path in `q4k_gemv_kernel<Fp16,2048,256,4>` and its N4096 counterpart, using actual gate/up launch shapes. Compare logically required weight bytes against measured memory traffic and inspect lane addresses for transaction waste. The attn_gate grid240 result is context, not gate/up evidence.
+
+- **Invalidate:** traffic is consistent with efficiently coalesced loads, or measurements cannot isolate material waste attributable to the weight layout. No layout edit in either case.
+- **Proceed only if:** a specific address pattern explains measured excess traffic and suggests a concrete correction.
+- **Acceptance for any resulting code change:** correctness passes and e2e median **≥143**, using ADR_002 D12 with raw results committed. Microbenchmark gains alone do not qualify.
+
+**Do-not-try:** blind load/dot rescheduling; layout changes justified only by ~36% peak HBM bandwidth; bundling activation cvt/pack changes into this bet; reviving sequential SlotW, Split-K, or the `moe_down a[9][512]` removal without new evidence overturning their rejection.

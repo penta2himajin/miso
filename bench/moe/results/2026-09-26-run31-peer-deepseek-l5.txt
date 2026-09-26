@@ -1,0 +1,19 @@
+**Confirm CLOSE** for item #3. No counter-read: FETCH/ideal is 1.006× gate
+gate_up, 1.012× down_Q4, 1.009× down_Q6; all RDREQ are 64B, and DRAM byte
+bytes ≈ unique weight bytes. High L2 miss is not a layout/transaction defe
+defect here — it is compulsory streaming of unique weights. No layout chan
+change.
+
+**Future-open one-liner:** If M8b ends here, the only future-batch opening 
+is a fundamentally different gate/up compute/overlap approach, not more wei
+weight-fetch/layout tuning.
+
+**Do-not-try carry-forward:**
+- Sequential SlotW
+- Split-K
+- Drop down LDS `a[]`
+- GEMV ISA schedule (invalidated)
+- Any weight layout/padding change for `moe_gate_up`, `moe_down_Q4`, `moe_d
+`moe_down_Q6` based on FETCH/ideal ratios
+- Chasing 32B RDREQ or treating high L2 miss as actionable; 64B requests ar
+are fully utilized and DRAM ≈ unique weights.

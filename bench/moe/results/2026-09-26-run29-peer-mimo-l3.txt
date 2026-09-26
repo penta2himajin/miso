@@ -1,0 +1,44 @@
+# 1. Verdict: REJECT confirmed — not disputed
+
+The bet's causal chain failed at its **first link**, not its last:
+
+- **LDS was never the occupancy limiter.** 18512 → 80 bytes moved Q4 occupancy **not at all** (83 VGPR / occ 3, unchanged). LDS-aliasing was a hypothesis, and the measurement falsified it: occupancy is gated by VGPR, not LDS.
+- **The cross-over cost landed exactly where predicted risk was.** Q6 went 106 → 134 VGPR, occ 2 → 1, and L0 Q6 latency regressed 69 → 71.5 µs. That is the whole net loss.
+- **The gate is missed on every sample**, not on a median fluke: 141.3 / 141.0 / 140.8, all < 143. Net +0.9 tok/s ≈ **+0.6%** against a required **+2.1%**.
+- Salvageable signal: **L5 Q4 improved 66 → 64.6** with Q4 resources untouched. This justifies Q4-directed work later; it does not rescue this loop.
+
+REJECT stands. Code correctly reverted.
+
+---
+
+# 2. ONE loop4 bet — Q4 GEMV instruction scheduling (strategy item #2)
+
+**Change site (single knob, instruction order only):**
+Inner `kSteps` loop of the **Q4 GEMV path of `moe_down`** (the kernel carrying `a[9][512]` / `act[kSteps]` staging), measured at MoE **L5 Q4**. Software-pipeline the sequence: hoist address generation and `sid`/`coef` LDS loads ahead of the consuming dequant/FFMA ops, interleave independent ops across LDS-use latency, keep both pipeline stages fed.
+
+**Hard constraints (these are the loop1/loop2 failure signatures, explicitly excluded):** launch config, tile/block geometry, `kSteps`, dual SlotW gate/up pipelines, shared-memory layout, top-k, and **Q4 VGPR ≤ 85 / occ ≥ 3** all unchanged. No new registers.
+
+**Hypothesis tied to measurement:**
+- Q4 responded to the last change with **L5 66 → 64.6 µs while its resources were flat** → the Q4 path has latency-hiding headroom and is not at an issue/resource wall.
+- Q4 sits at **83 VGPR / occ 3**, i.e. register headroom exists → scheduling can be rearranged with zero occupancy cost, unlike Q6 (106 VGPR / occ 2, the path that broke last loop).
+- loop1 (serializing gate/up) and loop2 (geometry/launch) both lost to **serialized issue and launch overhead** → the pipeline is issue-limited, not bandwidth-limited, so scheduling is the remaining lever.
+
+**Invalidate check (measure before and after):**
+- **Stage 0, pre-change:** disassemble the Q4 GEMV inner loop; count stall causes (VALU idle / LDS wait / scoreboard / address-gen on critical path). If Q4 is already issue-saturated with no reorderable latency stalls → **abandon the bet at design time, no code written.**
+- **Stage 1, post-change, kernel-level:** invalidate unless **L5 Q4 ≤ 62 µs** (must beat the 64.6 that the LDS variant already gave — otherwise the work isn't buying anything new), **and** L0 Q6 ≤ 69 µs (no cross-path regression), **and** Q4 VGPR ≤ 85 / occ ≥ 3.
+- **Final acceptance:** e2e **median ≥ 143 tok/s over ≥ 3 runs** vs baseline 140.1, `test_moe` passes, first generated ids unchanged. Kernel win but e2e < 143 → **REJECT and close Q4 scheduling** as well.
+
+---
+
+# 3. Do-not-try, loops 4–5
+
+1. **Anything that raises Q6 register pressure or accepts occ 1** — Q6 is at its VGPR wall (106/2 baseline; 134/1 in loop3). Includes any variant of "keep loop3's register-resident `act` for Q6."
+2. **Reopening loop1** (sequential/serialized gate_up SlotW) — dual-pipeline overlap is load-bearing; measured loss.
+3. **Reopening loop2** (Split-K or any launch/geometry/reduction change) — launch+reduce overhead measured worse.
+4. **Reopening loop3's `a[9][512]` deletion** without new counters — the LDS win is real but the occupancy hypothesis is disproven; only a *Q4-only* variant could ever be reconsidered, and only with new evidence.
+5. **M8a closures:** VGPR-only down, soft-pipeline, act-reload, Q4 rolled steps, coop top-k, consumer→router RMSNorm fusion — closed, don't re-litigate.
+6. **Gate/up layout changes (strategy item #3) before measuring transaction efficiency** — item 3 explicitly says *measure first*. If counters show no transaction waste, drop the idea instead of shipping a layout change.
+7. **Any two-variable change** — loop3's damage came from a resource cross-over (LDS ↓ ⇒ VGPR ↑ ⇒ occ ↓). One knob per loop, always.
+8. **HBM% as a go/no-go signal** — brief already states it ≠ saturation; use kernel µs, VGPR/occ, and stall counters.
+9. **Re-baselining or accepting ~141** as "close enough" — the gate is ≥143 against 140.1, full stop.
+10. If loop4 misses the gate, **loop5 should be measurement-only** (the item-3 transaction-efficiency profiling), not a fifth speculative change — speculating twice on unmeasured bottlenecks is how this batch burns its remaining loops.

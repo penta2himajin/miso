@@ -1,0 +1,30 @@
+# VERDICT: REJECT — LDS 18512→80 but Q6 VGPR↑134 occ 2→1; MoE L0 71.5(+2) L5 64.6(-1.4); e2e 141.3/141.0/140.8 median~141.0 < gate 143
+# Loop3: moe_down drop shared a[9][512]; act[kSteps] from global p.h once (astra+3peer KEEP)
+# baseline: LDS 18512 occ Q4=3 Q6=2; MoE L0~69us L5~66us; e2e median 140.1; KEEP gate e2e>=143
+## MoE
+MoE layer 0 (down Q6_K) decode: 71.5 us/token
+MoE layer 0 prefill 512 tokens: 4.848 ms (9.5 us/token, 5.98 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 64.6 us/token
+MoE layer 5 prefill 512 tokens: 4.049 ms (7.9 us/token, 7.16 TFLOP/s experts)
+## e2e x3
+## run 1
+model load: 10.1 s
+warm-up: pp512 356.1 ms, 1437.7 tok/s
+measured: pp512 355.4 ms, 1440.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.05 ms/token, 141.9 tok/s
+measured: 256 tokens at ctx 273..529: 7.08 ms/token, 141.3 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 11.1 s
+warm-up: pp512 356.4 ms, 1436.8 tok/s
+measured: pp512 355.2 ms, 1441.3 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.06 ms/token, 141.6 tok/s
+measured: 256 tokens at ctx 273..529: 7.09 ms/token, 141.0 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 11.2 s
+warm-up: pp512 356.5 ms, 1436.2 tok/s
+measured: pp512 355.4 ms, 1440.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.07 ms/token, 141.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.10 ms/token, 140.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

@@ -1,0 +1,31 @@
+"Name","Calls","TotalDurationNs","AverageNs","Percentage"
+"void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams) [clone .kd]",21160,616728117,29145,14.33229524900389
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]",21160,484352591,22890,11.255988088559977
+"void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]",21160,423975585,20036,9.852872108616939
+"void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int) [clone .kd]",43011,378014860,8788,8.78477960172338
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]",10580,347726227,32866,8.080894666240988
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams) [clone .kd]",3705,328329645,88617,7.6301327626037745
+"void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]",10580,299893716,28345,6.969303267606529
+"void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams) [clone .kd]",15870,220791744,13912,5.13103323218598
+"void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams) [clone .kd]",7406,198517214,26804,4.613389992494357
+"void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)0>(miso::kernels::QGemmParams) [clone .kd]",160,179724473,1123277,4.176660897248548
+"void miso::kernels::moe_gate_up_grouped_kernel<256>(miso::kernels::MoeGateUpGroupedParams) [clone .kd]",80,150427408,1880342,3.495819252551396
+"void miso::kernels::moe_router_kernel<256>(miso::kernels::MoeRouterParams) [clone .kd]",21160,149372831,7059,3.4713116802351998
+"void miso::kernels::deltanet_seq_kernel<256>(miso::kernels::DeltaNetSeqParams) [clone .kd]",60,134803920,2246732,3.1327412013600484
+"void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams) [clone .kd]",5290,73614274,13915,1.7107400820985603
+"void miso::kernels::moe_down_grouped_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownGroupedParams) [clone .kd]",40,49587589,1239689,1.1523780846759375
+"void miso::kernels::moe_router_batch_kernel<256>(miso::kernels::MoeRouterBatchParams) [clone .kd]",80,47899914,598748,1.113157793403953
+"void miso::kernels::moe_down_grouped_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownGroupedParams) [clone .kd]",40,42160721,1054018,0.9797832863891927
+"void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)1>(miso::kernels::QGemmParams) [clone .kd]",40,41211768,1030294,0.9577303359909088
+"void miso::kernels::attn_combine_kernel<256>(miso::kernels::AttnCombineParams) [clone .kd]",5290,36911772,6977,0.8578016793547858
+"void miso::kernels::attn_prep_kernel<256>(miso::kernels::AttnPrepParams) [clone .kd]",5290,28755158,5435,0.6682481356493046
+"void miso::kernels::attn_prefill_kernel<256>(miso::kernels::AttnPrefillParams) [clone .kd]",20,24669077,1233453,0.5732907019129974
+"miso::kernels::qgemm_act_kernel(miso::kernels::QGemmActParams) [clone .kd]",240,19818043,82575,0.4605563386912272
+"miso::kernels::moe_combine_kernel(miso::kernels::MoeCombineParams) [clone .kd]",80,7203669,90045,0.1674078222447844
+"void miso::kernels::argmax_partial_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd]",531,5440628,10246,0.1264360821026059
+"void miso::kernels::embed_q4k_kernel<2048u, 256>(miso::kernels::EmbedParams, unsigned int) [clone .kd]",531,3791671,7140,0.08811556788335277
+"void miso::kernels::argmax_final_kernel<256>(miso::kernels::ArgmaxParams) [clone .kd]",531,2730073,5141,0.0634448328343911
+"void miso::kernels::moe_topk_batch_kernel<256>(miso::kernels::MoeTopkBatchParams) [clone .kd]",80,2071835,25897,0.048147879282143986
+"void miso::kernels::moe_group_kernel<1024>(miso::kernels::MoeGroupParams) [clone .kd]",80,1657438,20717,0.03851760624839245
+"__amd_rocclr_fillBufferAligned.kd",270,1590876,5892,0.03697075568317945
+"void miso::kernels::attn_prep_batch_kernel<256>(miso::kernels::AttnPrepBatchParams) [clone .kd]",20,1293115,64655,0.030051015123274596

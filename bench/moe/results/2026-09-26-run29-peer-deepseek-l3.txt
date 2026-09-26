@@ -1,0 +1,43 @@
+**REJECT confirmed.**  
+Loop3’s LDS win is real (18512→80 B), but it did not produce the required
+required e2e win. The concrete counter-signal is Q6: VGPR 106→134 and occ 
+2→1, with MoE L0 Q6 69→71.5 µs (worse). Q4 L5 only improved slightly (66→
+64.6 µs), and e2e median was ~141.0 tok/s, below the ≥143 gate. Correctnes
+Correctness passing does not overturn that. So REJECT, no dispute.
+
+## ONE loop4 bet
+
+**Bet: Q4 GEMV instruction scheduling only — ISA/SASS reorder, no geometry
+geometry/layout change.**
+
+- **Exact change site:** Q4 GEMV inner k-loop / quant-block consumer, the p
+path that showed the only positive signal in loop3 (MoE L5 Q4 66→64.6 µs).
+µs). Specifically, reschedule around `sid`/`coef` LDS reads and Q4 weight u
+unpack/dot/FMA chains to shorten VGPR live ranges and fill dependency stall
+stalls.
+- **Do not touch:** launch geometry, block size, SlotW structure, `a[9][512
+`a[9][512]`, shared layout, or math. Preserve dual SlotW.
+- **Hypothesis tied to measured bottleneck:** Loop3 showed LDS reduction al
+alone is not the limiter; Q4 L5 improved only ~1.4 µs while Q6 occupancy re
+regressed. If the Q4 GEMV is issue/dependency-bound, a pure schedule change
+change should reduce Q4 µs without raising VGPR/occ pressure, enough to lif
+lift e2e from 140.1 to ≥143.
+- **Invalidate check:** SASS/ISA shows no reduction in dependency stalls or
+or no Q4 VGPR/occ improvement; MoE L5 Q4 does not drop below ~63 µs; or e2e
+e2e median remains <143. Kill immediately if Q4 VGPR rises or occ falls.
+- **Acceptance:** e2e median **≥143 tok/s** vs 140.1, `test_moe` passes, f
+first generated ids unchanged.
+
+## Do-not-try for remaining loops 4–5
+
+- Do not reopen loop1: sequential gate_up SlotW.
+- Do not reopen loop2: Q4 GEMV Split-K=2.
+- Do not reopen loop3: drop MoE down `a[9][512]` / global `act` reload.
+- Do not retry prior M8a closed items: VGPR-only down, soft-pipeline, act-r
+act-reload, Q4 rolled steps, coop top-k, consumer→router RMSNorm fusion, e
+etc.
+- Do not change Q4 GEMV launch/geometry during loop4.
+- Do not make gate/up memory-layout changes before measuring transaction ef
+efficiency; HBM% alone ≠ saturation.
+- Do not take any occupancy “win” that pushes Q6 VGPR/occ the wrong way —
+ loop3 already falsified that trade.
