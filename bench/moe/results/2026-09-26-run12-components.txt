@@ -1,0 +1,12 @@
+# Component decode µs (post wave0-topk) — continued
+## MoE (already measured)
+MoE layer 0 (down Q6_K) decode: 69.5 us/token
+MoE layer 5 (down Q4_K) decode: 66.2 us/token
+## DeltaNet
+DeltaNet layer 0 decode: 84.4 us/token (qkv.n=8192 z_ab.n=4160, 1000 tokens)
+DeltaNet layer 5 decode: 73.9 us/token (qkv.n=12352 z_ab.n=0, 1000 tokens)
+## Attention L3 vs ctx
+attention layer 3 decode at ctx    16:     93.7 us/token
+attention layer 3 decode at ctx  1024:    101.2 us/token
+attention layer 3 decode at ctx  4096:    139.5 us/token
+attention layer 3 decode at ctx 16384:    259.3 us/token
