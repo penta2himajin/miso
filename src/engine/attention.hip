@@ -83,11 +83,15 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kernels::kRmsNormBlock>
       <<<1, kernels::kRmsNormBlock, 0, stream>>>(norm, 1);
-  gemv(w.q, sc.xn.data(), sc.qg(), stream);
-  if (w.k.n != 0)
-    gemv(w.k, sc.xn.data(), sc.k(), stream);
-  if (w.v.n != 0)
-    gemv(w.v, sc.xn.data(), sc.v(), stream);
+  if (w.k.n == 0 && w.v.n != 0) {
+    gemv_pair(w.q, w.v, sc.xn.data(), sc.qg(), sc.v(), stream);
+  } else {
+    gemv(w.q, sc.xn.data(), sc.qg(), stream);
+    if (w.k.n != 0)
+      gemv(w.k, sc.xn.data(), sc.k(), stream);
+    if (w.v.n != 0)
+      gemv(w.v, sc.xn.data(), sc.v(), stream);
+  }
   auto* kc = reinterpret_cast<half_t*>(cache.k.data());
   auto* vc = reinterpret_cast<half_t*>(cache.v.data());
   const kernels::AttnPrepParams prep{
@@ -102,7 +106,7 @@ void attention_decode(const AttentionLayer& w, AttentionCache& cache, AttentionS
   kernels::attn_split_kernel<kBlock><<<dim3(n_splits, 2), kBlock, 0, stream>>>(split);
   const kernels::AttnCombineParams comb{sc.part_m.data(), sc.part_l.data(), sc.part_o.data(),
                                         sc.qg(),          sc.core.data(),   n_splits};
-  kernels::attn_combine_kernel<kBlock><<<16, kBlock, 0, stream>>>(comb);
+  kernels::attn_combine_kernel<64, true, 4><<<64, 64, 0, stream>>>(comb);
   MISO_HIP_CHECK(hipGetLastError());
   gemv(w.o, sc.core.data(), y, stream);
 }

@@ -1,0 +1,25 @@
+command: ['/tmp/miso-first-principles/prepared_decode']
+run 1 utc 2026-09-26T17:41:14.372661+00:00
+model load: 13.1 s
+warm-up: pp512 356.4 ms, 1436.6 tok/s
+measured: pp512 355.6 ms, 1439.9 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.90 ms/token, 144.9 tok/s
+measured: 256 tokens at ctx 273..529: 6.93 ms/token, 144.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
+run 2 utc 2026-09-26T17:41:32.448831+00:00
+model load: 12.4 s
+warm-up: pp512 356.1 ms, 1437.7 tok/s
+measured: pp512 355.6 ms, 1439.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.91 ms/token, 144.7 tok/s
+measured: 256 tokens at ctx 273..529: 6.94 ms/token, 144.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
+run 3 utc 2026-09-26T17:41:49.874934+00:00
+model load: 12.4 s
+warm-up: pp512 356.3 ms, 1436.9 tok/s
+measured: pp512 355.6 ms, 1439.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.84 ms/token, 146.3 tok/s
+measured: 256 tokens at ctx 273..529: 6.86 ms/token, 145.9 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

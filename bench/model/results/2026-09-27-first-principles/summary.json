@@ -1,0 +1,654 @@
+{
+  "e2e": {
+    "baseline": {
+      "runs": [
+        145.1,
+        146.9,
+        146.0
+      ],
+      "median": 146.0,
+      "pp512_runs": [
+        1440.4,
+        1439.5,
+        1439.9
+      ],
+      "pp512_median": 1439.9
+    },
+    "mixed": {
+      "runs": [
+        148.8,
+        147.8,
+        148.8
+      ],
+      "median": 148.8,
+      "pp512_runs": [
+        1438.8,
+        1438.2,
+        1439.5
+      ],
+      "pp512_median": 1438.8
+    },
+    "pipeline": {
+      "runs": [
+        145.6,
+        146.6,
+        146.4
+      ],
+      "median": 146.4,
+      "pp512_runs": [
+        1440.5,
+        1440.4,
+        1440.0
+      ],
+      "pp512_median": 1440.4
+    },
+    "combined": {
+      "runs": [
+        148.2,
+        147.0,
+        148.6
+      ],
+      "median": 148.2,
+      "pp512_runs": [
+        1440.2,
+        1439.7,
+        1439.3
+      ],
+      "pp512_median": 1439.7
+    }
+  },
+  "contexts": {
+    "17": {
+      "baseline": [
+        146.624
+      ],
+      "combined": [
+        147.438
+      ]
+    },
+    "32768": {
+      "baseline": [
+        111.838
+      ],
+      "combined": [
+        115.647
+      ]
+    },
+    "4096": {
+      "baseline": [
+        135.226
+      ],
+      "combined": [
+        139.467
+      ]
+    }
+  },
+  "telemetry": {
+    "ctest.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 29,
+        "(1485Mhz)": 2
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 37.0,
+          "median": 41.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 46.0,
+          "max": 58.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 42.0,
+          "median": 46.0,
+          "max": 51.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 50.0,
+          "max": 152.0
+        }
+      }
+    },
+    "ctx17-1-baseline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 9,
+        "(1485Mhz)": 3
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 37.0,
+          "median": 38.0,
+          "max": 41.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 40.0,
+          "median": 43.0,
+          "max": 57.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 42.0,
+          "median": 42.0,
+          "max": 51.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 33.0,
+          "median": 47.0,
+          "max": 187.0
+        }
+      }
+    },
+    "ctx17-1-combined.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 14,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 38.0,
+          "median": 38.0,
+          "max": 42.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 41.0,
+          "median": 44.0,
+          "max": 57.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 43.0,
+          "median": 44.0,
+          "max": 51.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 48.0,
+          "max": 171.0
+        }
+      }
+    },
+    "ctx32768-1-baseline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 139,
+        "(1485Mhz)": 2,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 55.0,
+          "max": 58.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 45.0,
+          "median": 74.0,
+          "max": 78.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 58.0,
+          "max": 66.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 165.0,
+          "max": 272.0
+        }
+      }
+    },
+    "ctx32768-1-combined.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 137,
+        "(1606Mhz)": 3
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 48.0,
+          "median": 58.0,
+          "max": 60.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 53.0,
+          "median": 77.0,
+          "max": 79.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 51.0,
+          "median": 60.0,
+          "max": 67.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 50.0,
+          "median": 165.0,
+          "max": 259.0
+        }
+      }
+    },
+    "ctx4096-1-baseline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1485Mhz)": 1,
+        "(1725Mhz)": 16
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 38.0,
+          "median": 42.0,
+          "max": 45.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 39.0,
+          "median": 60.0,
+          "max": 65.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 44.0,
+          "median": 46.0,
+          "max": 54.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 153.0,
+          "max": 257.0
+        }
+      }
+    },
+    "ctx4096-1-combined.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1485Mhz)": 2,
+        "(1725Mhz)": 18,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 42.0,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 48.0,
+          "max": 67.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 44.0,
+          "median": 46.0,
+          "max": 56.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 35.0,
+          "median": 51.0,
+          "max": 260.0
+        }
+      }
+    },
+    "e2e-1-baseline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 17,
+        "(1485Mhz)": 1,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 35.0,
+          "median": 36.0,
+          "max": 42.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 38.0,
+          "median": 42.0,
+          "max": 61.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 40.0,
+          "median": 40.0,
+          "max": 51.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 32.0,
+          "median": 48.0,
+          "max": 218.0
+        }
+      }
+    },
+    "e2e-1-combined.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 19,
+        "(1485Mhz)": 1,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 41.0,
+          "max": 45.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 47.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 44.0,
+          "median": 45.0,
+          "max": 54.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 39.0,
+          "median": 50.0,
+          "max": 235.0
+        }
+      }
+    },
+    "e2e-1-mixed.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 18,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 38.0,
+          "median": 38.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 44.0,
+          "max": 63.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 42.0,
+          "median": 42.0,
+          "max": 52.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 47.0,
+          "median": 48.0,
+          "max": 222.0
+        }
+      }
+    },
+    "e2e-1-pipeline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 17,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 38.0,
+          "median": 40.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 41.0,
+          "median": 46.0,
+          "max": 64.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 44.0,
+          "median": 45.0,
+          "max": 53.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 48.0,
+          "max": 225.0
+        }
+      }
+    },
+    "e2e-2-baseline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 18
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 45.0,
+          "median": 47.5,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 54.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 40.0,
+          "median": 53.0,
+          "max": 171.0
+        }
+      }
+    },
+    "e2e-2-combined.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 19
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 41.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 45.0,
+          "median": 47.0,
+          "max": 65.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 55.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 51.0,
+          "median": 53.0,
+          "max": 174.0
+        }
+      }
+    },
+    "e2e-2-mixed.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 19,
+        "(1485Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 45.0,
+          "median": 48.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 55.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 49.5,
+          "max": 201.0
+        }
+      }
+    },
+    "e2e-2-pipeline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 15,
+        "(1485Mhz)": 5,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 41.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 47.0,
+          "max": 65.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 54.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 32.0,
+          "median": 48.0,
+          "max": 187.0
+        }
+      }
+    },
+    "e2e-3-baseline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 17,
+        "(1606Mhz)": 2
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 48.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 55.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 48.0,
+          "max": 220.0
+        }
+      }
+    },
+    "e2e-3-combined.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 16,
+        "(1485Mhz)": 1,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.5,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 48.5,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 47.5,
+          "max": 56.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 37.0,
+          "median": 51.0,
+          "max": 178.0
+        }
+      }
+    },
+    "e2e-3-mixed.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 17,
+        "(1485Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 48.5,
+          "max": 68.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 55.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 53.0,
+          "max": 163.0
+        }
+      }
+    },
+    "e2e-3-pipeline.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1485Mhz)": 1,
+        "(1725Mhz)": 19,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 45.0,
+          "median": 48.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 56.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 49.0,
+          "max": 226.0
+        }
+      }
+    },
+    "profile-short.txt.smi.jsonl": {
+      "sclk_samples": {
+        "(1725Mhz)": 18,
+        "(1606Mhz)": 1
+      },
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 36.0,
+          "median": 37.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 40.0,
+          "median": 44.0,
+          "max": 62.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 41.0,
+          "median": 43.0,
+          "max": 53.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 47.0,
+          "median": 52.0,
+          "max": 224.0
+        }
+      }
+    }
+  },
+  "telemetry_note": "GPU use >=90% samples include load, warm-up and prefill; not decode-only."
+}

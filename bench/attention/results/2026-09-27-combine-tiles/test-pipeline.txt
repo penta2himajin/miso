@@ -1,0 +1,9 @@
+command: ['build/tests/test_attn_splitk', '--test-case=*combine*']
+run 1 utc 2026-09-26T17:43:30.662253+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:      1 |      1 passed | 0 failed | 4 skipped
+[doctest] assertions: 442368 | 442368 passed | 0 failed |
+[doctest] Status: SUCCESS!
+exit: 0

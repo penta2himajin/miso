@@ -70,6 +70,10 @@ void load_split(const gguf::File& f, const gguf::TensorInfo& t, std::byte* dst, 
 // y = W x for one token (decode GEMV family, FP16 activations per ADR_004).
 void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream);
 
+// Two independent decode projections of x. Mixed Q4_K/Q6_K K=2048 matrices share one launch.
+void gemv_pair(const QMatrix& a, const QMatrix& b, const float* x, float* ya, float* yb,
+               hipStream_t stream);
+
 // Activations of a token chunk for the prefill GEMM family: FP16-rounded values and per-32 sums.
 struct GemmInput {
   GemmInput(unsigned max_tok, unsigned max_k)

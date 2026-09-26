@@ -1,0 +1,21 @@
+[1/5] Building HIP object CMakeFiles/miso_engine.dir/src/engine/weights.hip.o
+[2/5] Building HIP object tests/CMakeFiles/test_gemv_dispatch.dir/test_gemv_dispatch.hip.o
+[3/5] Building HIP object CMakeFiles/miso_engine.dir/src/engine/moe.hip.o
+[4/5] Linking HIP static library libmiso_engine.a
+[5/5] Linking HIP executable tests/test_gemv_dispatch
+# test_gemv_dispatch (gfx906)
+VGPR SGPR    LDS scratch spill   wg occ  kernel
+  17   14      0       0     0  256  10  miso::kernels::qgemm_act_kernel(miso::kernels::QGemmActParams)
+  68   40      0       0     0  256   3  void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)
+  63   43      0       0     0  256   4  void miso::kernels::mixed_gemv_kernel<2, 480u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)
+  45   20      0       0     0  256   5  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 1>(miso::kernels::Q4kGemvParams)
+  69   35      0       0     0  256   3  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams)
+  69   35      0       0     0  256   3  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams)
+  63   20      0       0     0  256   4  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 1>(miso::kernels::Q4kGemvParams)
+ 110   36      0       0     0  256   2  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams)
+  57   18      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams)
+  57   18      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams)
+  60   25      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams)
+  60   25      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams)
+ 120   47  19968       0     0  256   2  void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)0>(miso::kernels::QGemmParams)
+ 124   40  19968       0     0  256   2  void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)1>(miso::kernels::QGemmParams)

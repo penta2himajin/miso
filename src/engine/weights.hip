@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 
+#include "mixed_gemv.hpp"
 #include "q4k_gemv.hpp"
 #include "q6k_gemv.hpp"
 #include "qgemm.hpp"
@@ -280,6 +281,26 @@ void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream) {
     throw std::runtime_error("gemv: no kernel for this type / K = " + std::to_string(w.k));
   }
   MISO_HIP_CHECK(hipGetLastError());
+}
+
+void gemv_pair(const QMatrix& a, const QMatrix& b, const float* x, float* ya, float* yb,
+               hipStream_t stream) {
+  const bool reverse = a.type == gguf::GgmlType::Q4_K;
+  const QMatrix& q6 = reverse ? b : a;
+  const QMatrix& q4 = reverse ? a : b;
+  if (q6.type == gguf::GgmlType::Q6_K && q4.type == gguf::GgmlType::Q4_K && q6.k == 2048 &&
+      q4.k == 2048 && q6.n != 0 && q6.n < 100000 && q4.n >= 2048) {
+    const kernels::Q6kGemvParams p6{q6.data.data(), x, reverse ? yb : ya, q6.n};
+    const kernels::Q4kGemvParams p4{q4.data.data(), x, reverse ? ya : yb, q4.n};
+    if (q6.n >= 8192)
+      kernels::mixed_gemv_kernel<2, 480, 240><<<720, kBlock, 0, stream>>>(p6, p4);
+    else
+      kernels::mixed_gemv_kernel<1, 240, 240><<<480, kBlock, 0, stream>>>(p6, p4);
+    MISO_HIP_CHECK(hipGetLastError());
+  } else {
+    gemv(a, x, ya, stream);
+    gemv(b, x, yb, stream);
+  }
 }
 
 void gemm_input(const float* x, unsigned k, unsigned n_tok, GemmInput& in, hipStream_t stream) {

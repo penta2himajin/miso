@@ -1,0 +1,936 @@
+0000000000006d00 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)>:
+	s_lshr_b32 s24, s6, 1                                      // 000000006D00: 8F188106
+	s_bitcmp1_b32 s6, 0                                        // 000000006D04: BF0D8006
+	s_cselect_b64 s[2:3], -1, 0                                // 000000006D08: 858280C1
+	v_and_b32_e32 v31, 63, v0                                  // 000000006D0C: 263E00BF
+	s_mov_b64 s[0:1], -1                                       // 000000006D10: BE8001C1
+	s_and_b64 vcc, exec, s[2:3]                                // 000000006D14: 86EA027E
+	s_cbranch_vccz 858                                         // 000000006D18: BF86035A <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0xd84>
+	s_load_dword s25, s[4:5], 0x38                             // 000000006D1C: C0020642 00000038
+	v_lshrrev_b32_e32 v1, 4, v0                                // 000000006D24: 20020084
+	v_and_b32_e32 v1, 12, v1                                   // 000000006D28: 2602028C
+	s_add_u32 s2, s4, 32                                       // 000000006D2C: 8002A004
+	v_lshl_or_b32 v25, s24, 4, v1                              // 000000006D30: D2000019 04050818
+	s_addc_u32 s3, s5, 0                                       // 000000006D38: 82038005
+	s_waitcnt lgkmcnt(0)                                       // 000000006D3C: BF8CC07F
+	v_cmp_gt_u32_e32 vcc, s25, v25                             // 000000006D40: 7D983219
+	s_and_saveexec_b64 s[16:17], vcc                           // 000000006D44: BE90206A
+	s_cbranch_execz 844                                        // 000000006D48: BF88034C <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0xd7c>
+	s_load_dwordx2 s[0:1], s[4:5], 0x28                        // 000000006D4C: C0060002 00000028
+	v_lshlrev_b32_e32 v1, 7, v31                               // 000000006D54: 24023E87
+	v_and_b32_e32 v2, 0x1c00, v1                               // 000000006D58: 260402FF 00001C00
+	v_and_b32_e32 v1, 0x300, v1                                // 000000006D60: 260202FF 00000300
+	s_add_i32 s26, s25, -1                                     // 000000006D68: 811AC119
+	s_waitcnt lgkmcnt(0)                                       // 000000006D6C: BF8CC07F
+	v_mov_b32_e32 v3, s1                                       // 000000006D70: 7E060201
+	v_add_co_u32_e32 v2, vcc, s0, v2                           // 000000006D74: 32040400
+	v_addc_co_u32_e32 v3, vcc, 0, v3, vcc                      // 000000006D78: 38060680
+	v_add_co_u32_e32 v1, vcc, v2, v1                           // 000000006D7C: 32020302
+	v_addc_co_u32_e32 v2, vcc, 0, v3, vcc                      // 000000006D80: 38040680
+	v_lshlrev_b32_e32 v3, 6, v31                               // 000000006D84: 24063E86
+	v_and_b32_e32 v3, 64, v3                                   // 000000006D88: 260606C0
+	v_add_co_u32_e32 v32, vcc, v1, v3                          // 000000006D8C: 32400701
+	v_addc_co_u32_e32 v33, vcc, 0, v2, vcc                     // 000000006D90: 38420480
+	global_load_dwordx4 v[1:4], v[32:33], off                  // 000000006D94: DC5C8000 017F0020
+	global_load_dwordx4 v[5:8], v[32:33], off offset:128       // 000000006D9C: DC5C8080 057F0020
+	global_load_dwordx4 v[9:12], v[32:33], off offset:16       // 000000006DA4: DC5C8010 097F0020
+	global_load_dwordx4 v[13:16], v[32:33], off offset:144     // 000000006DAC: DC5C8090 0D7F0020
+	global_load_dwordx4 v[17:20], v[32:33], off offset:32      // 000000006DB4: DC5C8020 117F0020
+	global_load_dwordx4 v[21:24], v[32:33], off offset:160     // 000000006DBC: DC5C80A0 157F0020
+	s_load_dwordx2 s[0:1], s[2:3], 0x0                         // 000000006DC4: C0060001 00000000
+	s_load_dwordx2 s[18:19], s[2:3], 0x10                      // 000000006DCC: C0060481 00000010
+	global_load_dwordx4 v[27:30], v[32:33], off offset:48      // 000000006DD4: DC5C8030 1B7F0020
+	global_load_dwordx4 v[46:49], v[32:33], off offset:176     // 000000006DDC: DC5C80B0 2E7F0020
+	v_lshlrev_b32_e32 v50, 4, v31                              // 000000006DE4: 24643E84
+	v_mov_b32_e32 v26, 0                                       // 000000006DE8: 7E340280
+	v_and_b32_e32 v50, 0x70, v50                               // 000000006DEC: 266464FF 00000070
+	s_waitcnt lgkmcnt(0)                                       // 000000006DF4: BF8CC07F
+	s_add_u32 s27, s18, 4                                      // 000000006DF8: 801B8412
+	s_addc_u32 s28, s19, 0                                     // 000000006DFC: 821C8013
+	s_add_u32 s29, s18, 8                                      // 000000006E00: 801D8812
+	s_addc_u32 s30, s19, 0                                     // 000000006E04: 821E8013
+	s_add_u32 s31, s18, 12                                     // 000000006E08: 801F8C12
+	v_cmp_eq_u32_e64 s[6:7], 63, v31                           // 000000006E0C: D0CA0006 00023EBF
+	s_addc_u32 s33, s19, 0                                     // 000000006E14: 82218013
+	s_mov_b64 s[20:21], 0                                      // 000000006E18: BE940180
+	s_movk_i32 s34, 0x480                                      // 000000006E1C: B0220480
+	s_mov_b32 s35, 0x1000706                                   // 000000006E20: BEA300FF 01000706
+	s_waitcnt vmcnt(7)                                         // 000000006E28: BF8C0F77
+	v_cvt_f16_f32_e32 v1, v1                                   // 000000006E2C: 7E021501
+	v_cvt_f16_f32_e32 v3, v3                                   // 000000006E30: 7E061503
+	s_waitcnt vmcnt(6)                                         // 000000006E34: BF8C0F76
+	v_cvt_f16_f32_e32 v5, v5                                   // 000000006E38: 7E0A1505
+	v_cvt_f16_f32_e32 v7, v7                                   // 000000006E3C: 7E0E1507
+	v_cvt_f16_f32_e32 v2, v2                                   // 000000006E40: 7E041502
+	v_cvt_f16_f32_e32 v4, v4                                   // 000000006E44: 7E081504
+	v_cvt_f16_f32_e32 v6, v6                                   // 000000006E48: 7E0C1506
+	v_cvt_f16_f32_e32 v8, v8                                   // 000000006E4C: 7E101508
+	s_waitcnt vmcnt(5)                                         // 000000006E50: BF8C0F75
+	v_cvt_f16_f32_e32 v9, v9                                   // 000000006E54: 7E121509
+	v_cvt_f16_f32_e32 v11, v11                                 // 000000006E58: 7E16150B
+	s_waitcnt vmcnt(4)                                         // 000000006E5C: BF8C0F74
+	v_cvt_f16_f32_e32 v13, v13                                 // 000000006E60: 7E1A150D
+	v_cvt_f16_f32_e32 v15, v15                                 // 000000006E64: 7E1E150F
+	v_cvt_f16_f32_e32 v10, v10                                 // 000000006E68: 7E14150A
+	v_cvt_f16_f32_e32 v12, v12                                 // 000000006E6C: 7E18150C
+	v_cvt_f16_f32_e32 v14, v14                                 // 000000006E70: 7E1C150E
+	v_cvt_f16_f32_e32 v16, v16                                 // 000000006E74: 7E201510
+	v_pack_b32_f16 v32, v1, v3                                 // 000000006E78: D2A00020 00020701
+	v_pack_b32_f16 v34, v5, v7                                 // 000000006E80: D2A00022 00020F05
+	v_cvt_f32_f16_e32 v1, v1                                   // 000000006E88: 7E021701
+	v_cvt_f32_f16_e32 v3, v3                                   // 000000006E8C: 7E061703
+	v_cvt_f32_f16_e32 v5, v5                                   // 000000006E90: 7E0A1705
+	v_cvt_f32_f16_e32 v7, v7                                   // 000000006E94: 7E0E1707
+	s_waitcnt vmcnt(3)                                         // 000000006E98: BF8C0F73
+	v_cvt_f16_f32_e32 v17, v17                                 // 000000006E9C: 7E221511
+	v_cvt_f16_f32_e32 v19, v19                                 // 000000006EA0: 7E261513
+	v_pack_b32_f16 v33, v2, v4                                 // 000000006EA4: D2A00021 00020902
+	v_pack_b32_f16 v35, v6, v8                                 // 000000006EAC: D2A00023 00021106
+	v_cvt_f32_f16_e32 v2, v2                                   // 000000006EB4: 7E041702
+	v_cvt_f32_f16_e32 v6, v6                                   // 000000006EB8: 7E0C1706
+	v_pack_b32_f16 v36, v9, v11                                // 000000006EBC: D2A00024 00021709
+	v_pack_b32_f16 v38, v13, v15                               // 000000006EC4: D2A00026 00021F0D
+	v_cvt_f32_f16_e32 v9, v9                                   // 000000006ECC: 7E121709
+	v_cvt_f32_f16_e32 v11, v11                                 // 000000006ED0: 7E16170B
+	v_cvt_f32_f16_e32 v13, v13                                 // 000000006ED4: 7E1A170D
+	v_cvt_f32_f16_e32 v15, v15                                 // 000000006ED8: 7E1E170F
+	v_cvt_f16_f32_e32 v18, v18                                 // 000000006EDC: 7E241512
+	v_cvt_f16_f32_e32 v20, v20                                 // 000000006EE0: 7E281514
+	v_cvt_f32_f16_e32 v8, v8                                   // 000000006EE4: 7E101708
+	v_pack_b32_f16 v37, v10, v12                               // 000000006EE8: D2A00025 0002190A
+	v_pack_b32_f16 v39, v14, v16                               // 000000006EF0: D2A00027 0002210E
+	v_cvt_f32_f16_e32 v10, v10                                 // 000000006EF8: 7E14170A
+	v_cvt_f32_f16_e32 v14, v14                                 // 000000006EFC: 7E1C170E
+	v_cvt_f32_f16_e32 v4, v4                                   // 000000006F00: 7E081704
+	v_cvt_f32_f16_e32 v16, v16                                 // 000000006F04: 7E201710
+	s_waitcnt vmcnt(2)                                         // 000000006F08: BF8C0F72
+	v_cvt_f16_f32_e32 v21, v21                                 // 000000006F0C: 7E2A1515
+	v_cvt_f16_f32_e32 v23, v23                                 // 000000006F10: 7E2E1517
+	v_cvt_f32_f16_e32 v12, v12                                 // 000000006F14: 7E18170C
+	v_add_f32_e32 v1, v1, v3                                   // 000000006F18: 02020701
+	v_add_f32_e32 v3, v5, v7                                   // 000000006F1C: 02060F05
+	v_cvt_f16_f32_e32 v22, v22                                 // 000000006F20: 7E2C1516
+	v_pack_b32_f16 v40, v17, v19                               // 000000006F24: D2A00028 00022711
+	v_cvt_f32_f16_e32 v17, v17                                 // 000000006F2C: 7E221711
+	v_cvt_f32_f16_e32 v19, v19                                 // 000000006F30: 7E261713
+	v_add_f32_e32 v5, v9, v11                                  // 000000006F34: 020A1709
+	v_add_f32_e32 v7, v13, v15                                 // 000000006F38: 020E1F0D
+	v_add_f32_e32 v1, v1, v2                                   // 000000006F3C: 02020501
+	v_add_f32_e32 v2, v3, v6                                   // 000000006F40: 02040D03
+	v_cvt_f16_f32_e32 v24, v24                                 // 000000006F44: 7E301518
+	v_pack_b32_f16 v41, v18, v20                               // 000000006F48: D2A00029 00022912
+	v_cvt_f32_f16_e32 v18, v18                                 // 000000006F50: 7E241712
+	v_add_f32_e32 v3, v5, v10                                  // 000000006F54: 02061505
+	v_add_f32_e32 v5, v7, v14                                  // 000000006F58: 020A1D07
+	v_add_f32_e32 v2, v2, v8                                   // 000000006F5C: 02041102
+	v_cvt_f32_f16_e32 v20, v20                                 // 000000006F60: 7E281714
+	v_add_f32_e32 v1, v1, v4                                   // 000000006F64: 02020901
+	v_add_f32_e32 v4, v5, v16                                  // 000000006F68: 02082105
+	v_add_f32_e32 v2, 0, v2                                    // 000000006F6C: 02040480
+	v_add_f32_e32 v3, v3, v12                                  // 000000006F70: 02061903
+	v_add_f32_e32 v1, 0, v1                                    // 000000006F74: 02020280
+	v_add_f32_e32 v2, v2, v4                                   // 000000006F78: 02040902
+	v_cvt_f32_f16_e32 v4, v21                                  // 000000006F7C: 7E081715
+	v_cvt_f32_f16_e32 v5, v23                                  // 000000006F80: 7E0A1717
+	v_add_f32_e32 v1, v1, v3                                   // 000000006F84: 02020701
+	v_add_f32_e32 v3, v17, v19                                 // 000000006F88: 02062711
+	v_cvt_f32_f16_e32 v6, v22                                  // 000000006F8C: 7E0C1716
+	v_add_f32_e32 v3, v3, v18                                  // 000000006F90: 02062503
+	v_cvt_f32_f16_e32 v7, v24                                  // 000000006F94: 7E0E1718
+	v_add_f32_e32 v3, v3, v20                                  // 000000006F98: 02062903
+	v_add_f32_e32 v1, v1, v3                                   // 000000006F9C: 02020701
+	v_add_f32_e32 v3, v4, v5                                   // 000000006FA0: 02060B04
+	v_add_f32_e32 v3, v3, v6                                   // 000000006FA4: 02060D03
+	s_waitcnt vmcnt(1)                                         // 000000006FA8: BF8C0F71
+	v_cvt_f16_f32_e32 v4, v27                                  // 000000006FAC: 7E08151B
+	v_cvt_f16_f32_e32 v5, v29                                  // 000000006FB0: 7E0A151D
+	v_add_f32_e32 v3, v3, v7                                   // 000000006FB4: 02060F03
+	v_cvt_f16_f32_e32 v6, v28                                  // 000000006FB8: 7E0C151C
+	v_cvt_f16_f32_e32 v7, v30                                  // 000000006FBC: 7E0E151E
+	v_pack_b32_f16 v44, v4, v5                                 // 000000006FC0: D2A0002C 00020B04
+	v_cvt_f32_f16_e32 v4, v4                                   // 000000006FC8: 7E081704
+	v_cvt_f32_f16_e32 v5, v5                                   // 000000006FCC: 7E0A1705
+	s_waitcnt vmcnt(0)                                         // 000000006FD0: BF8C0F70
+	v_cvt_f16_f32_e32 v8, v46                                  // 000000006FD4: 7E10152E
+	v_cvt_f16_f32_e32 v9, v48                                  // 000000006FD8: 7E121530
+	v_pack_b32_f16 v45, v6, v7                                 // 000000006FDC: D2A0002D 00020F06
+	v_cvt_f32_f16_e32 v6, v6                                   // 000000006FE4: 7E0C1706
+	v_add_f32_e32 v2, v2, v3                                   // 000000006FE8: 02040702
+	v_cvt_f16_f32_e32 v3, v47                                  // 000000006FEC: 7E06152F
+	v_cvt_f16_f32_e32 v10, v49                                 // 000000006FF0: 7E141531
+	v_cvt_f32_f16_e32 v7, v7                                   // 000000006FF4: 7E0E1707
+	v_add_f32_e32 v4, v4, v5                                   // 000000006FF8: 02080B04
+	v_add_f32_e32 v4, v4, v6                                   // 000000006FFC: 02080D04
+	v_cvt_f32_f16_e32 v5, v8                                   // 000000007000: 7E0A1708
+	v_cvt_f32_f16_e32 v6, v9                                   // 000000007004: 7E0C1709
+	v_pack_b32_f16 v47, v3, v10                                // 000000007008: D2A0002F 00021503
+	v_cvt_f32_f16_e32 v3, v3                                   // 000000007010: 7E061703
+	v_add_f32_e32 v4, v4, v7                                   // 000000007014: 02080F04
+	v_cvt_f32_f16_e32 v7, v10                                  // 000000007018: 7E0E170A
+	v_add_f32_e32 v48, v1, v4                                  // 00000000701C: 02600901
+	v_add_f32_e32 v1, v5, v6                                   // 000000007020: 02020D05
+	v_add_f32_e32 v1, v1, v3                                   // 000000007024: 02020701
+	v_add_f32_e32 v1, v1, v7                                   // 000000007028: 02020F01
+	v_add_f32_e32 v49, v2, v1                                  // 00000000702C: 02620302
+	v_lshrrev_b32_e32 v1, 3, v31                               // 000000007030: 20023E83
+	v_mul_u32_u24_e32 v1, 0x90, v1                             // 000000007034: 100202FF 00000090
+	v_mov_b32_e32 v2, s1                                       // 00000000703C: 7E040201
+	v_add_co_u32_e32 v27, vcc, s0, v1                          // 000000007040: 32360200
+	v_bfe_u32 v1, v0, 1, 2                                     // 000000007044: D1C80001 02090300
+	v_addc_co_u32_e32 v28, vcc, 0, v2, vcc                     // 00000000704C: 38380480
+	v_cmp_eq_u32_e64 s[2:3], 0, v1                             // 000000007050: D0CA0002 00020280
+	v_pack_b32_f16 v42, v21, v23                               // 000000007058: D2A0002A 00022F15
+	v_pack_b32_f16 v43, v22, v24                               // 000000007060: D2A0002B 00023116
+	v_pack_b32_f16 v46, v8, v9                                 // 000000007068: D2A0002E 00021308
+	v_cmp_eq_u32_e32 vcc, 2, v1                                // 000000007070: 7D940282
+	v_cmp_gt_u32_e64 s[0:1], 2, v1                             // 000000007074: D0CC0000 00020282
+	v_cndmask_b32_e64 v51, 24, 0, s[2:3]                       // 00000000707C: D1000033 00090098
+	v_cmp_ne_u32_e64 s[2:3], 63, v31                           // 000000007084: D0CD0002 00023EBF
+	s_branch 8                                                 // 00000000708C: BF820008 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x3b0>
+	s_or_b64 exec, exec, s[10:11]                              // 000000007090: 87FE0A7E
+	v_add_u32_e32 v25, 0xf00, v25                              // 000000007094: 683232FF 00000F00
+	v_cmp_le_u32_e64 s[8:9], s25, v25                          // 00000000709C: D0CB0008 00023219
+	s_or_b64 s[20:21], s[8:9], s[20:21]                        // 0000000070A4: 87941408
+	s_andn2_b64 exec, exec, s[20:21]                           // 0000000070A8: 89FE147E
+	s_cbranch_execz 627                                        // 0000000070AC: BF880273 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0xd7c>
+	v_mad_u64_u32 v[5:6], s[8:9], v25, s34, v[27:28]           // 0000000070B0: D1E80805 046C4519
+	v_add_u32_e32 v9, 1, v25                                   // 0000000070B8: 68123281
+	v_mov_b32_e32 v10, s26                                     // 0000000070BC: 7E14021A
+	global_load_dwordx4 v[1:4], v[5:6], off                    // 0000000070C0: DC5C8000 017F0005
+	v_add_co_u32_e64 v5, s[8:9], v5, v50                       // 0000000070C8: D1190805 00026505
+	v_addc_co_u32_e64 v6, s[8:9], 0, v6, s[8:9]                // 0000000070D0: D11C0806 00220C80
+	global_load_dwordx4 v[5:8], v[5:6], off offset:16          // 0000000070D8: DC5C8010 057F0005
+	v_add_u32_e32 v11, 2, v25                                  // 0000000070E0: 68163282
+	v_add_u32_e32 v12, 3, v25                                  // 0000000070E4: 68183283
+	v_cmp_le_u32_e64 s[12:13], s25, v9                         // 0000000070E8: D0CB000C 00021219
+	v_cndmask_b32_e64 v9, v9, v10, s[12:13]                    // 0000000070F0: D1000009 00321509
+	v_cmp_le_u32_e64 s[10:11], s25, v11                        // 0000000070F8: D0CB000A 00021619
+	v_cmp_le_u32_e64 s[8:9], s25, v12                          // 000000007100: D0CB0008 00021819
+	v_cndmask_b32_e64 v11, v11, v10, s[10:11]                  // 000000007108: D100000B 002A150B
+	v_cndmask_b32_e64 v13, v12, v10, s[8:9]                    // 000000007110: D100000D 0022150C
+	v_mad_u64_u32 v[9:10], s[14:15], v9, s34, v[27:28]         // 000000007118: D1E80E09 046C4509
+	v_mad_u64_u32 v[11:12], s[14:15], v11, s34, v[27:28]       // 000000007120: D1E80E0B 046C450B
+	v_mad_u64_u32 v[29:30], s[14:15], v13, s34, v[27:28]       // 000000007128: D1E80E1D 046C450D
+	v_add_co_u32_e64 v13, s[14:15], v9, v50                    // 000000007130: D1190E0D 00026509
+	v_addc_co_u32_e64 v14, s[14:15], 0, v10, s[14:15]          // 000000007138: D11C0E0E 003A1480
+	v_add_co_u32_e64 v15, s[14:15], v11, v50                   // 000000007140: D1190E0F 0002650B
+	v_addc_co_u32_e64 v16, s[14:15], 0, v12, s[14:15]          // 000000007148: D11C0E10 003A1880
+	v_add_co_u32_e64 v52, s[14:15], v29, v50                   // 000000007150: D1190E34 0002651D
+	v_addc_co_u32_e64 v53, s[14:15], 0, v30, s[14:15]          // 000000007158: D11C0E35 003A3C80
+	s_waitcnt vmcnt(1)                                         // 000000007160: BF8C0F71
+	v_lshrrev_b32_e32 v17, 8, v4                               // 000000007164: 20220888
+	v_perm_b32 v4, v3, v4, s35                                 // 000000007168: D1ED0004 008E0903
+	v_alignbit_b32 v2, v3, v2, v51                             // 000000007170: D1CE0002 04CE0503
+	v_cvt_f32_f16_sdwa v54, v1 dst_sel:DWORD dst_unused:UNUSED_PAD src0_sel:WORD_1// 000000007178: 7E6C16F9 00050601
+	v_cvt_f32_f16_e32 v55, v1                                  // 000000007180: 7E6E1701
+	s_waitcnt vmcnt(0)                                         // 000000007184: BF8C0F70
+	v_and_b32_e32 v1, 0xf000f, v5                              // 000000007188: 26020AFF 000F000F
+	v_lshrrev_b32_e32 v3, 8, v5                                // 000000007190: 20060A88
+	v_lshrrev_b32_e32 v56, 4, v5                               // 000000007194: 20700A84
+	v_lshrrev_b32_e32 v5, 12, v5                               // 000000007198: 200A0A8C
+	v_and_b32_e32 v60, 0xf000f, v7                             // 00000000719C: 26780EFF 000F000F
+	v_lshrrev_b32_e32 v61, 8, v7                               // 0000000071A4: 207A0E88
+	v_lshrrev_b32_e32 v62, 4, v7                               // 0000000071A8: 207C0E84
+	v_lshrrev_b32_e32 v63, 12, v7                              // 0000000071AC: 207E0E8C
+	v_cndmask_b32_e32 v4, v17, v4, vcc                         // 0000000071B0: 00080911
+	v_dot2_f32_f16 v1, v1, v32, 0                              // 0000000071B4: D3A34001 1A024101
+	v_and_b32_e32 v3, 0xf000f, v3                              // 0000000071BC: 260606FF 000F000F
+	v_and_b32_e32 v7, 0xf000f, v56                             // 0000000071C4: 260E70FF 000F000F
+	v_and_b32_e32 v57, 0xf000f, v6                             // 0000000071CC: 26720CFF 000F000F
+	v_lshrrev_b32_e32 v58, 8, v6                               // 0000000071D4: 20740C88
+	v_lshrrev_b32_e32 v59, 4, v6                               // 0000000071D8: 20760C84
+	v_and_b32_e32 v5, 0xf000f, v5                              // 0000000071DC: 260A0AFF 000F000F
+	v_cndmask_b32_e64 v56, v4, v2, s[0:1]                      // 0000000071E4: D1000038 00020504
+	v_dot2_f32_f16 v1, v3, v33, v1                             // 0000000071EC: D3A34001 1C064303
+	v_dot2_f32_f16 v2, v7, v34, 0                              // 0000000071F4: D3A34002 1A024507
+	v_lshrrev_b32_e32 v6, 12, v6                               // 0000000071FC: 200C0C8C
+	v_dot2_f32_f16 v2, v5, v35, v2                             // 000000007200: D3A34002 1C0A4705
+	v_dot2_f32_f16 v1, v57, v36, v1                            // 000000007208: D3A34001 1C064939
+	v_and_b32_e32 v3, 0xf000f, v58                             // 000000007210: 260674FF 000F000F
+	v_and_b32_e32 v4, 0xf000f, v59                             // 000000007218: 260876FF 000F000F
+	v_and_b32_e32 v5, 0xf000f, v6                              // 000000007220: 260A0CFF 000F000F
+	v_dot2_f32_f16 v1, v3, v37, v1                             // 000000007228: D3A34001 1C064B03
+	v_dot2_f32_f16 v2, v4, v38, v2                             // 000000007230: D3A34002 1C0A4D04
+	v_and_b32_e32 v64, 0xf000f, v8                             // 000000007238: 268010FF 000F000F
+	v_lshrrev_b32_e32 v65, 8, v8                               // 000000007240: 20821088
+	v_lshrrev_b32_e32 v66, 4, v8                               // 000000007244: 20841084
+	v_lshrrev_b32_e32 v67, 12, v8                              // 000000007248: 2086108C
+	global_load_dwordx4 v[17:20], v[9:10], off                 // 00000000724C: DC5C8000 117F0009
+	global_load_dwordx4 v[21:24], v[13:14], off offset:16      // 000000007254: DC5C8010 157F000D
+	s_nop 0                                                    // 00000000725C: BF800000
+	global_load_dwordx4 v[9:12], v[11:12], off                 // 000000007260: DC5C8000 097F000B
+	s_nop 0                                                    // 000000007268: BF800000
+	global_load_dwordx4 v[13:16], v[15:16], off offset:16      // 00000000726C: DC5C8010 0D7F000F
+	v_dot2_f32_f16 v57, v5, v39, v2                            // 000000007274: D3A34039 1C0A4F05
+	v_dot2_f32_f16 v58, v60, v40, v1                           // 00000000727C: D3A3403A 1C06513C
+	global_load_dwordx4 v[1:4], v[29:30], off                  // 000000007284: DC5C8000 017F001D
+	global_load_dwordx4 v[5:8], v[52:53], off offset:16        // 00000000728C: DC5C8010 057F0034
+	v_and_b32_e32 v29, 0xf000f, v61                            // 000000007294: 263A7AFF 000F000F
+	v_and_b32_e32 v30, 0xf000f, v62                            // 00000000729C: 263C7CFF 000F000F
+	v_and_b32_e32 v52, 0xf000f, v63                            // 0000000072A4: 26687EFF 000F000F
+	v_dot2_f32_f16 v29, v29, v41, v58                          // 0000000072AC: D3A3401D 1CEA531D
+	v_dot2_f32_f16 v30, v30, v42, v57                          // 0000000072B4: D3A3401E 1CE6551E
+	v_and_b32_e32 v53, 0xf000f, v65                            // 0000000072BC: 266A82FF 000F000F
+	v_and_b32_e32 v59, 0xf000f, v66                            // 0000000072C4: 267684FF 000F000F
+	v_bfe_u32 v58, v56, 18, 6                                  // 0000000072CC: D1C8003A 02192538
+	v_dot2_f32_f16 v30, v52, v43, v30                          // 0000000072D4: D3A3401E 1C7A5734
+	v_dot2_f32_f16 v29, v64, v44, v29                          // 0000000072DC: D3A3401D 1C765940
+	v_and_b32_e32 v60, 0xf000f, v67                            // 0000000072E4: 267886FF 000F000F
+	v_dot2_f32_f16 v29, v53, v45, v29                          // 0000000072EC: D3A3401D 1C765B35
+	v_dot2_f32_f16 v30, v59, v46, v30                          // 0000000072F4: D3A3401E 1C7A5D3B
+	v_cvt_f32_ubyte0_e32 v52, v58                              // 0000000072FC: 7E68233A
+	v_bfe_u32 v53, v56, 12, 6                                  // 000000007300: D1C80035 02191938
+	v_bfe_u32 v57, v56, 6, 6                                   // 000000007308: D1C80039 02190D38
+	v_dot2_f32_f16 v30, v60, v47, v30                          // 000000007310: D3A3401E 1C7A5F3C
+	v_cvt_f32_ubyte0_e32 v53, v53                              // 000000007318: 7E6A2335
+	v_cvt_f32_ubyte0_e32 v57, v57                              // 00000000731C: 7E722339
+	v_and_b32_e32 v56, 63, v56                                 // 000000007320: 267070BF
+	v_mul_f32_e32 v52, v49, v52                                // 000000007324: 0A686931
+	v_cvt_f32_ubyte0_e32 v56, v56                              // 000000007328: 7E702338
+	v_fmac_f32_e32 v52, v48, v57                               // 00000000732C: 76687330
+	v_mul_f32_e32 v30, v30, v53                                // 000000007330: 0A3C6B1E
+	v_mul_f32_e32 v55, 0x4b800000, v55                         // 000000007334: 0A6E6EFF 4B800000
+	v_mul_f32_e32 v52, v52, v54                                // 00000000733C: 0A686D34
+	v_fmac_f32_e32 v30, v29, v56                               // 000000007340: 763C711D
+	v_fma_f32 v29, v55, v30, -v52                              // 000000007344: D1CB001D 84D23D37
+	v_add_f32_e32 v29, 0, v29                                  // 00000000734C: 023A3A80
+	v_mov_b32_e32 v30, v26                                     // 000000007350: 7E3C031A
+	v_mov_b32_e32 v53, v26                                     // 000000007354: 7E6A031A
+	v_add_f32_dpp v29, v29, v29 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007358: 023A3AFA FF08B11D
+	s_nop 1                                                    // 000000007360: BF800001
+	v_add_f32_dpp v29, v29, v29 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007364: 023A3AFA FF084E1D
+	s_nop 1                                                    // 00000000736C: BF800001
+	v_add_f32_dpp v29, v29, v29 row_half_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007370: 023A3AFA FF09411D
+	s_nop 1                                                    // 000000007378: BF800001
+	v_add_f32_dpp v29, v29, v29 row_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 00000000737C: 023A3AFA FF09401D
+	s_nop 1                                                    // 000000007384: BF800001
+	v_mov_b32_dpp v30, v29 row_bcast:15 row_mask:0xa bank_mask:0xf// 000000007388: 7E3C02FA AF01421D
+	v_add_f32_e32 v52, v29, v30                                // 000000007390: 02683D1D
+	v_lshlrev_b64 v[29:30], 2, v[25:26]                        // 000000007394: D28F001D 00023282
+	s_nop 0                                                    // 00000000739C: BF800000
+	v_mov_b32_dpp v53, v52 row_bcast:31 row_mask:0xc bank_mask:0xf// 0000000073A0: 7E6A02FA CF014334
+	s_and_saveexec_b64 s[22:23], s[6:7]                        // 0000000073A8: BE962006
+	s_cbranch_execz 8                                          // 0000000073AC: BF880008 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x6d0>
+	v_add_f32_e32 v54, v52, v53                                // 0000000073B0: 026C6B34
+	v_mov_b32_e32 v53, s19                                     // 0000000073B4: 7E6A0213
+	v_add_co_u32_e64 v52, s[14:15], s18, v29                   // 0000000073B8: D1190E34 00023A12
+	v_addc_co_u32_e64 v53, s[14:15], v53, v30, s[14:15]        // 0000000073C0: D11C0E35 003A3D35
+	global_store_dword v[52:53], v54, off                      // 0000000073C8: DC708000 007F3634
+	s_or_b64 exec, exec, s[22:23]                              // 0000000073D0: 87FE167E
+	s_waitcnt vmcnt(4)                                         // 0000000073D4: BF8C0F74
+	v_and_b32_e32 v53, 0xf000f, v21                            // 0000000073D8: 266A2AFF 000F000F
+	v_lshrrev_b32_e32 v54, 8, v21                              // 0000000073E0: 206C2A88
+	v_dot2_f32_f16 v53, v53, v32, 0                            // 0000000073E4: D3A34035 1A024135
+	v_and_b32_e32 v54, 0xf000f, v54                            // 0000000073EC: 266C6CFF 000F000F
+	v_dot2_f32_f16 v53, v54, v33, v53                          // 0000000073F4: D3A34035 1CD64336
+	v_lshrrev_b32_e32 v54, 4, v21                              // 0000000073FC: 206C2A84
+	v_and_b32_e32 v54, 0xf000f, v54                            // 000000007400: 266C6CFF 000F000F
+	v_lshrrev_b32_e32 v21, 12, v21                             // 000000007408: 202A2A8C
+	v_dot2_f32_f16 v54, v54, v34, 0                            // 00000000740C: D3A34036 1A024536
+	v_and_b32_e32 v21, 0xf000f, v21                            // 000000007414: 262A2AFF 000F000F
+	v_dot2_f32_f16 v21, v21, v35, v54                          // 00000000741C: D3A34015 1CDA4715
+	v_and_b32_e32 v54, 0xf000f, v22                            // 000000007424: 266C2CFF 000F000F
+	v_dot2_f32_f16 v53, v54, v36, v53                          // 00000000742C: D3A34035 1CD64936
+	v_lshrrev_b32_e32 v54, 8, v22                              // 000000007434: 206C2C88
+	v_and_b32_e32 v54, 0xf000f, v54                            // 000000007438: 266C6CFF 000F000F
+	v_dot2_f32_f16 v53, v54, v37, v53                          // 000000007440: D3A34035 1CD64B36
+	v_lshrrev_b32_e32 v54, 4, v22                              // 000000007448: 206C2C84
+	v_and_b32_e32 v54, 0xf000f, v54                            // 00000000744C: 266C6CFF 000F000F
+	v_lshrrev_b32_e32 v22, 12, v22                             // 000000007454: 202C2C8C
+	v_dot2_f32_f16 v21, v54, v38, v21                          // 000000007458: D3A34015 1C564D36
+	v_and_b32_e32 v22, 0xf000f, v22                            // 000000007460: 262C2CFF 000F000F
+	v_dot2_f32_f16 v21, v22, v39, v21                          // 000000007468: D3A34015 1C564F16
+	v_and_b32_e32 v22, 0xf000f, v23                            // 000000007470: 262C2EFF 000F000F
+	v_dot2_f32_f16 v22, v22, v40, v53                          // 000000007478: D3A34016 1CD65116
+	v_lshrrev_b32_e32 v53, 8, v23                              // 000000007480: 206A2E88
+	v_and_b32_e32 v53, 0xf000f, v53                            // 000000007484: 266A6AFF 000F000F
+	v_dot2_f32_f16 v22, v53, v41, v22                          // 00000000748C: D3A34016 1C5A5335
+	v_lshrrev_b32_e32 v53, 4, v23                              // 000000007494: 206A2E84
+	v_and_b32_e32 v53, 0xf000f, v53                            // 000000007498: 266A6AFF 000F000F
+	v_lshrrev_b32_e32 v23, 12, v23                             // 0000000074A0: 202E2E8C
+	v_dot2_f32_f16 v21, v53, v42, v21                          // 0000000074A4: D3A34015 1C565535
+	v_and_b32_e32 v23, 0xf000f, v23                            // 0000000074AC: 262E2EFF 000F000F
+	v_dot2_f32_f16 v21, v23, v43, v21                          // 0000000074B4: D3A34015 1C565717
+	v_and_b32_e32 v23, 0xf000f, v24                            // 0000000074BC: 262E30FF 000F000F
+	v_dot2_f32_f16 v22, v23, v44, v22                          // 0000000074C4: D3A34016 1C5A5917
+	v_lshrrev_b32_e32 v23, 8, v24                              // 0000000074CC: 202E3088
+	v_and_b32_e32 v23, 0xf000f, v23                            // 0000000074D0: 262E2EFF 000F000F
+	v_dot2_f32_f16 v22, v23, v45, v22                          // 0000000074D8: D3A34016 1C5A5B17
+	v_lshrrev_b32_e32 v23, 4, v24                              // 0000000074E0: 202E3084
+	v_and_b32_e32 v23, 0xf000f, v23                            // 0000000074E4: 262E2EFF 000F000F
+	v_lshrrev_b32_e32 v52, 8, v20                              // 0000000074EC: 20682888
+	v_perm_b32 v20, v19, v20, s35                              // 0000000074F0: D1ED0014 008E2913
+	v_dot2_f32_f16 v21, v23, v46, v21                          // 0000000074F8: D3A34015 1C565D17
+	v_lshrrev_b32_e32 v23, 12, v24                             // 000000007500: 202E308C
+	v_cvt_f32_f16_e32 v24, v17                                 // 000000007504: 7E301711
+	v_alignbit_b32 v18, v19, v18, v51                          // 000000007508: D1CE0012 04CE2513
+	v_cndmask_b32_e32 v20, v52, v20, vcc                       // 000000007510: 00282934
+	v_cndmask_b32_e64 v18, v20, v18, s[0:1]                    // 000000007514: D1000012 00022514
+	v_cvt_f32_f16_sdwa v17, v17 dst_sel:DWORD dst_unused:UNUSED_PAD src0_sel:WORD_1// 00000000751C: 7E2216F9 00050611
+	v_bfe_u32 v20, v18, 18, 6                                  // 000000007524: D1C80014 02192512
+	v_and_b32_e32 v23, 0xf000f, v23                            // 00000000752C: 262E2EFF 000F000F
+	v_mul_f32_e32 v19, 0x4b800000, v24                         // 000000007534: 0A2630FF 4B800000
+	v_cvt_f32_ubyte0_e32 v20, v20                              // 00000000753C: 7E282314
+	v_bfe_u32 v24, v18, 6, 6                                   // 000000007540: D1C80018 02190D12
+	v_dot2_f32_f16 v21, v23, v47, v21                          // 000000007548: D3A34015 1C565F17
+	v_bfe_u32 v23, v18, 12, 6                                  // 000000007550: D1C80017 02191912
+	v_cvt_f32_ubyte0_e32 v24, v24                              // 000000007558: 7E302318
+	v_mul_f32_e32 v20, v49, v20                                // 00000000755C: 0A282931
+	v_cvt_f32_ubyte0_e32 v23, v23                              // 000000007560: 7E2E2317
+	v_and_b32_e32 v18, 63, v18                                 // 000000007564: 262424BF
+	v_fmac_f32_e32 v20, v48, v24                               // 000000007568: 76283130
+	v_cvt_f32_ubyte0_e32 v18, v18                              // 00000000756C: 7E242312
+	v_mul_f32_e32 v17, v20, v17                                // 000000007570: 0A222314
+	v_mul_f32_e32 v20, v21, v23                                // 000000007574: 0A282F15
+	v_fmac_f32_e32 v20, v22, v18                               // 000000007578: 76282516
+	v_fma_f32 v17, v19, v20, -v17                              // 00000000757C: D1CB0011 84462913
+	v_add_f32_e32 v17, 0, v17                                  // 000000007584: 02222280
+	v_mov_b32_e32 v18, v26                                     // 000000007588: 7E24031A
+	s_or_b64 s[12:13], s[2:3], s[12:13]                        // 00000000758C: 878C0C02
+	v_add_f32_dpp v17, v17, v17 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007590: 022222FA FF08B111
+	s_xor_b64 s[12:13], s[12:13], -1                           // 000000007598: 888CC10C
+	s_nop 0                                                    // 00000000759C: BF800000
+	v_add_f32_dpp v17, v17, v17 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000075A0: 022222FA FF084E11
+	s_nop 1                                                    // 0000000075A8: BF800001
+	v_add_f32_dpp v17, v17, v17 row_half_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000075AC: 022222FA FF094111
+	s_nop 1                                                    // 0000000075B4: BF800001
+	v_add_f32_dpp v17, v17, v17 row_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000075B8: 022222FA FF094011
+	s_nop 1                                                    // 0000000075C0: BF800001
+	v_mov_b32_dpp v18, v17 row_bcast:15 row_mask:0xa bank_mask:0xf// 0000000075C4: 7E2402FA AF014211
+	v_add_f32_e32 v17, v17, v18                                // 0000000075CC: 02222511
+	v_mov_b32_e32 v18, v26                                     // 0000000075D0: 7E24031A
+	s_nop 1                                                    // 0000000075D4: BF800001
+	v_mov_b32_dpp v18, v17 row_bcast:31 row_mask:0xc bank_mask:0xf// 0000000075D8: 7E2402FA CF014311
+	s_and_saveexec_b64 s[14:15], s[12:13]                      // 0000000075E0: BE8E200C
+	s_cbranch_execz 8                                          // 0000000075E4: BF880008 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x908>
+	v_add_f32_e32 v19, v17, v18                                // 0000000075E8: 02262511
+	v_mov_b32_e32 v18, s28                                     // 0000000075EC: 7E24021C
+	v_add_co_u32_e64 v17, s[12:13], s27, v29                   // 0000000075F0: D1190C11 00023A1B
+	v_addc_co_u32_e64 v18, s[12:13], v18, v30, s[12:13]        // 0000000075F8: D11C0C12 00323D12
+	global_store_dword v[17:18], v19, off                      // 000000007600: DC708000 007F1311
+	s_or_b64 exec, exec, s[14:15]                              // 000000007608: 87FE0E7E
+	s_waitcnt vmcnt(2)                                         // 00000000760C: BF8C0F72
+	v_and_b32_e32 v18, 0xf000f, v13                            // 000000007610: 26241AFF 000F000F
+	v_lshrrev_b32_e32 v19, 8, v13                              // 000000007618: 20261A88
+	v_dot2_f32_f16 v18, v18, v32, 0                            // 00000000761C: D3A34012 1A024112
+	v_and_b32_e32 v19, 0xf000f, v19                            // 000000007624: 262626FF 000F000F
+	v_dot2_f32_f16 v18, v19, v33, v18                          // 00000000762C: D3A34012 1C4A4313
+	v_lshrrev_b32_e32 v19, 4, v13                              // 000000007634: 20261A84
+	v_and_b32_e32 v19, 0xf000f, v19                            // 000000007638: 262626FF 000F000F
+	v_lshrrev_b32_e32 v13, 12, v13                             // 000000007640: 201A1A8C
+	v_dot2_f32_f16 v19, v19, v34, 0                            // 000000007644: D3A34013 1A024513
+	v_and_b32_e32 v13, 0xf000f, v13                            // 00000000764C: 261A1AFF 000F000F
+	v_dot2_f32_f16 v13, v13, v35, v19                          // 000000007654: D3A3400D 1C4E470D
+	v_and_b32_e32 v19, 0xf000f, v14                            // 00000000765C: 26261CFF 000F000F
+	v_dot2_f32_f16 v18, v19, v36, v18                          // 000000007664: D3A34012 1C4A4913
+	v_lshrrev_b32_e32 v19, 8, v14                              // 00000000766C: 20261C88
+	v_and_b32_e32 v19, 0xf000f, v19                            // 000000007670: 262626FF 000F000F
+	v_dot2_f32_f16 v18, v19, v37, v18                          // 000000007678: D3A34012 1C4A4B13
+	v_lshrrev_b32_e32 v19, 4, v14                              // 000000007680: 20261C84
+	v_and_b32_e32 v19, 0xf000f, v19                            // 000000007684: 262626FF 000F000F
+	v_lshrrev_b32_e32 v14, 12, v14                             // 00000000768C: 201C1C8C
+	v_dot2_f32_f16 v13, v19, v38, v13                          // 000000007690: D3A3400D 1C364D13
+	v_and_b32_e32 v14, 0xf000f, v14                            // 000000007698: 261C1CFF 000F000F
+	v_dot2_f32_f16 v13, v14, v39, v13                          // 0000000076A0: D3A3400D 1C364F0E
+	v_and_b32_e32 v14, 0xf000f, v15                            // 0000000076A8: 261C1EFF 000F000F
+	v_dot2_f32_f16 v14, v14, v40, v18                          // 0000000076B0: D3A3400E 1C4A510E
+	v_lshrrev_b32_e32 v18, 8, v15                              // 0000000076B8: 20241E88
+	v_and_b32_e32 v18, 0xf000f, v18                            // 0000000076BC: 262424FF 000F000F
+	v_dot2_f32_f16 v14, v18, v41, v14                          // 0000000076C4: D3A3400E 1C3A5312
+	v_lshrrev_b32_e32 v18, 4, v15                              // 0000000076CC: 20241E84
+	v_and_b32_e32 v18, 0xf000f, v18                            // 0000000076D0: 262424FF 000F000F
+	v_lshrrev_b32_e32 v15, 12, v15                             // 0000000076D8: 201E1E8C
+	v_dot2_f32_f16 v13, v18, v42, v13                          // 0000000076DC: D3A3400D 1C365512
+	v_and_b32_e32 v15, 0xf000f, v15                            // 0000000076E4: 261E1EFF 000F000F
+	v_dot2_f32_f16 v13, v15, v43, v13                          // 0000000076EC: D3A3400D 1C36570F
+	v_and_b32_e32 v15, 0xf000f, v16                            // 0000000076F4: 261E20FF 000F000F
+	v_dot2_f32_f16 v14, v15, v44, v14                          // 0000000076FC: D3A3400E 1C3A590F
+	v_lshrrev_b32_e32 v15, 8, v16                              // 000000007704: 201E2088
+	v_and_b32_e32 v15, 0xf000f, v15                            // 000000007708: 261E1EFF 000F000F
+	v_dot2_f32_f16 v14, v15, v45, v14                          // 000000007710: D3A3400E 1C3A5B0F
+	v_lshrrev_b32_e32 v15, 4, v16                              // 000000007718: 201E2084
+	v_and_b32_e32 v15, 0xf000f, v15                            // 00000000771C: 261E1EFF 000F000F
+	v_lshrrev_b32_e32 v17, 8, v12                              // 000000007724: 20221888
+	v_perm_b32 v12, v11, v12, s35                              // 000000007728: D1ED000C 008E190B
+	v_dot2_f32_f16 v13, v15, v46, v13                          // 000000007730: D3A3400D 1C365D0F
+	v_lshrrev_b32_e32 v15, 12, v16                             // 000000007738: 201E208C
+	v_cvt_f32_f16_e32 v16, v9                                  // 00000000773C: 7E201709
+	v_alignbit_b32 v10, v11, v10, v51                          // 000000007740: D1CE000A 04CE150B
+	v_cndmask_b32_e32 v12, v17, v12, vcc                       // 000000007748: 00181911
+	v_cndmask_b32_e64 v10, v12, v10, s[0:1]                    // 00000000774C: D100000A 0002150C
+	v_cvt_f32_f16_sdwa v9, v9 dst_sel:DWORD dst_unused:UNUSED_PAD src0_sel:WORD_1// 000000007754: 7E1216F9 00050609
+	v_bfe_u32 v12, v10, 18, 6                                  // 00000000775C: D1C8000C 0219250A
+	v_and_b32_e32 v15, 0xf000f, v15                            // 000000007764: 261E1EFF 000F000F
+	v_mul_f32_e32 v11, 0x4b800000, v16                         // 00000000776C: 0A1620FF 4B800000
+	v_cvt_f32_ubyte0_e32 v12, v12                              // 000000007774: 7E18230C
+	v_bfe_u32 v16, v10, 6, 6                                   // 000000007778: D1C80010 02190D0A
+	v_dot2_f32_f16 v13, v15, v47, v13                          // 000000007780: D3A3400D 1C365F0F
+	v_bfe_u32 v15, v10, 12, 6                                  // 000000007788: D1C8000F 0219190A
+	v_cvt_f32_ubyte0_e32 v16, v16                              // 000000007790: 7E202310
+	v_mul_f32_e32 v12, v49, v12                                // 000000007794: 0A181931
+	v_cvt_f32_ubyte0_e32 v15, v15                              // 000000007798: 7E1E230F
+	v_and_b32_e32 v10, 63, v10                                 // 00000000779C: 261414BF
+	v_fmac_f32_e32 v12, v48, v16                               // 0000000077A0: 76182130
+	v_cvt_f32_ubyte0_e32 v10, v10                              // 0000000077A4: 7E14230A
+	v_mul_f32_e32 v9, v12, v9                                  // 0000000077A8: 0A12130C
+	v_mul_f32_e32 v12, v13, v15                                // 0000000077AC: 0A181F0D
+	v_fmac_f32_e32 v12, v14, v10                               // 0000000077B0: 7618150E
+	v_fma_f32 v9, v11, v12, -v9                                // 0000000077B4: D1CB0009 8426190B
+	v_add_f32_e32 v9, 0, v9                                    // 0000000077BC: 02121280
+	v_mov_b32_e32 v10, v26                                     // 0000000077C0: 7E14031A
+	s_or_b64 s[10:11], s[2:3], s[10:11]                        // 0000000077C4: 878A0A02
+	v_add_f32_dpp v9, v9, v9 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000077C8: 021212FA FF08B109
+	s_xor_b64 s[10:11], s[10:11], -1                           // 0000000077D0: 888AC10A
+	s_nop 0                                                    // 0000000077D4: BF800000
+	v_add_f32_dpp v9, v9, v9 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000077D8: 021212FA FF084E09
+	s_nop 1                                                    // 0000000077E0: BF800001
+	v_add_f32_dpp v9, v9, v9 row_half_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000077E4: 021212FA FF094109
+	s_nop 1                                                    // 0000000077EC: BF800001
+	v_add_f32_dpp v9, v9, v9 row_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 0000000077F0: 021212FA FF094009
+	s_nop 1                                                    // 0000000077F8: BF800001
+	v_mov_b32_dpp v10, v9 row_bcast:15 row_mask:0xa bank_mask:0xf// 0000000077FC: 7E1402FA AF014209
+	v_add_f32_e32 v9, v9, v10                                  // 000000007804: 02121509
+	v_mov_b32_e32 v10, v26                                     // 000000007808: 7E14031A
+	s_nop 1                                                    // 00000000780C: BF800001
+	v_mov_b32_dpp v10, v9 row_bcast:31 row_mask:0xc bank_mask:0xf// 000000007810: 7E1402FA CF014309
+	s_and_saveexec_b64 s[12:13], s[10:11]                      // 000000007818: BE8C200A
+	s_cbranch_execz 8                                          // 00000000781C: BF880008 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0xb40>
+	v_add_f32_e32 v11, v9, v10                                 // 000000007820: 02161509
+	v_mov_b32_e32 v10, s30                                     // 000000007824: 7E14021E
+	v_add_co_u32_e64 v9, s[10:11], s29, v29                    // 000000007828: D1190A09 00023A1D
+	v_addc_co_u32_e64 v10, s[10:11], v10, v30, s[10:11]        // 000000007830: D11C0A0A 002A3D0A
+	global_store_dword v[9:10], v11, off                       // 000000007838: DC708000 007F0B09
+	s_or_b64 exec, exec, s[12:13]                              // 000000007840: 87FE0C7E
+	s_waitcnt vmcnt(0)                                         // 000000007844: BF8C0F70
+	v_and_b32_e32 v10, 0xf000f, v5                             // 000000007848: 26140AFF 000F000F
+	v_lshrrev_b32_e32 v11, 8, v5                               // 000000007850: 20160A88
+	v_dot2_f32_f16 v10, v10, v32, 0                            // 000000007854: D3A3400A 1A02410A
+	v_and_b32_e32 v11, 0xf000f, v11                            // 00000000785C: 261616FF 000F000F
+	v_dot2_f32_f16 v10, v11, v33, v10                          // 000000007864: D3A3400A 1C2A430B
+	v_lshrrev_b32_e32 v11, 4, v5                               // 00000000786C: 20160A84
+	v_and_b32_e32 v11, 0xf000f, v11                            // 000000007870: 261616FF 000F000F
+	v_lshrrev_b32_e32 v5, 12, v5                               // 000000007878: 200A0A8C
+	v_dot2_f32_f16 v11, v11, v34, 0                            // 00000000787C: D3A3400B 1A02450B
+	v_and_b32_e32 v5, 0xf000f, v5                              // 000000007884: 260A0AFF 000F000F
+	v_dot2_f32_f16 v5, v5, v35, v11                            // 00000000788C: D3A34005 1C2E4705
+	v_and_b32_e32 v11, 0xf000f, v6                             // 000000007894: 26160CFF 000F000F
+	v_dot2_f32_f16 v10, v11, v36, v10                          // 00000000789C: D3A3400A 1C2A490B
+	v_lshrrev_b32_e32 v11, 8, v6                               // 0000000078A4: 20160C88
+	v_and_b32_e32 v11, 0xf000f, v11                            // 0000000078A8: 261616FF 000F000F
+	v_dot2_f32_f16 v10, v11, v37, v10                          // 0000000078B0: D3A3400A 1C2A4B0B
+	v_lshrrev_b32_e32 v11, 4, v6                               // 0000000078B8: 20160C84
+	v_and_b32_e32 v11, 0xf000f, v11                            // 0000000078BC: 261616FF 000F000F
+	v_lshrrev_b32_e32 v6, 12, v6                               // 0000000078C4: 200C0C8C
+	v_dot2_f32_f16 v5, v11, v38, v5                            // 0000000078C8: D3A34005 1C164D0B
+	v_and_b32_e32 v6, 0xf000f, v6                              // 0000000078D0: 260C0CFF 000F000F
+	v_dot2_f32_f16 v5, v6, v39, v5                             // 0000000078D8: D3A34005 1C164F06
+	v_and_b32_e32 v6, 0xf000f, v7                              // 0000000078E0: 260C0EFF 000F000F
+	v_dot2_f32_f16 v6, v6, v40, v10                            // 0000000078E8: D3A34006 1C2A5106
+	v_lshrrev_b32_e32 v10, 8, v7                               // 0000000078F0: 20140E88
+	v_and_b32_e32 v10, 0xf000f, v10                            // 0000000078F4: 261414FF 000F000F
+	v_dot2_f32_f16 v6, v10, v41, v6                            // 0000000078FC: D3A34006 1C1A530A
+	v_lshrrev_b32_e32 v10, 4, v7                               // 000000007904: 20140E84
+	v_and_b32_e32 v10, 0xf000f, v10                            // 000000007908: 261414FF 000F000F
+	v_lshrrev_b32_e32 v7, 12, v7                               // 000000007910: 200E0E8C
+	v_dot2_f32_f16 v5, v10, v42, v5                            // 000000007914: D3A34005 1C16550A
+	v_and_b32_e32 v7, 0xf000f, v7                              // 00000000791C: 260E0EFF 000F000F
+	v_dot2_f32_f16 v5, v7, v43, v5                             // 000000007924: D3A34005 1C165707
+	v_and_b32_e32 v7, 0xf000f, v8                              // 00000000792C: 260E10FF 000F000F
+	v_dot2_f32_f16 v6, v7, v44, v6                             // 000000007934: D3A34006 1C1A5907
+	v_lshrrev_b32_e32 v7, 8, v8                                // 00000000793C: 200E1088
+	v_and_b32_e32 v7, 0xf000f, v7                              // 000000007940: 260E0EFF 000F000F
+	v_dot2_f32_f16 v6, v7, v45, v6                             // 000000007948: D3A34006 1C1A5B07
+	v_lshrrev_b32_e32 v7, 4, v8                                // 000000007950: 200E1084
+	v_and_b32_e32 v7, 0xf000f, v7                              // 000000007954: 260E0EFF 000F000F
+	v_lshrrev_b32_e32 v9, 8, v4                                // 00000000795C: 20120888
+	v_perm_b32 v4, v3, v4, s35                                 // 000000007960: D1ED0004 008E0903
+	v_dot2_f32_f16 v5, v7, v46, v5                             // 000000007968: D3A34005 1C165D07
+	v_lshrrev_b32_e32 v7, 12, v8                               // 000000007970: 200E108C
+	v_cvt_f32_f16_e32 v8, v1                                   // 000000007974: 7E101701
+	v_alignbit_b32 v2, v3, v2, v51                             // 000000007978: D1CE0002 04CE0503
+	v_cndmask_b32_e32 v4, v9, v4, vcc                          // 000000007980: 00080909
+	v_cndmask_b32_e64 v2, v4, v2, s[0:1]                       // 000000007984: D1000002 00020504
+	v_cvt_f32_f16_sdwa v1, v1 dst_sel:DWORD dst_unused:UNUSED_PAD src0_sel:WORD_1// 00000000798C: 7E0216F9 00050601
+	v_bfe_u32 v4, v2, 18, 6                                    // 000000007994: D1C80004 02192502
+	v_and_b32_e32 v7, 0xf000f, v7                              // 00000000799C: 260E0EFF 000F000F
+	v_mul_f32_e32 v3, 0x4b800000, v8                           // 0000000079A4: 0A0610FF 4B800000
+	v_cvt_f32_ubyte0_e32 v4, v4                                // 0000000079AC: 7E082304
+	v_bfe_u32 v8, v2, 6, 6                                     // 0000000079B0: D1C80008 02190D02
+	v_dot2_f32_f16 v5, v7, v47, v5                             // 0000000079B8: D3A34005 1C165F07
+	v_bfe_u32 v7, v2, 12, 6                                    // 0000000079C0: D1C80007 02191902
+	v_cvt_f32_ubyte0_e32 v8, v8                                // 0000000079C8: 7E102308
+	v_mul_f32_e32 v4, v49, v4                                  // 0000000079CC: 0A080931
+	v_cvt_f32_ubyte0_e32 v7, v7                                // 0000000079D0: 7E0E2307
+	v_and_b32_e32 v2, 63, v2                                   // 0000000079D4: 260404BF
+	v_fmac_f32_e32 v4, v48, v8                                 // 0000000079D8: 76081130
+	v_cvt_f32_ubyte0_e32 v2, v2                                // 0000000079DC: 7E042302
+	v_mul_f32_e32 v1, v4, v1                                   // 0000000079E0: 0A020304
+	v_mul_f32_e32 v4, v5, v7                                   // 0000000079E4: 0A080F05
+	v_fmac_f32_e32 v4, v6, v2                                  // 0000000079E8: 76080506
+	v_fma_f32 v1, v3, v4, -v1                                  // 0000000079EC: D1CB0001 84060903
+	v_add_f32_e32 v1, 0, v1                                    // 0000000079F4: 02020280
+	v_mov_b32_e32 v2, v26                                      // 0000000079F8: 7E04031A
+	s_or_b64 s[8:9], s[2:3], s[8:9]                            // 0000000079FC: 87880802
+	v_add_f32_dpp v1, v1, v1 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007A00: 020202FA FF08B101
+	s_xor_b64 s[8:9], s[8:9], -1                               // 000000007A08: 8888C108
+	s_nop 0                                                    // 000000007A0C: BF800000
+	v_add_f32_dpp v1, v1, v1 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007A10: 020202FA FF084E01
+	s_nop 1                                                    // 000000007A18: BF800001
+	v_add_f32_dpp v1, v1, v1 row_half_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007A1C: 020202FA FF094101
+	s_nop 1                                                    // 000000007A24: BF800001
+	v_add_f32_dpp v1, v1, v1 row_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000007A28: 020202FA FF094001
+	s_nop 1                                                    // 000000007A30: BF800001
+	v_mov_b32_dpp v2, v1 row_bcast:15 row_mask:0xa bank_mask:0xf// 000000007A34: 7E0402FA AF014201
+	v_add_f32_e32 v1, v1, v2                                   // 000000007A3C: 02020501
+	v_mov_b32_e32 v2, v26                                      // 000000007A40: 7E04031A
+	s_nop 1                                                    // 000000007A44: BF800001
+	v_mov_b32_dpp v2, v1 row_bcast:31 row_mask:0xc bank_mask:0xf// 000000007A48: 7E0402FA CF014301
+	s_and_saveexec_b64 s[10:11], s[8:9]                        // 000000007A50: BE8A2008
+	s_cbranch_execz 64910                                      // 000000007A54: BF88FD8E <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x390>
+	v_add_f32_e32 v3, v1, v2                                   // 000000007A58: 02060501
+	v_mov_b32_e32 v2, s33                                      // 000000007A5C: 7E040221
+	v_add_co_u32_e64 v1, s[8:9], s31, v29                      // 000000007A60: D1190801 00023A1F
+	v_addc_co_u32_e64 v2, s[8:9], v2, v30, s[8:9]              // 000000007A68: D11C0802 00223D02
+	global_store_dword v[1:2], v3, off                         // 000000007A70: DC708000 007F0301
+	s_branch 64901                                             // 000000007A78: BF82FD85 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x390>
+	s_or_b64 exec, exec, s[16:17]                              // 000000007A7C: 87FE107E
+	s_mov_b64 s[0:1], 0                                        // 000000007A80: BE800180
+	s_andn2_b64 vcc, exec, s[0:1]                              // 000000007A84: 89EA007E
+	s_cbranch_vccnz 458                                        // 000000007A88: BF8701CA <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x14b4>
+	s_load_dword s12, s[4:5], 0x18                             // 000000007A8C: C0020302 00000018
+	v_lshrrev_b32_e32 v1, 6, v0                                // 000000007A94: 20020086
+	v_lshl_or_b32 v1, s24, 2, v1                               // 000000007A98: D2000001 04050418
+	s_waitcnt lgkmcnt(0)                                       // 000000007AA0: BF8CC07F
+	v_cmp_gt_u32_e32 vcc, s12, v1                              // 000000007AA4: 7D98020C
+	s_and_saveexec_b64 s[0:1], vcc                             // 000000007AA8: BE80206A
+	s_cbranch_execz 449                                        // 000000007AAC: BF8801C1 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x14b4>
+	s_load_dwordx4 s[8:11], s[4:5], 0x0                        // 000000007AB0: C00A0202 00000000
+	s_load_dwordx2 s[2:3], s[4:5], 0x10                        // 000000007AB8: C0060082 00000010
+	v_lshlrev_b32_e32 v2, 7, v31                               // 000000007AC0: 24043E87
+	v_and_b32_e32 v3, 0x1c00, v2                               // 000000007AC4: 260604FF 00001C00
+	v_and_b32_e32 v2, 0x200, v2                                // 000000007ACC: 260404FF 00000200
+	s_waitcnt lgkmcnt(0)                                       // 000000007AD4: BF8CC07F
+	v_mov_b32_e32 v4, s11                                      // 000000007AD8: 7E08020B
+	v_add_co_u32_e32 v3, vcc, s10, v3                          // 000000007ADC: 3206060A
+	v_addc_co_u32_e32 v4, vcc, 0, v4, vcc                      // 000000007AE0: 38080880
+	v_lshlrev_b32_e32 v30, 4, v31                              // 000000007AE4: 243C3E84
+	v_add_co_u32_e32 v2, vcc, v3, v2                           // 000000007AE8: 32040503
+	v_and_b32_e32 v3, 48, v30                                  // 000000007AEC: 26063CB0
+	v_addc_co_u32_e32 v4, vcc, 0, v4, vcc                      // 000000007AF0: 38080880
+	v_lshlrev_b32_e32 v5, 2, v3                                // 000000007AF4: 240A0682
+	v_add_co_u32_e32 v28, vcc, v2, v5                          // 000000007AF8: 32380B02
+	v_addc_co_u32_e32 v29, vcc, 0, v4, vcc                     // 000000007AFC: 383A0880
+	global_load_dwordx4 v[4:7], v[28:29], off                  // 000000007B00: DC5C8000 047F001C
+	global_load_dwordx4 v[8:11], v[28:29], off offset:16       // 000000007B08: DC5C8010 087F001C
+	global_load_dwordx4 v[12:15], v[28:29], off offset:32      // 000000007B10: DC5C8020 0C7F001C
+	global_load_dwordx4 v[16:19], v[28:29], off offset:48      // 000000007B18: DC5C8030 107F001C
+	global_load_dwordx4 v[20:23], v[28:29], off offset:256     // 000000007B20: DC5C8100 147F001C
+	global_load_dwordx4 v[24:27], v[28:29], off offset:272     // 000000007B28: DC5C8110 187F001C
+	global_load_dwordx4 v[32:35], v[28:29], off offset:288     // 000000007B30: DC5C8120 207F001C
+	global_load_dwordx4 v[36:39], v[28:29], off offset:304     // 000000007B38: DC5C8130 247F001C
+	v_cmp_eq_u32_e32 vcc, 63, v31                              // 000000007B40: 7D943EBF
+	s_mov_b64 s[4:5], 0                                        // 000000007B44: BE840180
+	s_movk_i32 s10, 0x690                                      // 000000007B48: B00A0690
+	s_mov_b32 s11, 0x300030                                    // 000000007B4C: BE8B00FF 00300030
+	s_waitcnt vmcnt(7)                                         // 000000007B54: BF8C0F77
+	v_cvt_f16_f32_e32 v28, v6                                  // 000000007B58: 7E381506
+	v_cvt_f16_f32_e32 v29, v5                                  // 000000007B5C: 7E3A1505
+	v_cvt_f16_f32_e32 v40, v7                                  // 000000007B60: 7E501507
+	s_waitcnt vmcnt(6)                                         // 000000007B64: BF8C0F76
+	v_cvt_f16_f32_e32 v41, v8                                  // 000000007B68: 7E521508
+	s_waitcnt vmcnt(3)                                         // 000000007B6C: BF8C0F73
+	v_cvt_f16_f32_e32 v5, v20                                  // 000000007B70: 7E0A1514
+	v_cvt_f16_f32_e32 v6, v22                                  // 000000007B74: 7E0C1516
+	v_cvt_f16_f32_e32 v42, v10                                 // 000000007B78: 7E54150A
+	v_cvt_f16_f32_e32 v46, v14                                 // 000000007B7C: 7E5C150E
+	v_cvt_f16_f32_e32 v47, v13                                 // 000000007B80: 7E5E150D
+	v_cvt_f16_f32_e32 v50, v17                                 // 000000007B84: 7E641511
+	v_cvt_f16_f32_e32 v8, v21                                  // 000000007B88: 7E101515
+	s_waitcnt vmcnt(2)                                         // 000000007B8C: BF8C0F72
+	v_cvt_f16_f32_e32 v7, v24                                  // 000000007B90: 7E0E1518
+	v_cvt_f16_f32_e32 v10, v26                                 // 000000007B94: 7E14151A
+	s_waitcnt vmcnt(1)                                         // 000000007B98: BF8C0F71
+	v_cvt_f16_f32_e32 v13, v32                                 // 000000007B9C: 7E1A1520
+	v_cvt_f16_f32_e32 v14, v34                                 // 000000007BA0: 7E1C1522
+	s_waitcnt vmcnt(0)                                         // 000000007BA4: BF8C0F70
+	v_cvt_f16_f32_e32 v17, v36                                 // 000000007BA8: 7E221524
+	v_cvt_f16_f32_e32 v20, v38                                 // 000000007BAC: 7E281526
+	v_cvt_f16_f32_e32 v43, v9                                  // 000000007BB0: 7E561509
+	v_cvt_f16_f32_e32 v44, v11                                 // 000000007BB4: 7E58150B
+	v_cvt_f16_f32_e32 v48, v15                                 // 000000007BB8: 7E60150F
+	v_cvt_f16_f32_e32 v9, v23                                  // 000000007BBC: 7E121517
+	v_cvt_f16_f32_e32 v11, v25                                 // 000000007BC0: 7E161519
+	v_cvt_f16_f32_e32 v15, v33                                 // 000000007BC4: 7E1E1521
+	v_cvt_f16_f32_e32 v45, v12                                 // 000000007BC8: 7E5A150C
+	v_cvt_f16_f32_e32 v49, v16                                 // 000000007BCC: 7E621510
+	v_cvt_f16_f32_e32 v12, v27                                 // 000000007BD0: 7E18151B
+	v_cvt_f16_f32_e32 v16, v35                                 // 000000007BD4: 7E201523
+	v_cvt_f16_f32_e32 v21, v37                                 // 000000007BD8: 7E2A1525
+	v_cvt_f16_f32_e32 v22, v39                                 // 000000007BDC: 7E2C1527
+	v_cvt_f32_f16_e32 v23, v5                                  // 000000007BE0: 7E2E1705
+	v_cvt_f32_f16_e32 v24, v6                                  // 000000007BE4: 7E301706
+	v_cvt_f16_f32_e32 v2, v4                                   // 000000007BE8: 7E041504
+	v_pack_b32_f16 v4, v5, v6                                  // 000000007BEC: D2A00004 00020D05
+	v_pack_b32_f16 v5, v7, v10                                 // 000000007BF4: D2A00005 00021507
+	v_cvt_f32_f16_e32 v25, v7                                  // 000000007BFC: 7E321707
+	v_cvt_f32_f16_e32 v26, v10                                 // 000000007C00: 7E34170A
+	v_pack_b32_f16 v6, v13, v14                                // 000000007C04: D2A00006 00021D0D
+	v_cvt_f32_f16_e32 v13, v13                                 // 000000007C0C: 7E1A170D
+	v_cvt_f32_f16_e32 v14, v14                                 // 000000007C10: 7E1C170E
+	v_pack_b32_f16 v7, v17, v20                                // 000000007C14: D2A00007 00022911
+	v_cvt_f32_f16_e32 v17, v17                                 // 000000007C1C: 7E221711
+	v_cvt_f32_f16_e32 v20, v20                                 // 000000007C20: 7E281714
+	v_cvt_f32_f16_e32 v27, v8                                  // 000000007C24: 7E361708
+	v_cvt_f32_f16_e32 v32, v11                                 // 000000007C28: 7E40170B
+	v_cvt_f32_f16_e32 v33, v15                                 // 000000007C2C: 7E42170F
+	v_cvt_f32_f16_e32 v35, v9                                  // 000000007C30: 7E461709
+	v_cvt_f32_f16_e32 v34, v21                                 // 000000007C34: 7E441715
+	v_pack_b32_f16 v8, v8, v9                                  // 000000007C38: D2A00008 00021308
+	v_pack_b32_f16 v9, v11, v12                                // 000000007C40: D2A00009 0002190B
+	v_cvt_f32_f16_e32 v12, v12                                 // 000000007C48: 7E18170C
+	v_pack_b32_f16 v10, v15, v16                               // 000000007C4C: D2A0000A 0002210F
+	v_cvt_f32_f16_e32 v15, v16                                 // 000000007C54: 7E1E1710
+	v_cvt_f32_f16_e32 v16, v22                                 // 000000007C58: 7E201716
+	v_add_f32_e32 v23, v23, v24                                // 000000007C5C: 022E3117
+	v_add_f32_e32 v24, v25, v26                                // 000000007C60: 02303519
+	v_add_f32_e32 v13, v13, v14                                // 000000007C64: 021A1D0D
+	v_add_f32_e32 v14, v17, v20                                // 000000007C68: 021C2911
+	v_add_f32_e32 v17, v23, v27                                // 000000007C6C: 02223717
+	v_add_f32_e32 v20, v24, v32                                // 000000007C70: 02284118
+	v_add_f32_e32 v13, v13, v33                                // 000000007C74: 021A430D
+	v_add_f32_e32 v17, v17, v35                                // 000000007C78: 02224711
+	v_add_f32_e32 v14, v14, v34                                // 000000007C7C: 021C450E
+	v_add_f32_e32 v12, v20, v12                                // 000000007C80: 02181914
+	v_add_f32_e32 v13, v13, v15                                // 000000007C84: 021A1F0D
+	v_add_f32_e32 v15, 0, v17                                  // 000000007C88: 021E2280
+	v_add_f32_e32 v14, v14, v16                                // 000000007C8C: 021C210E
+	v_add_f32_e32 v12, v15, v12                                // 000000007C90: 0218190F
+	v_cvt_f32_f16_e32 v15, v41                                 // 000000007C94: 7E1E1729
+	v_cvt_f32_f16_e32 v16, v42                                 // 000000007C98: 7E20172A
+	v_cvt_f32_f16_e32 v17, v43                                 // 000000007C9C: 7E22172B
+	v_cvt_f32_f16_e32 v20, v44                                 // 000000007CA0: 7E28172C
+	v_pack_b32_f16 v11, v21, v22                               // 000000007CA4: D2A0000B 00022D15
+	v_cvt_f32_f16_e32 v21, v2                                  // 000000007CAC: 7E2A1702
+	v_cvt_f32_f16_e32 v22, v28                                 // 000000007CB0: 7E2C171C
+	v_add_f32_e32 v15, v15, v16                                // 000000007CB4: 021E210F
+	v_cvt_f32_f16_e32 v36, v29                                 // 000000007CB8: 7E48171D
+	v_add_f32_e32 v12, v12, v13                                // 000000007CBC: 02181B0C
+	v_add_f32_e32 v16, v15, v17                                // 000000007CC0: 0220230F
+	v_add_f32_e32 v32, v12, v14                                // 000000007CC4: 02401D0C
+	v_pack_b32_f16 v12, v2, v28                                // 000000007CC8: D2A0000C 00023902
+	v_cvt_f32_f16_e32 v2, v40                                  // 000000007CD0: 7E041728
+	v_add_f32_e32 v16, v16, v20                                // 000000007CD4: 02202910
+	v_cvt_f32_f16_e32 v17, v45                                 // 000000007CD8: 7E22172D
+	v_cvt_f32_f16_e32 v20, v46                                 // 000000007CDC: 7E28172E
+	v_add_f32_e32 v13, v21, v22                                // 000000007CE0: 021A2D15
+	v_cvt_f32_f16_e32 v21, v47                                 // 000000007CE4: 7E2A172F
+	v_cvt_f32_f16_e32 v22, v48                                 // 000000007CE8: 7E2C1730
+	v_cvt_f16_f32_e32 v18, v18                                 // 000000007CEC: 7E241512
+	v_add_f32_e32 v14, v13, v36                                // 000000007CF0: 021C490D
+	v_add_f32_e32 v2, v14, v2                                  // 000000007CF4: 0204050E
+	v_add_f32_e32 v17, v17, v20                                // 000000007CF8: 02222911
+	v_cvt_f16_f32_e32 v19, v19                                 // 000000007CFC: 7E261513
+	v_add_f32_e32 v2, 0, v2                                    // 000000007D00: 02040480
+	v_add_f32_e32 v20, v17, v21                                // 000000007D04: 02282B11
+	v_add_f32_e32 v2, v2, v16                                  // 000000007D08: 02042102
+	v_add_f32_e32 v20, v20, v22                                // 000000007D0C: 02282D14
+	v_add_f32_e32 v2, v2, v20                                  // 000000007D10: 02042902
+	v_cvt_f32_f16_e32 v20, v49                                 // 000000007D14: 7E281731
+	v_cvt_f32_f16_e32 v21, v18                                 // 000000007D18: 7E2A1712
+	v_cvt_f32_f16_e32 v22, v50                                 // 000000007D1C: 7E2C1732
+	v_cvt_f32_f16_e32 v23, v19                                 // 000000007D20: 7E2E1713
+	v_lshrrev_b32_e32 v27, 3, v31                              // 000000007D24: 20363E83
+	v_add_f32_e32 v20, v20, v21                                // 000000007D28: 02282B14
+	v_add_f32_e32 v20, v20, v22                                // 000000007D2C: 02282D14
+	v_add_f32_e32 v20, v20, v23                                // 000000007D30: 02282F14
+	v_add_f32_e32 v2, v2, v20                                  // 000000007D34: 02042902
+	v_and_b32_e32 v20, 16, v30                                 // 000000007D38: 26283C90
+	v_bfe_u32 v23, v0, 2, 1                                    // 000000007D3C: D1C80017 02050500
+	v_and_b32_e32 v30, 2, v0                                   // 000000007D44: 263C0082
+	v_lshlrev_b32_e32 v0, 3, v0                                // 000000007D48: 24000083
+	v_pack_b32_f16 v13, v29, v40                               // 000000007D4C: D2A0000D 0002511D
+	v_pack_b32_f16 v14, v41, v42                               // 000000007D54: D2A0000E 00025529
+	v_pack_b32_f16 v15, v43, v44                               // 000000007D5C: D2A0000F 0002592B
+	v_pack_b32_f16 v16, v45, v46                               // 000000007D64: D2A00010 00025D2D
+	v_pack_b32_f16 v17, v47, v48                               // 000000007D6C: D2A00011 0002612F
+	v_pack_b32_f16 v18, v49, v18                               // 000000007D74: D2A00012 00022531
+	v_pack_b32_f16 v19, v50, v19                               // 000000007D7C: D2A00013 00022732
+	v_lshlrev_b32_e32 v21, 6, v23                              // 000000007D84: 242A2E86
+	v_lshlrev_b32_e32 v22, 5, v23                              // 000000007D88: 242C2E85
+	v_lshlrev_b32_e32 v23, 3, v23                              // 000000007D8C: 242E2E83
+	v_lshlrev_b32_e32 v24, 7, v27                              // 000000007D90: 24303687
+	v_lshlrev_b32_e32 v25, 6, v27                              // 000000007D94: 24323686
+	v_lshlrev_b32_e32 v26, 4, v27                              // 000000007D98: 24343684
+	v_lshlrev_b32_e32 v27, 1, v27                              // 000000007D9C: 24363681
+	v_mul_f32_e32 v28, 0xb6000000, v2                          // 000000007DA0: 0A3804FF B6000000
+	v_mul_f32_e32 v29, 0xb6000000, v32                         // 000000007DA8: 0A3A40FF B6000000
+	v_and_b32_e32 v0, 24, v0                                   // 000000007DB0: 26000098
+	v_or_b32_e32 v31, 4, v30                                   // 000000007DB4: 283E3C84
+	v_or_b32_e32 v32, 8, v30                                   // 000000007DB8: 28403C88
+	v_or_b32_e32 v33, 12, v30                                  // 000000007DBC: 28423C8C
+	v_mov_b32_e32 v2, 0                                        // 000000007DC0: 7E040280
+	s_branch 8                                                 // 000000007DC4: BF820008 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x10e8>
+	s_or_b64 exec, exec, s[6:7]                                // 000000007DC8: 87FE067E
+	v_add_u32_e32 v1, 0x3c0, v1                                // 000000007DCC: 680202FF 000003C0
+	v_cmp_le_u32_e64 s[0:1], s12, v1                           // 000000007DD4: D0CB0000 0002020C
+	s_or_b64 s[4:5], s[0:1], s[4:5]                            // 000000007DDC: 87840400
+	s_andn2_b64 exec, exec, s[4:5]                             // 000000007DE0: 89FE047E
+	s_cbranch_execz 243                                        // 000000007DE4: BF8800F3 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x14b4>
+	v_mov_b32_e32 v35, s9                                      // 000000007DE8: 7E460209
+	v_mov_b32_e32 v34, s8                                      // 000000007DEC: 7E440208
+	v_mad_u64_u32 v[42:43], s[0:1], v1, s10, v[34:35]          // 000000007DF0: D1E8002A 04881501
+	v_add_co_u32_e64 v34, s[0:1], v42, v24                     // 000000007DF8: D1190022 0002312A
+	v_addc_co_u32_e64 v35, s[0:1], 0, v43, s[0:1]              // 000000007E00: D11C0023 00025680
+	v_add_co_u32_e64 v34, s[0:1], v34, v21                     // 000000007E08: D1190022 00022B22
+	v_addc_co_u32_e64 v35, s[0:1], 0, v35, s[0:1]              // 000000007E10: D11C0023 00024680
+	v_add_co_u32_e64 v44, s[0:1], v34, v3                      // 000000007E18: D119002C 00020722
+	v_addc_co_u32_e64 v45, s[0:1], 0, v35, s[0:1]              // 000000007E20: D11C002D 00024680
+	v_add_co_u32_e64 v34, s[0:1], v42, v25                     // 000000007E28: D1190022 0002332A
+	v_addc_co_u32_e64 v35, s[0:1], 0, v43, s[0:1]              // 000000007E30: D11C0023 00025680
+	v_add_co_u32_e64 v34, s[0:1], v34, v22                     // 000000007E38: D1190022 00022D22
+	v_addc_co_u32_e64 v35, s[0:1], 0, v35, s[0:1]              // 000000007E40: D11C0023 00024680
+	v_add_co_u32_e64 v46, s[0:1], v34, v20                     // 000000007E48: D119002E 00022922
+	v_addc_co_u32_e64 v47, s[0:1], 0, v35, s[0:1]              // 000000007E50: D11C002F 00024680
+	global_load_dwordx4 v[34:37], v[44:45], off                // 000000007E58: DC5C8000 227F002C
+	global_load_dwordx4 v[38:41], v[46:47], off offset:1024    // 000000007E60: DC5C8400 267F002E
+	v_add_co_u32_e64 v44, s[0:1], v42, v26                     // 000000007E68: D119002C 0002352A
+	v_addc_co_u32_e64 v45, s[0:1], 0, v43, s[0:1]              // 000000007E70: D11C002D 00025680
+	v_add_co_u32_e64 v42, s[0:1], v42, v27                     // 000000007E78: D119002A 0002372A
+	v_addc_co_u32_e64 v43, s[0:1], 0, v43, s[0:1]              // 000000007E80: D11C002B 00025680
+	v_add_co_u32_e64 v44, s[0:1], v44, v23                     // 000000007E88: D119002C 00022F2C
+	v_addc_co_u32_e64 v45, s[0:1], 0, v45, s[0:1]              // 000000007E90: D11C002D 00025A80
+	global_load_dwordx2 v[46:47], v[44:45], off offset:1536    // 000000007E98: DC548600 2E7F002C
+	global_load_ushort v48, v[42:43], off offset:1664          // 000000007EA0: DC488680 307F002A
+	s_waitcnt vmcnt(3)                                         // 000000007EA8: BF8C0F73
+	v_and_b32_e32 v42, 0xf000f, v34                            // 000000007EAC: 265444FF 000F000F
+	s_waitcnt vmcnt(2)                                         // 000000007EB4: BF8C0F72
+	v_lshrrev_b32_e32 v43, v30, v38                            // 000000007EB8: 20564D1E
+	v_lshrrev_b32_e32 v44, 8, v34                              // 000000007EBC: 20584488
+	v_lshrrev_b32_e32 v45, v32, v38                            // 000000007EC0: 205A4D20
+	v_lshrrev_b32_e32 v49, 4, v34                              // 000000007EC4: 20624484
+	v_lshrrev_b32_e32 v50, v31, v38                            // 000000007EC8: 20644D1F
+	v_lshlrev_b32_e32 v43, 4, v43                              // 000000007ECC: 24565684
+	v_and_or_b32 v42, v43, s11, v42                            // 000000007ED0: D201002A 04A8172B
+	v_and_b32_e32 v43, 0xf000f, v44                            // 000000007ED8: 265658FF 000F000F
+	v_lshlrev_b32_e32 v44, 4, v45                              // 000000007EE0: 24585A84
+	v_and_b32_e32 v45, 0xf000f, v49                            // 000000007EE4: 265A62FF 000F000F
+	v_lshlrev_b32_e32 v49, 4, v50                              // 000000007EEC: 24626484
+	v_lshrrev_b32_e32 v34, 12, v34                             // 000000007EF0: 2044448C
+	v_lshrrev_b32_e32 v38, v33, v38                            // 000000007EF4: 204C4D21
+	v_and_b32_e32 v51, 0xf000f, v35                            // 000000007EF8: 266646FF 000F000F
+	v_lshrrev_b32_e32 v52, v30, v39                            // 000000007F00: 20684F1E
+	v_lshrrev_b32_e32 v53, 8, v35                              // 000000007F04: 206A4688
+	v_lshrrev_b32_e32 v54, v32, v39                            // 000000007F08: 206C4F20
+	v_lshrrev_b32_e32 v55, 4, v35                              // 000000007F0C: 206E4684
+	v_lshrrev_b32_e32 v56, v31, v39                            // 000000007F10: 20704F1F
+	v_lshrrev_b32_e32 v35, 12, v35                             // 000000007F14: 2046468C
+	v_lshrrev_b32_e32 v39, v33, v39                            // 000000007F18: 204E4F21
+	v_and_or_b32 v45, v49, s11, v45                            // 000000007F1C: D201002D 04B41731
+	v_lshrrev_b32_e32 v49, v30, v40                            // 000000007F24: 2062511E
+	v_and_or_b32 v43, v44, s11, v43                            // 000000007F28: D201002B 04AC172C
+	v_and_b32_e32 v44, 0xf000f, v36                            // 000000007F30: 265848FF 000F000F
+	v_and_b32_e32 v34, 0xf000f, v34                            // 000000007F38: 264444FF 000F000F
+	v_lshlrev_b32_e32 v38, 4, v38                              // 000000007F40: 244C4C84
+	v_lshlrev_b32_e32 v50, 4, v52                              // 000000007F44: 24646884
+	v_and_b32_e32 v35, 0xf000f, v35                            // 000000007F48: 264646FF 000F000F
+	v_lshlrev_b32_e32 v39, 4, v39                              // 000000007F50: 244E4E84
+	v_lshlrev_b32_e32 v49, 4, v49                              // 000000007F54: 24626284
+	v_dot2_f32_f16 v42, v42, v12, v28                          // 000000007F58: D3A3402A 1C72192A
+	v_and_or_b32 v34, v38, s11, v34                            // 000000007F60: D2010022 04881726
+	v_and_b32_e32 v52, 0xf000f, v53                            // 000000007F68: 26686AFF 000F000F
+	v_lshlrev_b32_e32 v53, 4, v54                              // 000000007F70: 246A6C84
+	v_and_b32_e32 v54, 0xf000f, v55                            // 000000007F74: 266C6EFF 000F000F
+	v_lshlrev_b32_e32 v55, 4, v56                              // 000000007F7C: 246E7084
+	v_and_or_b32 v50, v50, s11, v51                            // 000000007F80: D2010032 04CC1732
+	v_and_or_b32 v35, v39, s11, v35                            // 000000007F88: D2010023 048C1727
+	v_and_or_b32 v39, v49, s11, v44                            // 000000007F90: D2010027 04B01731
+	v_dot2_f32_f16 v44, v45, v4, v29                           // 000000007F98: D3A3402C 1C76092D
+	v_dot2_f32_f16 v42, v43, v13, v42                          // 000000007FA0: D3A3402A 1CAA1B2B
+	v_and_or_b32 v51, v53, s11, v52                            // 000000007FA8: D2010033 04D01735
+	v_and_or_b32 v52, v55, s11, v54                            // 000000007FB0: D2010034 04D81737
+	v_dot2_f32_f16 v34, v34, v8, v44                           // 000000007FB8: D3A34022 1CB21122
+	v_dot2_f32_f16 v42, v50, v14, v42                          // 000000007FC0: D3A3402A 1CAA1D32
+	v_dot2_f32_f16 v34, v52, v5, v34                           // 000000007FC8: D3A34022 1C8A0B34
+	v_dot2_f32_f16 v42, v51, v15, v42                          // 000000007FD0: D3A3402A 1CAA1F33
+	v_lshrrev_b32_e32 v38, 8, v36                              // 000000007FD8: 204C4888
+	v_dot2_f32_f16 v34, v35, v9, v34                           // 000000007FDC: D3A34022 1C8A1323
+	v_dot2_f32_f16 v35, v39, v16, v42                          // 000000007FE4: D3A34023 1CAA2127
+	v_lshrrev_b32_e32 v39, v32, v40                            // 000000007FEC: 204E5120
+	v_and_b32_e32 v38, 0xf000f, v38                            // 000000007FF0: 264C4CFF 000F000F
+	v_lshlrev_b32_e32 v39, 4, v39                              // 000000007FF8: 244E4E84
+	v_and_or_b32 v38, v39, s11, v38                            // 000000007FFC: D2010026 04981727
+	v_dot2_f32_f16 v35, v38, v17, v35                          // 000000008004: D3A34023 1C8E2326
+	v_lshrrev_b32_e32 v38, 4, v36                              // 00000000800C: 204C4884
+	v_lshrrev_b32_e32 v39, v31, v40                            // 000000008010: 204E511F
+	v_and_b32_e32 v38, 0xf000f, v38                            // 000000008014: 264C4CFF 000F000F
+	v_lshlrev_b32_e32 v39, 4, v39                              // 00000000801C: 244E4E84
+	v_and_or_b32 v38, v39, s11, v38                            // 000000008020: D2010026 04981727
+	v_dot2_f32_f16 v34, v38, v6, v34                           // 000000008028: D3A34022 1C8A0D26
+	v_lshrrev_b32_e32 v36, 12, v36                             // 000000008030: 2048488C
+	v_lshrrev_b32_e32 v38, v33, v40                            // 000000008034: 204C5121
+	v_and_b32_e32 v36, 0xf000f, v36                            // 000000008038: 264848FF 000F000F
+	v_lshlrev_b32_e32 v38, 4, v38                              // 000000008040: 244C4C84
+	v_and_or_b32 v36, v38, s11, v36                            // 000000008044: D2010024 04901726
+	v_lshrrev_b32_e32 v38, v30, v41                            // 00000000804C: 204C531E
+	v_dot2_f32_f16 v34, v36, v10, v34                          // 000000008050: D3A34022 1C8A1524
+	v_and_b32_e32 v36, 0xf000f, v37                            // 000000008058: 26484AFF 000F000F
+	v_lshlrev_b32_e32 v38, 4, v38                              // 000000008060: 244C4C84
+	v_and_or_b32 v36, v38, s11, v36                            // 000000008064: D2010024 04901726
+	v_dot2_f32_f16 v35, v36, v18, v35                          // 00000000806C: D3A34023 1C8E2524
+	v_lshrrev_b32_e32 v36, 8, v37                              // 000000008074: 20484A88
+	v_lshrrev_b32_e32 v38, v32, v41                            // 000000008078: 204C5320
+	v_and_b32_e32 v36, 0xf000f, v36                            // 00000000807C: 264848FF 000F000F
+	v_lshlrev_b32_e32 v38, 4, v38                              // 000000008084: 244C4C84
+	v_and_or_b32 v36, v38, s11, v36                            // 000000008088: D2010024 04901726
+	v_dot2_f32_f16 v35, v36, v19, v35                          // 000000008090: D3A34023 1C8E2724
+	v_lshrrev_b32_e32 v36, 4, v37                              // 000000008098: 20484A84
+	v_lshrrev_b32_e32 v38, v31, v41                            // 00000000809C: 204C531F
+	v_and_b32_e32 v36, 0xf000f, v36                            // 0000000080A0: 264848FF 000F000F
+	v_lshlrev_b32_e32 v38, 4, v38                              // 0000000080A8: 244C4C84
+	v_and_or_b32 v36, v38, s11, v36                            // 0000000080AC: D2010024 04901726
+	v_dot2_f32_f16 v34, v36, v7, v34                           // 0000000080B4: D3A34022 1C8A0F24
+	v_lshrrev_b32_e32 v36, 12, v37                             // 0000000080BC: 20484A8C
+	v_lshrrev_b32_e32 v37, v33, v41                            // 0000000080C0: 204A5321
+	v_and_b32_e32 v36, 0xf000f, v36                            // 0000000080C4: 264848FF 000F000F
+	v_lshlrev_b32_e32 v37, 4, v37                              // 0000000080CC: 244A4A84
+	v_and_or_b32 v36, v37, s11, v36                            // 0000000080D0: D2010024 04901725
+	s_waitcnt vmcnt(1)                                         // 0000000080D8: BF8C0F71
+	v_lshrrev_b32_e32 v37, v0, v47                             // 0000000080DC: 204A5F00
+	v_bfe_i32 v37, v37, 0, 8                                   // 0000000080E0: D1C90025 02210125
+	v_lshrrev_b32_e32 v38, v0, v46                             // 0000000080E8: 204C5D00
+	v_cvt_f32_i32_sdwa v37, sext(v37) dst_sel:DWORD dst_unused:UNUSED_PAD src0_sel:WORD_0// 0000000080EC: 7E4A0AF9 000C0625
+	v_bfe_i32 v38, v38, 0, 8                                   // 0000000080F4: D1C90026 02210126
+	s_waitcnt vmcnt(0)                                         // 0000000080FC: BF8C0F70
+	v_cvt_f32_f16_e32 v39, v48                                 // 000000008100: 7E4E1730
+	v_cvt_f32_i32_sdwa v38, sext(v38) dst_sel:DWORD dst_unused:UNUSED_PAD src0_sel:WORD_0// 000000008104: 7E4C0AF9 000C0626
+	v_dot2_f32_f16 v34, v36, v11, v34                          // 00000000810C: D3A34022 1C8A1724
+	v_mul_f32_e32 v34, v34, v37                                // 000000008114: 0A444B22
+	v_mul_f32_e32 v36, 0x4b800000, v39                         // 000000008118: 0A484EFF 4B800000
+	v_fmac_f32_e32 v34, v35, v38                               // 000000008120: 76444D23
+	v_fma_f32 v34, v36, v34, 0                                 // 000000008124: D1CB0022 02024524
+	v_mov_b32_e32 v35, v2                                      // 00000000812C: 7E460302
+	s_nop 0                                                    // 000000008130: BF800000
+	v_add_f32_dpp v34, v34, v34 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000008134: 024444FA FF08B122
+	s_nop 1                                                    // 00000000813C: BF800001
+	v_add_f32_dpp v34, v34, v34 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000008140: 024444FA FF084E22
+	s_nop 1                                                    // 000000008148: BF800001
+	v_add_f32_dpp v34, v34, v34 row_half_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 00000000814C: 024444FA FF094122
+	s_nop 1                                                    // 000000008154: BF800001
+	v_add_f32_dpp v34, v34, v34 row_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000008158: 024444FA FF094022
+	s_nop 1                                                    // 000000008160: BF800001
+	v_mov_b32_dpp v35, v34 row_bcast:15 row_mask:0xa bank_mask:0xf// 000000008164: 7E4602FA AF014222
+	v_add_f32_e32 v34, v34, v35                                // 00000000816C: 02444722
+	v_mov_b32_e32 v35, v2                                      // 000000008170: 7E460302
+	s_nop 1                                                    // 000000008174: BF800001
+	v_mov_b32_dpp v35, v34 row_bcast:31 row_mask:0xc bank_mask:0xf// 000000008178: 7E4602FA CF014322
+	s_and_saveexec_b64 s[6:7], vcc                             // 000000008180: BE86206A
+	s_cbranch_execz 65296                                      // 000000008184: BF88FF10 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x10c8>
+	v_add_f32_e32 v36, v34, v35                                // 000000008188: 02484722
+	v_lshlrev_b64 v[34:35], 2, v[1:2]                          // 00000000818C: D28F0022 00020282
+	v_mov_b32_e32 v37, s3                                      // 000000008194: 7E4A0203
+	v_add_co_u32_e64 v34, s[0:1], s2, v34                      // 000000008198: D1190022 00024402
+	v_addc_co_u32_e64 v35, s[0:1], v37, v35, s[0:1]            // 0000000081A0: D11C0023 00024725
+	global_store_dword v[34:35], v36, off                      // 0000000081A8: DC708000 007F2422
+	s_branch 65285                                             // 0000000081B0: BF82FF05 <void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)+0x10c8>
+	s_endpgm                                                   // 0000000081B4: BF810000
+		...

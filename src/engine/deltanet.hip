@@ -59,9 +59,10 @@ void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch&
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kernels::kRmsNormBlock>
       <<<1, kernels::kRmsNormBlock, 0, stream>>>(norm, 1);
-  gemv(w.qkv, sc.xn.data(), sc.qkv(), stream);
   if (w.z_ab.n != 0)
-    gemv(w.z_ab, sc.xn.data(), sc.z(), stream);
+    gemv_pair(w.qkv, w.z_ab, sc.xn.data(), sc.qkv(), sc.z(), stream);
+  else
+    gemv(w.qkv, sc.xn.data(), sc.qkv(), stream);
   const kernels::DeltaNetStepParams step{sc.qkv(),
                                          sc.z(),
                                          sc.a(),

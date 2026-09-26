@@ -83,15 +83,17 @@ __device__ inline float slot_dot(const SlotW& w, int slot, const SlotAct& a) {
 
 // Rows [first, first + count); kRows consecutive rows per wavefront step, loads issued first.
 template <unsigned K, int kBlock, int kRows = 1>
-__device__ void q6k_gemv_op(const Q6kGemvParams& p, unsigned first, unsigned count) {
+__device__ void q6k_gemv_op(const Q6kGemvParams& p, unsigned first, unsigned count,
+                            unsigned logical_block = blockIdx.x,
+                            unsigned logical_grid = gridDim.x) {
   using namespace q6k_detail;
   static_assert(K % (32 * kWave) == 0, "K must be a multiple of 2048");
   static_assert(kBlock % kWave == 0);
   constexpr int kIters = K / (32 * kWave);
   const std::size_t row_bytes = (K / 256 * 210 + 15) / 16 * 16;
   const int lane = threadIdx.x % kWave;
-  const unsigned wave = blockIdx.x * (kBlock / kWave) + threadIdx.x / kWave;
-  const unsigned n_waves = gridDim.x * (kBlock / kWave);
+  const unsigned wave = logical_block * (kBlock / kWave) + threadIdx.x / kWave;
+  const unsigned n_waves = logical_grid * (kBlock / kWave);
 
   SlotAct act[kIters];
 #pragma unroll

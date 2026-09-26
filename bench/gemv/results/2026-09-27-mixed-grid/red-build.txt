@@ -1,0 +1,8 @@
+[1/2] Building HIP object tests/CMakeFiles/test_gemv_dispatch.dir/test_gemv_dispatch.hip.o
+FAILED: tests/CMakeFiles/test_gemv_dispatch.dir/test_gemv_dispatch.hip.o
+/opt/rocm-6.3.4/lib/llvm/bin/clang++ -DMISO_FIXTURE_DIR=\"/home/penta/repos/miso/tests/fixtures\" -DMISO_GOLDEN_DIR=\"/home/penta/repos/miso/tests/golden\" -DMISO_ORNITH_GGUF=\"/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf\" -D__HIP_ROCclr__=1 -I/home/penta/repos/miso/kernels -I/home/penta/repos/miso/src -isystem /home/penta/repos/miso/third_party --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 -O3 -DNDEBUG --offload-arch=gfx906 -Wall -Wextra -Werror -std=gnu++20 -MD -MT tests/CMakeFiles/test_gemv_dispatch.dir/test_gemv_dispatch.hip.o -MF tests/CMakeFiles/test_gemv_dispatch.dir/test_gemv_dispatch.hip.o.d -o tests/CMakeFiles/test_gemv_dispatch.dir/test_gemv_dispatch.hip.o -x hip -c /home/penta/repos/miso/tests/test_gemv_dispatch.hip
+/home/penta/repos/miso/tests/test_gemv_dispatch.hip:14:10: fatal error: 'mixed_gemv.hpp' file not found
+   14 | #include "mixed_gemv.hpp"
+      |          ^~~~~~~~~~~~~~~~
+1 error generated when compiling for gfx906.
+ninja: build stopped: subcommand failed.
