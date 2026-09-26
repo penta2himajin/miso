@@ -42,7 +42,8 @@ struct AttentionCache {
 
 // Per-token projections: [q+gate 8192 | k 512 | v 512] = 9216 floats.
 struct AttentionScratch {
-  static constexpr unsigned kMaxSplits = 120;  // per KV head: 240 workgroups, ~4 per CU
+  // Cap splits so combine stays cheap; sweep (bench/attention) preferred ~48–60 over 120.
+  static constexpr unsigned kMaxSplits = 60;
   static constexpr unsigned kProj = 9216;
   DeviceBuffer<float> xn{2048}, proj{kProj}, q{4096}, core{4096};
   DeviceBuffer<float> part_m{2 * kMaxSplits * 8}, part_l{2 * kMaxSplits * 8};

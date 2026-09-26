@@ -1,0 +1,7 @@
+# M7d baseline vs optimised (layer 3 gated attention decode). Same protocol as run2-splitk.
+# Before (main @ M7c): 103.5 / 110.4 / 173.3 / 325.6 us at ctx 16 / 1k / 4k / 16k.
+# After: V staged in LDS; attn_n_splits prefers ~6 subs/split, kMaxSplits 60.
+attention layer 3 decode at ctx    16:     93.4 us/token
+attention layer 3 decode at ctx  1024:     95.4 us/token
+attention layer 3 decode at ctx  4096:    126.1 us/token
+attention layer 3 decode at ctx 16384:    259.5 us/token

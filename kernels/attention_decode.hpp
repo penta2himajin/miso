@@ -89,11 +89,29 @@ __global__ void __launch_bounds__(kBlock) attn_prep_kernel(AttnPrepParams p) {
 
 constexpr unsigned kAttnSubChunk = 32;
 
-// Number of splits per KV head: at most max_splits, each split non-empty.
+// Number of splits per KV head: prefer ~6 sub-chunks per split (measured: 4k/16k sweet
+// spot on MI50), then cap at max_splits. Short contexts still get enough parallelism
+// (at least min(16, subs) splits) so a handful of workgroups do not serialise the score loop.
 __host__ __device__ constexpr unsigned attn_n_splits(unsigned len, unsigned max_splits) {
   const unsigned subs = (len + kAttnSubChunk - 1) / kAttnSubChunk;
-  const unsigned per = (subs + max_splits - 1) / max_splits;
-  return (subs + per - 1) / per;
+  if (subs == 0)
+    return 1;
+  constexpr unsigned kPref = 6, kMinPar = 16;
+  unsigned per = kPref;
+  unsigned n = (subs + per - 1) / per;
+  if (n > max_splits) {
+    per = (subs + max_splits - 1) / max_splits;
+    n = (subs + per - 1) / per;
+  } else if (n < kMinPar && max_splits >= kMinPar) {
+    // Even below 16 sub-chunks, take one split per sub-chunk so short decode
+    // keeps enough workgroups (ctx ~300 was collapsing to 2 splits and losing ~2 tok/s).
+    const unsigned target = subs < kMinPar ? subs : kMinPar;
+    if (n < target) {
+      per = (subs + target - 1) / target;
+      n = (subs + per - 1) / per;
+    }
+  }
+  return n;
 }
 
 struct AttnSplitParams {
@@ -112,8 +130,10 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
   constexpr int kGroup = kQHeads / kKvHeads, kSub = kAttnSubChunk, kRow = kDim / 2 + 1;
   static_assert(kBlock == kDim && kBlock == kGroup * kSub);
   typedef _Float16 half2_t __attribute__((ext_vector_type(2)));
+  // Float Q; K padded (bank-skew for score); V dense half for column gathers. ~42 KiB → 1 WG/CU.
   __shared__ float qs[kGroup][kDim], pr[kGroup][kSub], m_s[kGroup], l_s[kGroup], corr_s[kGroup];
-  __shared__ half2_t ks[kSub][kRow];  // padded rows: consecutive positions hit different banks
+  __shared__ half2_t ks[kSub][kRow];
+  __shared__ half_t vs[kSub][kDim];
   const unsigned t = threadIdx.x, hl = t / kSub, jl = t % kSub;
   const float scale = rsqrtf(static_cast<float>(kDim));
   const unsigned subs = (p.len + kSub - 1) / kSub;
@@ -135,18 +155,24 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
 
     for (unsigned j0 = j_begin; j0 < j_end; j0 += kSub) {
       const unsigned n = min(kSub, j_end - j0);
-      // Stage K rows [j0, j0 + n) in LDS: thread t copies 64 bytes of row t / 8.
+      // Stage K (padded half2) and V (dense half) for rows [j0, j0 + n).
       {
-        const unsigned row = t / 8, col = (t % 8) * 16;  // in half2 units
+        const unsigned row = t / 8, col = (t % 8) * 16;  // K in half2 units
         if (row < n) {
-          const uint4* src =
+          const uint4* ksrc =
               reinterpret_cast<const uint4*>(K + std::size_t{j0 + row} * kDim) + (t % 8) * 4;
           for (int c = 0; c < 4; ++c) {
-            const uint4 v = src[c];
-            const unsigned w[4] = {v.x, v.y, v.z, v.w};
+            const uint4 kv = ksrc[c];
+            const unsigned kw[4] = {kv.x, kv.y, kv.z, kv.w};
             for (int e = 0; e < 4; ++e)
-              ks[row][col + 4 * c + e] = __builtin_bit_cast(half2_t, w[e]);
+              ks[row][col + 4 * c + e] = __builtin_bit_cast(half2_t, kw[e]);
           }
+          // V: same 64 B chunk into dense half row (8 threads × 32 halves).
+          const uint4* vsrc =
+              reinterpret_cast<const uint4*>(V + std::size_t{j0 + row} * kDim) + (t % 8) * 4;
+          uint4* vdst = reinterpret_cast<uint4*>(&vs[row][(t % 8) * 32]);
+          for (int c = 0; c < 4; ++c)
+            vdst[c] = vsrc[c];
         }
       }
       __syncthreads();
@@ -180,7 +206,7 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
       for (int h = 0; h < kGroup; ++h)
         acc[h] *= corr_s[h];
       for (unsigned j = 0; j < n; ++j) {
-        const float v = static_cast<float>(V[std::size_t{j0 + j} * kDim + t]);
+        const float v = static_cast<float>(vs[j][t]);
         for (int h = 0; h < kGroup; ++h)
           acc[h] += pr[h][j] * v;
       }

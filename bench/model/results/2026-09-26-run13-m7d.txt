@@ -1,0 +1,10 @@
+# M7d. Attention score loop: stage V in LDS with K; prefer ~6 sub-chunks/split (cap 60)
+# instead of maxing at 120 (combine was dominating at 4k). Layer-3 decode 173→126 µs at 4k,
+# 326→260 µs at 16k. Short e2e 126.0 → 129.1 tok/s.
+# sclk 1725 MHz, junction 56 C, 192 W peak (`-smi.csv`).
+model load: 28.0 s
+warm-up: pp512 357.8 ms, 1431.0 tok/s
+measured: pp512 357.2 ms, 1433.2 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.82 ms/token, 127.8 tok/s
+measured: 256 tokens at ctx 273..529: 7.75 ms/token, 129.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
