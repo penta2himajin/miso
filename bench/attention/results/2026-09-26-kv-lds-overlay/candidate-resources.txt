@@ -1,0 +1,1 @@
+  94   33  25824       0     0  256   2  void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams)

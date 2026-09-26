@@ -130,10 +130,13 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
   constexpr int kGroup = kQHeads / kKvHeads, kSub = kAttnSubChunk, kRow = kDim / 2 + 1;
   static_assert(kBlock == kDim && kBlock == kGroup * kSub);
   typedef _Float16 half2_t __attribute__((ext_vector_type(2)));
-  // Float Q; K padded (bank-skew for score); V dense half for column gathers. ~42 KiB → 1 WG/CU.
+  // Float Q; score then value over the same LDS slot (K padded half2 / V dense half). Peak was
+  // ~42 KiB with both live → 1 WG/CU; overlay targets ~26 KiB so two workgroups can reside.
   __shared__ float qs[kGroup][kDim], pr[kGroup][kSub], m_s[kGroup], l_s[kGroup], corr_s[kGroup];
-  __shared__ half2_t ks[kSub][kRow];
-  __shared__ half_t vs[kSub][kDim];
+  __shared__ union {
+    half2_t ks[kSub][kRow];
+    half_t vs[kSub][kDim];
+  } kv;
   const unsigned t = threadIdx.x, hl = t / kSub, jl = t % kSub;
   const float scale = rsqrtf(static_cast<float>(kDim));
   const unsigned subs = (p.len + kSub - 1) / kSub;
@@ -155,24 +158,18 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
 
     for (unsigned j0 = j_begin; j0 < j_end; j0 += kSub) {
       const unsigned n = min(kSub, j_end - j0);
-      // Stage K (padded half2) and V (dense half) for rows [j0, j0 + n).
+      // Stage K (padded half2) for rows [j0, j0 + n); V reuses the same LDS after scores.
       {
         const unsigned row = t / 8, col = (t % 8) * 16;  // K in half2 units
         if (row < n) {
           const uint4* ksrc =
               reinterpret_cast<const uint4*>(K + std::size_t{j0 + row} * kDim) + (t % 8) * 4;
           for (int c = 0; c < 4; ++c) {
-            const uint4 kv = ksrc[c];
-            const unsigned kw[4] = {kv.x, kv.y, kv.z, kv.w};
+            const uint4 word = ksrc[c];
+            const unsigned kw[4] = {word.x, word.y, word.z, word.w};
             for (int e = 0; e < 4; ++e)
-              ks[row][col + 4 * c + e] = __builtin_bit_cast(half2_t, kw[e]);
+              kv.ks[row][col + 4 * c + e] = __builtin_bit_cast(half2_t, kw[e]);
           }
-          // V: same 64 B chunk into dense half row (8 threads × 32 halves).
-          const uint4* vsrc =
-              reinterpret_cast<const uint4*>(V + std::size_t{j0 + row} * kDim) + (t % 8) * 4;
-          uint4* vdst = reinterpret_cast<uint4*>(&vs[row][(t % 8) * 32]);
-          for (int c = 0; c < 4; ++c)
-            vdst[c] = vsrc[c];
         }
       }
       __syncthreads();
@@ -180,7 +177,7 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
       if (jl < n) {
         s = 0;
         for (int e = 0; e < kDim / 2; ++e) {
-          const half2_t kk = ks[jl][e];
+          const half2_t kk = kv.ks[jl][e];
           s += qs[hl][2 * e] * static_cast<float>(kk.x) +
                qs[hl][2 * e + 1] * static_cast<float>(kk.y);
         }
@@ -203,10 +200,22 @@ __device__ void attn_split_op(const AttnSplitParams& p, unsigned first, unsigned
         m_s[hl] = m_new;
       }
       __syncthreads();
+      // Overwrite K staging with V (dense half); scores live in pr / corr_s.
+      {
+        const unsigned row = t / 8;
+        if (row < n) {
+          const uint4* vsrc =
+              reinterpret_cast<const uint4*>(V + std::size_t{j0 + row} * kDim) + (t % 8) * 4;
+          uint4* vdst = reinterpret_cast<uint4*>(&kv.vs[row][(t % 8) * 32]);
+          for (int c = 0; c < 4; ++c)
+            vdst[c] = vsrc[c];
+        }
+      }
+      __syncthreads();
       for (int h = 0; h < kGroup; ++h)
         acc[h] *= corr_s[h];
       for (unsigned j = 0; j < n; ++j) {
-        const float v = static_cast<float>(vs[j][t]);
+        const float v = static_cast<float>(kv.vs[j][t]);
         for (int h = 0; h < kGroup; ++h)
           acc[h] += pr[h][j] * v;
       }
