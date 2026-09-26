@@ -8,28 +8,26 @@ Current-state sections (everything above "Session log") are overwritten each ses
 ## Snapshot
 
 - Branch: `ai-written/m8a-moe-topk-norm` (draft PR against `main`)
-- Last work commit: (M8a: wave0 top-k; three Astra-high bets failed)
+- Last work commit: (M8a: `kRmsNormBlock=512`; median **141.5 tok/s**)
 - Working tree: clean after handoff commit
 - Last session: 2026-09-26 JST
-- Background: M7a–M7f done. Stage-3 decode work continues (peer-review loop with astra/mimo/deepseek).
+- Background: M7a–M7f done. Stage-3 decode work continues (peer-review loop with astra).
 
 ## Status
 
-in-progress (M8a: wave0 top-k still best; median **136.4 tok/s**. Three Astra-high bets failed this session.)
+in-progress (M8a: rmsnorm block 512 kept; median **141.5 tok/s**. Four implement→measure→peer loops done this session; stopped as requested.)
 
 ## Next action
 
-Session stopped after 3 loops (Astra high consult). All three bets rejected (expert-major down, Q4 r2 SoA, residual GEMV epilogue). Next: MoE/GEMV bandwidth ideas beyond these — measure before coding.
+Stopped after loop 4. Next session: profile the new decode bottleneck (MoE/GEMV); any `moe_down` occupancy work must shrink LDS `a[9][512]` (18.5 KiB caps occ at 3), not chase VGPR alone.
 
 ## Verification
 
-- Wave-0-only `moe_topk`: MoE **69.3** µs; e2e median **136.4 tok/s** (`run21`, `run8-m8a-wave0-topk`).
-- Failed A/Bs this session (reverted): expert-major moe_down (`run9`/`run10`/`run22`), Q4_K r2 SoA (`run11`/`run23`), residual GEMV epilogue (`run24`).
-- Failed A/Bs earlier (reverted): down-skip, header __shfl, float4 RMSNorm, MoE grid retune (`run5`–`run7`, `run20`).
-- `moe_topk` 8× masked argmax: MoE 85.6→**70.4** µs; e2e median **134.2 tok/s** (main 127.7) (`run19`, `run4-m8a-topk-algo`).
-- Cooperative top-k-in-router: **121.1 tok/s** — reverted.
-- Consumer-side post-attn RMSNorm fusion: first build +0.8 tok/s but **raced on residual**; race-fixed median **126.7** vs main **127.7** (−1) — reverted (`run17`/`run18`).
-- Peer reviews agree: ship+fix then drop this pattern; stage 3 needs MoE/GEMV work, not launch fusion.
+- `kRmsNormBlock=512`: e2e median **141.5** tok/s (139.8/141.8/141.5); VGPR 33→26, occ 7→8 (`run18`). Block 128 rejected (~122.7, `run17`).
+- C-excluded measurement campaign (run25): baseline **136.3**; MoE/down 24–44% HBM; weak expert locality.
+- Loop1–3 on `moe_down` rejected: step soft-pipeline (134.7), act-reload (136.1, no resource change), Q4 rolled steps (132.9; VGPR↓ but LDS caps occ).
+- Wave-0-only `moe_topk`: MoE **69.3** µs; prior median **136.4 tok/s** (`run21`, `run8-m8a-wave0-topk`).
+- Failed A/Bs earlier (reverted): expert-major moe_down, Q4_K r2 SoA, residual GEMV epilogue, down-skip, header __shfl, float4 RMSNorm, MoE grid retune, coop top-k, consumer RMSNorm→router fusion.
 
 ## Context pointers
 
@@ -69,6 +67,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - Collapsing `attn_n_splits` below one-per-sub-chunk on short contexts (ctx ~300 → 2 splits) cost ~2 tok/s end to end; keep min parallelism = min(subs, 16).
 
 - Consumer-side post-attn RMSNorm fusion in `moe_router` (65× rebuild): race on residual when WG0 commits in-router; after deferring commit to gate/up, median **−1 tok/s** vs main. Reverted.
+- moe_down occupancy via VGPR alone (loop1–3): soft-pipeline / act-reload / Q4 rolled steps. LDS `a[9][512]` = 18512 B caps WG/CU at 3 on 64 KiB; rolling Q4 cut VGPR 83→54 but MoE slowed and e2e fell to 132.9.
 - Cooperative `moe_router` + `grid.sync` + WG0 top-k (gate_up loads ids): correct but 102.6/99.2 µs MoE and **121.1 tok/s** e2e (was 85.6/82.5 and 127.6). Cost matches the rejected separate top-k launch (~25 µs). Reverted.
 
 ## Open questions for user
@@ -113,3 +112,5 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 - 2026-09-26 (M8a ×3 loops): down-skip / hdr-shfl / float4-norm / grid retune all no e2e win; wave0 top-k +~2 tok/s → median **136.4**. Stopped after 3 loops as requested.
 - 2026-09-26 (M8a ×3 after Astra --high): consult ranked (1) expert-major down (2) Q4 r2 SoA (3) residual GEMV epilogue. All measured and rejected (run9–11, run22–24). Baseline unchanged at **136.4 tok/s**. Stopped.
+
+- 2026-09-26 (M8a measure→4 loops): C-excluded campaign (run25) median **136.3**; MoE/down not HBM-bound; LDS caps down occ at 3. Loops 1–3 on moe_down rejected. Loop4 `add_rmsnorm` block 512 kept: median **141.5 tok/s** (`run18`). Stopped after 4.

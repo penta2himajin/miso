@@ -1,0 +1,23 @@
+# Loop4a: add_rmsnorm kRmsNormBlock=128 (confirmed in kernel-resources)
+## run 1
+model load: 9.7 s
+warm-up: pp512 358.7 ms, 1427.5 tok/s
+measured: pp512 357.7 ms, 1431.3 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.13 ms/token, 123.0 tok/s
+measured: 256 tokens at ctx 273..529: 8.15 ms/token, 122.7 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 10.8 s
+warm-up: pp512 358.5 ms, 1428.1 tok/s
+measured: pp512 357.7 ms, 1431.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.08 ms/token, 123.8 tok/s
+measured: 256 tokens at ctx 273..529: 8.12 ms/token, 123.2 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 10.9 s
+warm-up: pp512 358.9 ms, 1426.7 tok/s
+measured: pp512 357.6 ms, 1431.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 8.16 ms/token, 122.6 tok/s
+measured: 256 tokens at ctx 273..529: 8.19 ms/token, 122.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+# REJECT: median ~122.7 tok/s (122.7/123.2/122.1) vs 136.3; VGPR 33→52 occ7→4.

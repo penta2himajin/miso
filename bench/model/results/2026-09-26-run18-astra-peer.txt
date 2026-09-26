@@ -1,0 +1,1 @@
+KEEP Loop4b: median 141.5 clears ≥138 gate (+3.8% vs baseline), with lower VGPRs, higher occupancy, and passing tests. Next: profile the next decode bottleneck; moe_down tuning needs to address its LDS occupancy limit.

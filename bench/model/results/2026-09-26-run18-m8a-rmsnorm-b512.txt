@@ -1,0 +1,23 @@
+# Loop4b: add_rmsnorm kRmsNormBlock=512
+## run 1
+model load: 9.8 s
+warm-up: pp512 356.7 ms, 1435.2 tok/s
+measured: pp512 355.5 ms, 1440.1 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.12 ms/token, 140.4 tok/s
+measured: 256 tokens at ctx 273..529: 7.15 ms/token, 139.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 10.9 s
+warm-up: pp512 356.2 ms, 1437.4 tok/s
+measured: pp512 355.9 ms, 1438.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.02 ms/token, 142.4 tok/s
+measured: 256 tokens at ctx 273..529: 7.05 ms/token, 141.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 10.8 s
+warm-up: pp512 356.4 ms, 1436.6 tok/s
+measured: pp512 356.0 ms, 1438.2 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.04 ms/token, 142.1 tok/s
+measured: 256 tokens at ctx 273..529: 7.07 ms/token, 141.5 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+# KEEP: median 141.5 tok/s (139.8/141.8/141.5) vs baseline 136.3 (+5.2). VGPR 33→26 occ7→8.

@@ -57,7 +57,8 @@ void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch&
                      const float* delta, float* y, float eps, hipStream_t stream) {
   constexpr int kBlock = 256;
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
-  kernels::add_rmsnorm_kernel<2048, kBlock><<<1, kBlock, 0, stream>>>(norm, 1);
+  kernels::add_rmsnorm_kernel<2048, kernels::kRmsNormBlock>
+      <<<1, kernels::kRmsNormBlock, 0, stream>>>(norm, 1);
   gemv(w.qkv, sc.xn.data(), sc.qkv(), stream);
   if (w.z_ab.n != 0)
     gemv(w.z_ab, sc.xn.data(), sc.z(), stream);
@@ -86,7 +87,8 @@ void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefill
   constexpr int kBlock = 256;
   constexpr unsigned kProj = DeltaNetScratch::kProj;
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
-  kernels::add_rmsnorm_kernel<2048, kBlock><<<n, kBlock, 0, stream>>>(norm, n);
+  kernels::add_rmsnorm_kernel<2048, kernels::kRmsNormBlock>
+      <<<n, kernels::kRmsNormBlock, 0, stream>>>(norm, n);
   gemm_input(sc.xn.data(), 2048, n, sc.in, stream);
   gemm(w.qkv, sc.in, sc.qkv(), kProj, stream);
   if (w.z_ab.n != 0)
