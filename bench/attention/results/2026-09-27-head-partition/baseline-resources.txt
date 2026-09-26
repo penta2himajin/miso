@@ -1,0 +1,1 @@
+baseline: LDS 25824 occ 2 VGPR 94

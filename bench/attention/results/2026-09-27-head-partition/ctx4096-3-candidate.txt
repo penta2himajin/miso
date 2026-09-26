@@ -1,0 +1,8 @@
+command: ['/tmp/attn-head-part/candidate_context_probe', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf', 'tests/golden/ornith-layers.gguf', '4096']
+run 1 utc 2026-09-26T16:47:23.405239+00:00
+warm-up round=0 ctx=4096..4160 tokens=64 ms=475.601196 tok_s=134.567 ids_match=yes
+measured round=1 ctx=4096..4160 tokens=64 ms=475.544434 tok_s=134.583 ids_match=yes
+measured round=2 ctx=4096..4160 tokens=64 ms=475.624512 tok_s=134.560 ids_match=yes
+measured round=3 ctx=4096..4160 tokens=64 ms=475.712280 tok_s=134.535 ids_match=yes
+median ctx=4096 ms_token=7.431633 tok_s=134.560
+exit: 0
