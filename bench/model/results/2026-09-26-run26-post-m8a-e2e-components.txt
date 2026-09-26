@@ -1,0 +1,34 @@
+# 2026-09-26 run26-post-m8a: post-PR#26 bottleneck (kRmsNormBlock=512 on main)
+## e2e x3
+## run 1
+model load: 9.9 s
+warm-up: pp512 356.2 ms, 1437.6 tok/s
+measured: pp512 355.2 ms, 1441.3 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.13 ms/token, 140.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.15 ms/token, 139.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 10.9 s
+warm-up: pp512 356.3 ms, 1436.8 tok/s
+measured: pp512 355.7 ms, 1439.4 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.05 ms/token, 141.9 tok/s
+measured: 256 tokens at ctx 273..529: 7.08 ms/token, 141.2 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 11.0 s
+warm-up: pp512 356.7 ms, 1435.5 tok/s
+measured: pp512 355.7 ms, 1439.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.11 ms/token, 140.6 tok/s
+measured: 256 tokens at ctx 273..529: 7.14 ms/token, 140.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## components
+MoE layer 0 (down Q6_K) decode: 69.3 us/token
+MoE layer 0 prefill 512 tokens: 4.852 ms (9.5 us/token, 5.97 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 66.1 us/token
+MoE layer 5 prefill 512 tokens: 4.045 ms (7.9 us/token, 7.17 TFLOP/s experts)
+DeltaNet layer 0 decode: 82.9 us/token (qkv.n=8192 z_ab.n=4160, 1000 tokens)
+DeltaNet layer 5 decode: 72.3 us/token (qkv.n=12352 z_ab.n=0, 1000 tokens)
+attention layer 3 decode at ctx    16:     92.1 us/token
+attention layer 3 decode at ctx  1024:     99.6 us/token
+attention layer 3 decode at ctx  4096:    137.7 us/token
+attention layer 3 decode at ctx 16384:    257.4 us/token
