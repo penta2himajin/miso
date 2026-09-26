@@ -7,27 +7,29 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Snapshot
 
-- Branch: `ai-written/m7d-attn-score` (PR against `main`)
-- Last work commit: 3dc777d @ 2026-09-26
-- Working tree: clean
+- Branch: `ai-written/m7e-megakernel` (PR against `main`)
+- Last work commit: (M7e grid-barrier / D4 trigger measurement)
+- Working tree: dirty until the handoff commit
 - Last session: 2026-09-26 JST
 - Background: M6 is paused. PR #19 is a draft and is not the next step. Speed work continues with M7.
 
 ## Status
 
-ready-for-review (M7d: attention V-in-LDS + split policy)
+ready-for-review (M7e: D4 megakernel trigger measured false; ADR_006)
 
 ## Next action
 
-After the M7d PR is merged, branch `ai-written/m7e-*` from `main` and start M7e (`docs/roadmap.md`: measure grid-barrier cost / ADR_001 D4 megakernel). Decode is 129.1 tok/s (past stage 2, 115); stage 3 is 190.
+After the M7e PR is merged, branch `ai-written/m7f-*` from `main` and start M7f (`docs/roadmap.md`: parallel weight repack at load, 27.6 s → < 10 s). Decode is 129.1 tok/s (past stage 2, 115); stage 3 is 190 and must come from per-kernel work, not dispatch (ADR_006).
 
 ## Verification
 
 - `ctest --preset default` all green (run alone: concurrent GPU suites can OOM).
+- `bench/mi50/grid_barrier.hip`: barrier 1.81 µs at 60×256 vs boundary 1.69 µs; 20-step chain 3.21 µs/step as launches vs 2.12 µs/step cooperative.
+- Decode gaps (`bench/mi50/results/2026-09-26-m7e-decode-gaps.txt`): 186 887 kernels, positive gaps 6.86 ms = **0.177%** of decode span.
 - `test_attn_splitk`: FP64 relative L2 ≤ 2e-6 through 5k positions; `attn_n_splits(4096)=22`, `(16384)=57`.
 - `test_attention` / `test_prefill` / `test_model` / `cli_golden_prompt` pass; first generated ids unchanged.
-- Attention L3: 93.4 / 95.4 / **126.1** / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`; was 103.5 / 110.4 / 173.3 / 325.6).
-- End to end: 7.75 ms/token, **129.1 tok/s**; pp512 357.2 ms, 1433.2 tok/s. sclk 1725 MHz, junction 56 °C, 192 W peak (`bench/model/results/2026-09-26-run13-m7d.txt`, `-smi.csv`).
+- Attention L3: 93.4 / 95.4 / 126.1 / 259.5 µs at ctx 16 / 1k / 4k / 16k (`bench/attention/results/2026-09-26-run3-m7d.txt`).
+- End to end (M7d, unchanged): 7.75 ms/token, **129.1 tok/s**; pp512 357.2 ms, 1433.2 tok/s. sclk 1725 MHz, junction 56 °C, 192 W peak (`bench/model/results/2026-09-26-run13-m7d.txt`, `-smi.csv`).
 
 ## Context pointers
 
@@ -68,7 +70,7 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 
 ## Open questions for user
 
-- Merge the M7d PR when ready. Next is M7e (megakernel / barrier cost). M6 stays a draft (#19) until asked for.
+- Merge the M7e PR when ready. Next is M7f (parallel weight repack). M6 stays a draft (#19) until asked for.
 
 ## Session log
 
@@ -98,15 +100,3 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M7c): On `ai-written/m7c-gemv-eff`, `gemv()` picks rows-per-wave and grid by shape (K=4096 and K=2048 with N≥2048 use R=4; Q6_K qkv uses R=2 at grid 480; LM head uses grid 1920). ssm_out 21.9 → 18.5 µs; decode 123.4 → **125.5 tok/s**. A Q6_K next-row weight prefetch spilled and was reverted.
 - 2026-09-26 (M7c review): attn_q and attn_k are Q4_K in all 11 attention layers, so the 7 layers whose attn_v is Q6_K now fuse q+k into one 8704-row GEMV (3 → 2 projection launches). Decode 125.5 → **126.0 tok/s**. Tried and rejected: R=5/R=6 and small grids (microbench-optimal but 1.1 tok/s *slower* end to end) and a Q6_K double-buffered weight prefetch (112 B scratch spill). The lesson is recorded under Failed approaches: tune GEMV dispatch on `bench_decode`, not on the isolated sweep.
 - 2026-09-26 (M7d): On `ai-written/m7d-attn-score`, staged V alongside K in LDS for split-K decode and retuned `attn_n_splits` (~6 sub-chunks/split, `kMaxSplits=60`) after a max_splits sweep showed combine dominating at 120. Attention L3 173→126 µs at 4k; decode 126.0→**129.1 tok/s**. FP16 Q/fdot2 and a part_o transpose were measured and reverted.
-
-- 2026-09-26 (M7e): On `ai-written/m7e-megakernel`, measured the ADR_001 D4 megakernel prerequisite
-  and trigger. `bench/mi50/grid_barrier.hip` shows a cooperative `grid.sync()` costs 1.81 us at
-  60x256 against 1.69 us for a kernel boundary (within 0.1-0.2 us across 60-480 blocks), i.e. a
-  barrier is not cheaper than the boundary it would replace. A 20-step dependency chain over 256
-  floats runs 3.21 us/step as 20 stream launches vs 2.12 us/step inside one cooperative kernel, so
-  the ~1.1 us/step win only exists for micro-operators with hard dependencies. rocprof of the full
-  model shows dependent-kernel gaps at **0.18% of decode time** (186 887 kernels, 506 gapped
-  boundaries, 6.86 ms of 3 873 ms) after the M7a-M7d fusion; the attention layer is 0.14%. Per-
-  operator resources are also spread (0-42 KiB LDS, 20-256 VGPR), so a single-shape megakernel
-  would inherit `attn_split`/`deltanet_seq` occupancy. Recorded **ADR_006: no megakernel**; stage 3
-  must come from per-kernel work. The D4 prerequisites stay in force so the option stays open.
