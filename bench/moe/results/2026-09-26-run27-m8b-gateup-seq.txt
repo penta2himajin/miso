@@ -1,0 +1,33 @@
+# Loop1: moe_gate_up sequential gate-then-up (no dual SlotW live); astra bet
+# baseline gate_up VGPR/occ 63/4
+## MoE
+MoE layer 0 (down Q6_K) decode: 71.1 us/token
+MoE layer 0 prefill 512 tokens: 4.880 ms (9.5 us/token, 5.94 TFLOP/s experts)
+MoE layer 5 (down Q4_K) decode: 67.9 us/token
+MoE layer 5 prefill 512 tokens: 4.052 ms (7.9 us/token, 7.16 TFLOP/s experts)
+## e2e x3 (gate >=143.0 vs 140.1)
+## run 1
+model load: 10.3 s
+warm-up: pp512 356.2 ms, 1437.5 tok/s
+measured: pp512 355.2 ms, 1441.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.21 ms/token, 138.7 tok/s
+measured: 256 tokens at ctx 273..529: 7.24 ms/token, 138.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 11.4 s
+warm-up: pp512 356.5 ms, 1436.1 tok/s
+measured: pp512 355.8 ms, 1439.1 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.18 ms/token, 139.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.21 ms/token, 138.6 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 11.2 s
+warm-up: pp512 356.4 ms, 1436.7 tok/s
+measured: pp512 355.2 ms, 1441.4 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.10 ms/token, 140.9 tok/s
+measured: 256 tokens at ctx 273..529: 7.13 ms/token, 140.3 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+
+# REJECT: e2e median 138.6 (138.1/138.6/140.3) < 140.1; gate was ≥143.
+# MoE 69.3→71.1 / 66.1→67.9. VGPR 63→58 but occ stayed 4 — residency not the limit;
+# lost weight soft-pipeline ILP. Reverted.

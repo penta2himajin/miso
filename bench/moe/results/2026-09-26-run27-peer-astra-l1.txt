@@ -1,0 +1,15 @@
+1) **Bet: shorten gate/up dequantization live ranges in `moe_gate_up`.**
+   Keep the grid, row ownership, and reduction order unchanged.
+   For each 32-weight Q4_K subblock, dequantize and immediately accumulate gate, then up, sharing the activation fragment; avoid retaining both dequantized fragments simultaneously.
+   Hypothesis: fewer live temporaries reduce VGPR pressure enough to increase resident waves and hide memory latency.
+   Measured room: 29.1 µs, 14.3% of decode, only ~46% HBM utilization. This supports investigation; it does **not** establish register pressure as the cause.
+
+2) **Success gate:** e2e median **≥143.0 tok/s versus 140.1**, with matched conditions under ADR_002 D12 and correctness passing.
+   Aim for `moe_gate_up` **≤24.5 µs**; kernel improvement alone does not qualify.
+
+3) **Mechanism check:** inspect baseline and candidate ISA/resource reports.
+   Reject if the baseline already uses this schedule, VGPR reduction fails to raise achievable occupancy, another resource caps residency, or scratch traffic appears.
+   Require reduced latency and higher effective weight bandwidth; verify compiler scheduling actually shortens live ranges.
+
+4) **Do not try:** grid-only tuning, R=5/6 GEMV extrapolation, Q4 r2 SoA, previous failed variants, or megakernels.
+   Do not pivot to VGPR-only `moe_down` occupancy: its 18.5 KiB LDS allocation remains the stated cap.
