@@ -1,0 +1,17 @@
+**Confirm REJECT.** Loop3 reduced LDS from 18,512 to 80 bytes but did not improve Q4 occupancy; Q6 VGPRs rose 106→134, occupancy fell 2→1, and L0 Q6 worsened ~69→71.5 µs. The e2e median of 141.0 misses the ≥143 gate. Correctness passed, but the performance hypothesis failed.
+
+**One loop4 bet: Q4 GEMV instruction scheduling, with unchanged launch and geometry.**
+
+- **Exact change site:** the Q4 GEMV inner K-step body that loads packed weights, unpacks/dequantizes them, and accumulates dot products. Reorder independent instructions within the existing step to shorten load/use or arithmetic dependency stalls. Preserve arithmetic accumulation order, register live ranges as far as possible, and dual SlotW overlap.
+- **Evidence and hypothesis:** loop3’s Q4 result improved slightly while occupancy stayed 3, so occupancy alone does not explain its timing. This does **not** establish an instruction-scheduling bottleneck. Before editing, inspect the baseline emitted ISA and measure the target Q4 GEMV; proceed only if they identify a concrete scheduling opportunity. The bet is that better scheduling reduces Q4 execution time without requiring more occupancy.
+- **Invalidate check:** stop before editing if ISA/timing provides no supporting evidence. Reject the candidate if emitted scheduling does not change as intended, spills appear, occupancy falls, or repeated target-kernel measurements show no gain beyond variation.
+- **Acceptance:** correctness passes and protocol-matched e2e median is **≥143 tok/s**, compared with baseline **140.1**. A kernel-only gain is insufficient.
+
+**Do not try in loops 4–5:**
+
+- Reopen loops 1–3 or the listed M8a rejects without new evidence.
+- Another LDS-removal or activation-reload variant justified solely by lower LDS usage.
+- Broader unrolling or software pipelining as a substitute for the narrow scheduling bet.
+- Split-K, extra reductions, changed launch geometry, or sequential SlotW.
+- Gate/up layout changes before measuring transaction inefficiency.
+- Treat HBM% as proof of saturation, or relax the ≥143 acceptance gate.
