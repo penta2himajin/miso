@@ -93,6 +93,8 @@ DeviceBuffer<float> upload_f32(const gguf::File& f, const std::string& name) {
 }
 
 void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream) {
+  if (w.n == 0)
+    return;
   using kernels::ActFormat;
   if (w.type == gguf::GgmlType::Q4_K) {
     const kernels::Q4kGemvParams p{w.data.data(), x, y, w.n};

@@ -30,6 +30,14 @@ struct AttnPrepParams {
   float eps;
 };
 
+// Prefill: tok0 pointers address token 0; each later token is `t * proj_stride` floats further in
+// qg/k/v (9216 when q/k/v share one buffer: [q 8192 | k 512 | v 512]).
+struct AttnPrepBatchParams {
+  AttnPrepParams tok0;
+  unsigned n;
+  unsigned proj_stride;
+};
+
 // One head of 18 (0..15 query heads, 16..17 KV heads) on a 256-thread workgroup: per-head RMSNorm,
 // RoPE at `pos`, then write q or append k / v to the cache.
 template <int kBlock>

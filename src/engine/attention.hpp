@@ -13,9 +13,11 @@
 namespace miso {
 
 struct AttentionLayer {
-  QMatrix q;     // attn_q (query then gate in the same rows)
-  QMatrix k, v;  // attn_k and attn_v are different types (Q4_K / Q6_K), so they stay separate
-  QMatrix o;     // attn_output
+  // When attn_q/k/v share a type, q holds all 9216 rows and k.n == v.n == 0. When only k/v match,
+  // k holds 1024 rows and v.n == 0. Otherwise the three stay separate.
+  QMatrix q;
+  QMatrix k, v;
+  QMatrix o;  // attn_output
   DeviceBuffer<float> attn_norm, q_norm, k_norm;
 
   static AttentionLayer load(const gguf::File& f, int layer);
@@ -36,11 +38,16 @@ struct AttentionCache {
   DeviceBuffer<std::uint16_t> k, v;
 };
 
+// Per-token projections: [q+gate 8192 | k 512 | v 512] = 9216 floats.
 struct AttentionScratch {
   static constexpr unsigned kMaxSplits = 120;  // per KV head: 240 workgroups, ~4 per CU
-  DeviceBuffer<float> xn{2048}, qg{8192}, k{512}, v{512}, q{4096}, core{4096};
+  static constexpr unsigned kProj = 9216;
+  DeviceBuffer<float> xn{2048}, proj{kProj}, q{4096}, core{4096};
   DeviceBuffer<float> part_m{2 * kMaxSplits * 8}, part_l{2 * kMaxSplits * 8};
   DeviceBuffer<float> part_o{2 * kMaxSplits * 8 * 256};
+  float* qg() { return proj.data(); }
+  float* k() { return proj.data() + 8192; }
+  float* v() { return proj.data() + 8704; }
 };
 
 // Chunk buffers of the prefill path, for up to max_tok tokens.
@@ -48,13 +55,14 @@ struct AttentionPrefillScratch {
   explicit AttentionPrefillScratch(unsigned max_tok)
       : in(max_tok, 4096),
         xn(max_tok * 2048),
-        qg(max_tok * 8192),
-        k(max_tok * 512),
-        v(max_tok * 512),
+        proj(max_tok * AttentionScratch::kProj),
         q(max_tok * 4096),
         core(max_tok * 4096) {}
   GemmInput in;
-  DeviceBuffer<float> xn, qg, k, v, q, core;
+  DeviceBuffer<float> xn, proj, q, core;
+  float* qg() { return proj.data(); }
+  float* k() { return proj.data() + 8192; }
+  float* v() { return proj.data() + 8704; }
 };
 
 // h += delta (if delta != nullptr), then y = Attention(RMSNorm(h)) for the token at position

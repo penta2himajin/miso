@@ -68,7 +68,8 @@ void check(unsigned n) {
                                              o_seq.data(),
                                              n,
                                              1e-6f,
-                                             4160};
+                                             4160,
+                                             kNch};
   miso::kernels::deltanet_seq_kernel<256><<<32, 256>>>(seq);
   MISO_HIP_CHECK(hipGetLastError());
 

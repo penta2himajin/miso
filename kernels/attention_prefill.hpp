@@ -17,11 +17,6 @@
 
 namespace miso::kernels {
 
-struct AttnPrepBatchParams {
-  AttnPrepParams tok0;  // pointers and position of token 0; q written to tok0.q + t * 4096
-  unsigned n;
-};
-
 // Items [first, first + count) of 18 n (token-major).
 template <int kBlock>
 __device__ void attn_prep_batch_op(const AttnPrepBatchParams& p, unsigned first, unsigned count) {
@@ -30,9 +25,9 @@ __device__ void attn_prep_batch_op(const AttnPrepBatchParams& p, unsigned first,
   for (unsigned item = first + blockIdx.x; item < first + count; item += gridDim.x) {
     const unsigned t = item / kHeads, head = item % kHeads;
     AttnPrepParams q = p.tok0;
-    q.qg += std::size_t{t} * kQHeads * 2 * kDim;
-    q.k += std::size_t{t} * kKvHeads * kDim;
-    q.v += std::size_t{t} * kKvHeads * kDim;
+    q.qg += std::size_t{t} * p.proj_stride;
+    q.k += std::size_t{t} * p.proj_stride;
+    q.v += std::size_t{t} * p.proj_stride;
     q.q += std::size_t{t} * kQHeads * kDim;
     q.pos += t;
     attn_prep_head<kBlock>(q, head);
@@ -46,11 +41,12 @@ __global__ void __launch_bounds__(kBlock) attn_prep_batch_kernel(AttnPrepBatchPa
 
 struct AttnPrefillParams {
   const float* q;               // [n][16][256] normalised, rotated (unscaled)
-  const float* qg;              // [n][16][512], for the gate half
+  const float* qg;              // token-major; gate at tok * qg_stride + head * 512 + 256
   const attn::half_t* k_cache;  // [2][max_ctx][256], positions [0, pos0 + n) valid
   const attn::half_t* v_cache;
   float* core;  // [n][16][256]
   unsigned pos0, n, max_ctx;
+  unsigned qg_stride;  // 8192 packed, or 9216 when q/k/v share a proj buffer
 };
 
 constexpr unsigned kAttnQBlock = 4;
@@ -150,7 +146,8 @@ __device__ void attn_prefill_op(const AttnPrefillParams& p, unsigned first, unsi
     for (int r = 0; r < static_cast<int>(nq); ++r) {
       for (int h = 0; h < kGroup; ++h) {
         const std::size_t head = std::size_t{t0 + r} * kQHeads + kvh * kGroup + h;
-        const float gate = p.qg[head * 2 * kDim + kDim + t];
+        const float gate =
+            p.qg[std::size_t{t0 + r} * p.qg_stride + (kvh * kGroup + h) * 2 * kDim + kDim + t];
         p.core[head * kDim + t] = acc[r][h] / l_s[r][h] / (1.0f + __expf(-gate));
       }
     }

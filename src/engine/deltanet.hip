@@ -1,15 +1,38 @@
 #include "engine/deltanet.hpp"
 
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 
 #include "deltanet_step.hpp"
 #include "rmsnorm.hpp"
 
 namespace miso {
+namespace {
+
+QMatrix empty_qmatrix() {
+  return {DeviceBuffer<std::uint8_t>(1), gguf::GgmlType::F32, 0, 0};
+}
+
+}  // namespace
 
 DeltaNetLayer DeltaNetLayer::load(const gguf::File& f, int layer) {
   const std::string p = "blk." + std::to_string(layer) + ".";
+  const auto* qkv_t = f.find_tensor(p + "attn_qkv.weight");
+  if (qkv_t == nullptr)
+    throw std::runtime_error("missing " + p + "attn_qkv.weight");
+  // Same type and K as gate/alpha/beta → one GEMV writes q, k, v, z, a, b.
+  if (qkv_t->type == gguf::GgmlType::Q4_K) {
+    return {concat_rows(f, {p + "attn_qkv.weight", p + "attn_gate.weight", p + "ssm_alpha.weight",
+                            p + "ssm_beta.weight"}),
+            empty_qmatrix(),
+            upload_qmatrix(f, p + "ssm_out.weight"),
+            upload_f32(f, p + "attn_norm.weight"),
+            upload_f32(f, p + "ssm_conv1d.weight"),
+            upload_f32(f, p + "ssm_a"),
+            upload_f32(f, p + "ssm_dt.bias"),
+            upload_f32(f, p + "ssm_norm.weight")};
+  }
   return {upload_qmatrix(f, p + "attn_qkv.weight"),
           concat_rows(f, {p + "attn_gate.weight", p + "ssm_alpha.weight", p + "ssm_beta.weight"}),
           upload_qmatrix(f, p + "ssm_out.weight"),
@@ -32,10 +55,10 @@ void deltanet_decode(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetScratch&
   constexpr int kBlock = 256;
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kBlock><<<1, kBlock, 0, stream>>>(norm, 1);
-  gemv(w.qkv, sc.xn.data(), sc.qkv.data(), stream);
-  // attn_gate + ssm_alpha + ssm_beta share K = 2048 and Q4_K, so one GEMV replaces three launches.
-  gemv(w.z_ab, sc.xn.data(), sc.z_ab.data(), stream);
-  const kernels::DeltaNetStepParams step{sc.qkv.data(),
+  gemv(w.qkv, sc.xn.data(), sc.qkv(), stream);
+  if (w.z_ab.n != 0)
+    gemv(w.z_ab, sc.xn.data(), sc.z(), stream);
+  const kernels::DeltaNetStepParams step{sc.qkv(),
                                          sc.z(),
                                          sc.a(),
                                          sc.b(),
@@ -58,12 +81,14 @@ void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefill
                       float* h, const float* delta, float* y, unsigned n, float eps,
                       hipStream_t stream) {
   constexpr int kBlock = 256;
+  constexpr unsigned kProj = DeltaNetScratch::kProj;
   const kernels::AddRmsNormParams norm{h, delta, w.attn_norm.data(), sc.xn.data(), eps};
   kernels::add_rmsnorm_kernel<2048, kBlock><<<n, kBlock, 0, stream>>>(norm, n);
   gemm_input(sc.xn.data(), 2048, n, sc.in, stream);
-  gemm(w.qkv, sc.in, sc.qkv.data(), 8192, stream);
-  gemm(w.z_ab, sc.in, sc.z_ab.data(), 4160, stream);
-  const kernels::DeltaNetSeqParams seq{sc.qkv.data(),
+  gemm(w.qkv, sc.in, sc.qkv(), kProj, stream);
+  if (w.z_ab.n != 0)
+    gemm(w.z_ab, sc.in, sc.z(0), kProj, stream);
+  const kernels::DeltaNetSeqParams seq{sc.qkv(),
                                        sc.z(0),
                                        sc.z(0) + 4096,
                                        sc.z(0) + 4128,
@@ -77,7 +102,8 @@ void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefill
                                        sc.o.data(),
                                        n,
                                        eps,
-                                       4160};
+                                       kProj,
+                                       kProj};
   kernels::deltanet_seq_kernel<kBlock><<<32, kBlock, 0, stream>>>(seq);
   st.parity = 1 - st.parity;
   MISO_HIP_CHECK(hipGetLastError());

@@ -11,9 +11,9 @@
 namespace miso {
 
 struct DeltaNetLayer {
-  QMatrix qkv;  // attn_qkv
-  // attn_gate + ssm_alpha + ssm_beta share K = 2048, so they are concatenated and one GEMV writes
-  // all three: rows [0,4096) z, [4096,4128) a, [4128,4160) b.
+  // When attn_qkv is Q4_K (same as gate/alpha/beta), qkv holds all 12352 rows and z_ab.n == 0.
+  // Otherwise qkv is 8192 rows (often Q6_K) and z_ab is the 4160-row gate+alpha+beta concat.
+  QMatrix qkv;
   QMatrix z_ab;
   QMatrix out;  // ssm_out
   DeviceBuffer<float> attn_norm, conv_w, ssm_a, dt_bias, ssm_norm;
@@ -32,24 +32,27 @@ struct DeltaNetState {
   void reset();
 };
 
+// Per-token projection buffer: [qkv 8192 | z 4096 | a 32 | b 32] = 12352 floats.
 struct DeltaNetScratch {
-  DeviceBuffer<float> xn{2048}, qkv{8192}, z_ab{4160}, o{4096};
-  float* z() { return z_ab.data(); }
-  float* a() { return z_ab.data() + 4096; }
-  float* b() { return z_ab.data() + 4128; }
+  static constexpr unsigned kProj = 12352;
+  DeviceBuffer<float> xn{2048}, proj{kProj}, o{4096};
+  float* qkv() { return proj.data(); }
+  float* z() { return proj.data() + 8192; }
+  float* a() { return proj.data() + 12288; }
+  float* b() { return proj.data() + 12320; }
 };
 
-// Chunk buffers of the prefill path, for up to max_tok tokens.
+// Chunk buffers of the prefill path, for up to max_tok tokens. Same proj layout per token.
 struct DeltaNetPrefillScratch {
   explicit DeltaNetPrefillScratch(unsigned max_tok)
       : in(max_tok, 4096),
         xn(max_tok * 2048),
-        qkv(max_tok * 8192),
-        z_ab(max_tok * 4160),
+        proj(max_tok * DeltaNetScratch::kProj),
         o(max_tok * 4096) {}
   GemmInput in;
-  DeviceBuffer<float> xn, qkv, z_ab, o;
-  float* z(unsigned t) { return z_ab.data() + std::size_t{t} * 4160; }
+  DeviceBuffer<float> xn, proj, o;
+  float* qkv() { return proj.data(); }
+  float* z(unsigned t) { return proj.data() + std::size_t{t} * DeltaNetScratch::kProj + 8192; }
 };
 
 // h += delta (if delta != nullptr), then y = DeltaNet(RMSNorm(h)) for one token. h, delta and y are
