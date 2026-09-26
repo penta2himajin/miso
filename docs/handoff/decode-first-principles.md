@@ -4,6 +4,7 @@
 
 - Branch: `ai-written/decode-first-principles`
 - Base: `6d10fb5` (main after #32)
+- PR: https://github.com/penta2himajin/miso/pull/33 (open, ready for review)
 - Last work commit: `8867a79` @ 2026-09-27 JST
 - Working tree: clean after handoff commit
 - Last session: 2026-09-27 JST
@@ -74,3 +75,8 @@ kernel change, preserving residual ownership and explicit synchronization.
   implemented exact mixed-type projection grids. Twelve native short runs, restored
   17/4k/32k probes, full CTest and final profile support KEEP. Raw traces, thermal/clock/
   power logs, source patch, resource reports and reproducible scripts committed.
+
+- 2026-09-27 (delivery): Opened and attached ready PR #33. Auto-subscription
+  failed: GitHub `updateSubscription` requires `notifications`; the token has
+  `gist`, `read:org`, `repo`, `workflow`. Implementation/review delivery is complete;
+  no authentication scopes were changed.
