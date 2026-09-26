@@ -1,5 +1,6 @@
 // Per-token time of one gated full-attention mixer (layer 3) on the decode path, as the KV cache
-// grows. Run under `rocprof --stats` for the per-kernel breakdown.
+// grows. Run under `rocprof --stats` for the per-kernel breakdown. Includes combine in the timed
+// path (attention_decode). Contexts cover short, 4k/16k, and the 32k long-context regime.
 #include <hip/hip_runtime.h>
 
 #include <cstdio>
@@ -11,14 +12,14 @@ int main(int argc, char** argv) {
   const auto m = miso::gguf::File::open(argc > 1 ? argv[1] : MISO_ORNITH_GGUF);
   const auto layer = miso::AttentionLayer::load(m, 3);
   const auto rope = miso::RopeConfig::from(m);
-  const unsigned max_ctx = 16384 + 256;
+  const unsigned max_ctx = 32768 + 256;
   miso::AttentionCache cache(max_ctx);
   miso::AttentionScratch sc;
   miso::DeviceBuffer<float> h(std::vector<float>(2048, 0.1f)), y(2048);
   hipEvent_t a, b;
   MISO_HIP_CHECK(hipEventCreate(&a));
   MISO_HIP_CHECK(hipEventCreate(&b));
-  for (unsigned ctx : {16u, 1024u, 4096u, 16384u}) {
+  for (unsigned ctx : {16u, 1024u, 4096u, 16384u, 32768u}) {
     while (cache.len < ctx)
       miso::attention_decode(layer, cache, sc, rope, h.data(), nullptr, y.data(), 1e-6f, nullptr);
     const int n = 64;

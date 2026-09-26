@@ -1,0 +1,8 @@
+command: ['/tmp/attn-long-lds/baseline_bench_attention', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf']
+run 1 utc 2026-09-26T15:07:38.247512+00:00
+attention layer 3 decode at ctx    16:     91.4 us/token
+attention layer 3 decode at ctx  1024:    100.0 us/token
+attention layer 3 decode at ctx  4096:    138.6 us/token
+attention layer 3 decode at ctx 16384:    258.6 us/token
+attention layer 3 decode at ctx 32768:    399.9 us/token
+exit: 0

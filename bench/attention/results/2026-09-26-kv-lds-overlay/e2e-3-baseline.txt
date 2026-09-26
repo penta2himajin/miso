@@ -1,0 +1,9 @@
+command: ['/tmp/attn-long-lds/baseline_bench_decode']
+run 1 utc 2026-09-26T15:18:02.328535+00:00
+model load: 11.1 s
+warm-up: pp512 356.8 ms, 1434.8 tok/s
+measured: pp512 355.9 ms, 1438.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.08 ms/token, 141.3 tok/s
+measured: 256 tokens at ctx 273..529: 7.12 ms/token, 140.5 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

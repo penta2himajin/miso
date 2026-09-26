@@ -93,6 +93,14 @@ TEST_CASE("split-K decode attention matches an FP64 reference across chunk bound
     check(len, 60);
 }
 
+// Long-context coverage for the decode split path (investigation plan §3). Boundaries sit on
+// and next to a 32-position sub-chunk at 32k; the full 32768 case exercises the production
+// n_splits cap. FP64 reference cost scales with len × heads × dim and stays under a few seconds.
+TEST_CASE("split-K decode attention matches FP64 at 32k and nearby tile boundaries") {
+  for (unsigned len : {32767u, 32768u, 32769u})
+    check(len, 60);
+}
+
 // Causal prefill attention: token pos0 + t sees keys [0, pos0 + t]. Same FP64 reference as decode,
 // so a wrong mask, a dropped query row or a broken online-softmax rescale fails it.
 void check_prefill(unsigned pos0, unsigned n) {
