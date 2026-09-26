@@ -1,0 +1,7 @@
+# After shape-tuned decode GEMV (R/grid by K and N). sclk 1725 MHz, junction 61 C, 227 W peak.
+model load: 25.3 s
+warm-up: pp512 359.1 ms, 1425.7 tok/s
+measured: pp512 358.3 ms, 1428.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 7.93 ms/token, 126.0 tok/s
+measured: 256 tokens at ctx 273..529: 7.97 ms/token, 125.5 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

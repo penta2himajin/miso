@@ -1,0 +1,4 @@
+# After shape-tuned GEMV dispatch (K=4096 and large K=2048 use R=4; Q6_K qkv uses R=2 at
+# grid 480). L0 still has a separate Q6_K qkv; L5 is the fused Q4_K path.
+DeltaNet layer 0 decode: 84.6 us/token (qkv.n=8192 z_ab.n=4160, 1000 tokens)
+DeltaNet layer 5 decode: 73.9 us/token (qkv.n=12352 z_ab.n=0, 1000 tokens)

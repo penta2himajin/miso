@@ -1,5 +1,6 @@
 #include "engine/weights.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 #include <vector>
@@ -96,18 +97,34 @@ void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream) {
   if (w.n == 0)
     return;
   using kernels::ActFormat;
+  // Grid and rows-per-wave from decode-sized microbenchmarks (bench/gemv): K = 4096 N = 2048 wants
+  // R = 4 at 240 workgroups (18.5 vs 21.9 µs at R = 1); K = 2048 with N >= 2048 likewise prefers
+  // R = 4; Q6_K qkv (N = 8192) prefers grid 480. Small N stays on a leaner grid so waves are not
+  // mostly idle.
   if (w.type == gguf::GgmlType::Q4_K) {
     const kernels::Q4kGemvParams p{w.data.data(), x, y, w.n};
     if (w.k == 2048) {
-      kernels::q4k_gemv_kernel<ActFormat::Fp16, 2048, kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+      if (w.n >= 2048) {
+        kernels::q4k_gemv_kernel<ActFormat::Fp16, 2048, kBlock, 4><<<kGrid, kBlock, 0, stream>>>(p);
+      } else {
+        const unsigned grid = std::min(kGrid, std::max(60u, (w.n + 3) / 4));
+        kernels::q4k_gemv_kernel<ActFormat::Fp16, 2048, kBlock, 1><<<grid, kBlock, 0, stream>>>(p);
+      }
     } else if (w.k == 4096) {
-      kernels::q4k_gemv_kernel<ActFormat::Fp16, 4096, kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+      kernels::q4k_gemv_kernel<ActFormat::Fp16, 4096, kBlock, 4><<<kGrid, kBlock, 0, stream>>>(p);
     } else {
       throw std::runtime_error("gemv: no Q4_K kernel for K = " + std::to_string(w.k));
     }
   } else if (w.type == gguf::GgmlType::Q6_K && w.k == 2048) {
     const kernels::Q6kGemvParams p{w.data.data(), x, y, w.n};
-    kernels::q6k_gemv_kernel<2048, kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+    // R = 2 at grid 480 edged out R = 1 for attn_qkv (27.4 vs 28.1 µs); LM head stays R = 1 at a
+    // larger grid so occupancy is not cut by the extra row registers.
+    if (w.n >= 8192 && w.n < 100000) {
+      kernels::q6k_gemv_kernel<2048, kBlock, 2><<<480, kBlock, 0, stream>>>(p);
+    } else {
+      const unsigned grid = w.n >= 100000 ? 1920u : kGrid;
+      kernels::q6k_gemv_kernel<2048, kBlock, 1><<<grid, kBlock, 0, stream>>>(p);
+    }
   } else {
     throw std::runtime_error("gemv: no kernel for this type / K = " + std::to_string(w.k));
   }

@@ -95,9 +95,8 @@ __device__ void q6k_gemv_op(const Q6kGemvParams& p, unsigned first, unsigned cou
 
   SlotAct act[kIters];
 #pragma unroll
-  for (int it = 0; it < kIters; ++it) {
+  for (int it = 0; it < kIters; ++it)
     act[it] = load_slot(p.x, lane + kWave * it);
-  }
 
   const unsigned end = first + count;
   for (unsigned r0 = first + wave * kRows; r0 < end; r0 += n_waves * kRows) {
