@@ -1,0 +1,25 @@
+## 1. ABANDON — CONFIRMED
+
+The invalidate clause was *"no edit if ISA shows no reorderable stall"* and the ISA evidence fires it:
+
+- **The stall isn't reorderable — it's already scheduled.** `LLLLWWDDDDDDDLLDDD...` shows the compiler software-pipelining the next-row `global_load` into the middle of the previous dot-product run. There is no empty slot in the weight-path timeline for a hand edit to move a load into; any source-level reorder would re-derive what the scheduler already did, or fight its itinerary.
+- **The post-`s_waitcnt vmcnt` gap is not a bubble.** ~12 ALU ops (scale/alignbit/cvt) sit between waitcnt and first `v_dot2`. More importantly, the latency window is not those 12 ops — it's spanned by the intervening `D` run, since loads are issued at the head of the dot sequence, not immediately before the waitcnt. So there is no exposed dependency bubble to fill.
+- **Consistency with prior loops.** L1 (sequential SlotW) is the adjacent scheduling lever and already REJECT; a manual-schedule loop4 bet would be a third pass at the same hypothesis. The 36%-of-peak-BW figure is a bandwidth/efficiency symptom, not a scheduling symptom — which is exactly why it belongs to the still-open memory item, not to ISA scheduling.
+
+No dispute. Rejecting a design-time edit that the invalidate clause pre-authorized as no-op is the correct outcome, not a spent loop.
+
+## 2. ONE loop5 bet — measurement-first: gate/up transaction efficiency (astra item #3)
+
+**No source change this loop.** The code change is not yet justified: HBM% at 36% of peak cannot distinguish *poor transaction efficiency* from *occupancy/latency-limited issue*, and the L3 datapoint (LDS↓ but Q6 occupancy↓ → e2e 141) already shows a locally-better change losing at e2e.
+
+- **Exact site:** `q4k_gemv_kernel<Fp16,2048,256,4>` weight-load path for **gate and up** (not moe_down, not attention q/v), on `bench_q4k_gemv` **attn_gate N4096 R4 grid240** *plus* one production-representative e2e shape — because grid240 at 36% peak may itself be the confound. Metrics: wavefronts / sectors per `global_load` vs. ideal for the k4 packing stride, L2 hit rate, LDS bank conflicts, and the actual occupancy limiter (VGPR / SGPR / LDS). Report `transactions per requested byte`, not HBM%.
+- **Invalidate:** if measured sectors-per-request are already within ~1.15× of ideal for the access pattern **and** occupancy is limited by something other than memory efficiency (VGPR pressure, dispatch granularity), then no layout/tiling edit is justified — report-only, zero source edits, and close astra item #3 as "efficient; not the bottleneck."
+- **Acceptance:** the measurement report is the deliverable (this loop has no e2e gate). **If** it does justify a code change, that change is deferred to loop6 and must clear the same gate: **e2e median ≥ 143 vs. 140.1 baseline.**
+
+## 3. Do-not-try (end of batch)
+
+1. **No hand-scheduling / inline-asm / unroll hints in `q4k_gemv_kernel` weight path** — already software-pipelined; loop4 is closed.
+2. **No further gate/up layout or tiling changes without loop5's numbers** — explicitly includes re-tries of L1 SlotW, L2 Split-K, and L3 `a[9][512]` drop; all three REJECT at ~141, and repeating them is the batch's highest-risk way to burn a loop.
+3. **No act-prologue cvt/pack rework** — flagged as a separate, unevidenced bet; do not fold it into a memory-efficiency loop.
+4. **Do not optimize or report HBM% alone as the objective** — 36% of peak BW is not proof of saturation or of its absence; treat it as a trigger for measurement only.
+5. **No more disassembly/ISA archaeology loops** — the code object has been read for both N2048 and N4096; further timelines won't change the invalidate outcome.

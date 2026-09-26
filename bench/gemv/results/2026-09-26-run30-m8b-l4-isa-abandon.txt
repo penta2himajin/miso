@@ -1,0 +1,50 @@
+# Loop4 ABANDON: Q4 GEMV instruction scheduling — no edit
+# Gate was: ISA must show concrete reorderable stall before editing (astra/mimo/deepseek consensus).
+# ISA (fp16 N2048 r4 from build/bench/bench_q4k_gemv code object):
+#  - act: 8x global_load_dwordx4 then long cvt/pack (prologue; not weight-path scheduling)
+#  - weight path timeline (L=load W=vmcnt-wait D=v_dot2): LLLLWWDDDDDDDLLDDDLLDDD...
+#  - after first weight wait: ~12 ALU ops (scale/alignbit/cvt) then dots; next-row loads
+#    already issued mid-dot (compiler soft-pipelines across kRows).
+#  - No empty wait→ALU bubble pattern to reorder; dual-SlotW / launch / geometry untouched.
+# Verdict: ABANDON at design time (invalidate check). No source change.
+## bench_q4k_gemv (baseline, unchanged)
+attn_gate.weight       fp16  K=2048 N=4096  R=4  rel.err max 5.15e-05 rms 1.19e-05
+    grid    60:   19.44 us/launch   242.7 GB/s   30.5% of 797
+    grid   120:   19.01 us/launch   248.3 GB/s   31.2% of 797
+    grid   240:   16.38 us/launch   288.0 GB/s   36.1% of 797
+    grid   480:   16.67 us/launch   283.0 GB/s   35.5% of 797
+attn_gate.weight       fp16  K=2048 N=4096  R=8  rel.err max 5.15e-05 rms 1.19e-05
+    grid    60:   19.47 us/launch   242.3 GB/s   30.4% of 797
+    grid   120:   19.35 us/launch   243.8 GB/s   30.6% of 797
+    grid   240:   16.63 us/launch   283.8 GB/s   35.6% of 797
+    grid   480:   16.63 us/launch   283.7 GB/s   35.6% of 797
+ssm_out.weight         int8  K=4096 N=2048  R=4  rel.err max 1.08e-03 rms 2.95e-04
+    grid    60:   19.41 us/launch   243.1 GB/s   30.5% of 797
+    grid   120:   19.56 us/launch   241.2 GB/s   30.3% of 797
+    grid   240:   21.68 us/launch   217.6 GB/s   27.3% of 797
+    grid   480:   30.19 us/launch   156.3 GB/s   19.6% of 797
+ssm_out.weight         fp16  K=4096 N=2048  R=1  rel.err max 2.89e-05 rms 6.83e-06
+    grid    60:   19.39 us/launch   243.4 GB/s   30.5% of 797
+    grid   120:   19.34 us/launch   244.0 GB/s   30.6% of 797
+    grid   240:   21.87 us/launch   215.8 GB/s   27.1% of 797
+    grid   480:   26.91 us/launch   175.3 GB/s   22.0% of 797
+ssm_out.weight         fp16  K=4096 N=2048  R=2  rel.err max 2.89e-05 rms 6.83e-06
+    grid    60:   19.41 us/launch   243.1 GB/s   30.5% of 797
+    grid   120:   19.48 us/launch   242.2 GB/s   30.4% of 797
+    grid   240:   21.21 us/launch   222.4 GB/s   27.9% of 797
+    grid   480:   21.07 us/launch   223.9 GB/s   28.1% of 797
+ssm_out.weight         fp16  K=4096 N=2048  R=4  rel.err max 2.89e-05 rms 6.83e-06
+    grid    60:   19.50 us/launch   242.0 GB/s   30.4% of 797
+    grid   120:   20.54 us/launch   229.7 GB/s   28.8% of 797
+    grid   240:   18.62 us/launch   253.4 GB/s   31.8% of 797
+    grid   480:   19.73 us/launch   239.2 GB/s   30.0% of 797
+attn_q.weight          int8  K=2048 N=8192  R=4  rel.err max 2.34e-03 rms 5.20e-04
+    grid    60:   24.72 us/launch   381.8 GB/s   47.9% of 797
+    grid   120:   22.53 us/launch   418.9 GB/s   52.6% of 797
+    grid   240:   23.70 us/launch   398.2 GB/s   50.0% of 797
+    grid   480:   23.28 us/launch   405.4 GB/s   50.9% of 797
+attn_q.weight          fp16  K=2048 N=8192  R=4  rel.err max 5.88e-05 rms 1.07e-05
+    grid    60:   26.96 us/launch   350.1 GB/s   43.9% of 797
+    grid   120:   22.85 us/launch   413.1 GB/s   51.8% of 797
+    grid   240:   22.52 us/launch   419.1 GB/s   52.6% of 797
+    grid   480:   24.16 us/launch   390.6 GB/s   49.0% of 797

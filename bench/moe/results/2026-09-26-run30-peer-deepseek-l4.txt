@@ -1,0 +1,33 @@
+**1. Verdict — CONFIRM ABANDON.**  
+No concrete ISA counter-argument is available from the committed excerpt. T
+The invalidate check fired: `LLLLWWDDDDDDDLLDDD...` shows the compiler alre
+already issues next-row `global_load` mid-dot. After weight `s_waitcnt vmcn
+vmcnt`, there are ~12 useful ALU ops (scale/alignbit/cvt) before first `v_d
+`v_dot2`; that is not an empty bubble. Act prologue is long cvt/pack but se
+separate from weight scheduling. A source edit here would likely be noise o
+or regression. **No source change.**
+
+**2. ONE loop5 bet — measurement-first, exact site.**  
+Measure gate/up memory **transaction efficiency** for `bench_q4k_gemv`, pro
+production `q4k_gemv_kernel<Fp16,2048,256,4>`, N4096, R4, grid240, attn_gat
+attn_gate weight path. Do not just use HBM%. Compare ideal weight bytes vs 
+DRAM read bytes, L2 sectors/request, L2 miss rate, sector utilization.
+
+- **Invalidate:** if DRAM read bytes are within ~5% of ideal weight bytes, 
+or sectors/request are near full-sector ideal, then the gate/up transaction
+transaction-efficiency hypothesis is dead. No layout change.
+- **If inefficiency is clear:** only then open a separate layout-change bet
+bet.
+- **Acceptance:** loop5 itself is measurement-only, so no code change and n
+no e2e gate. If measurement forces a code change, that change must clear e2
+e2e median **≥143** and not regress `bench_q4k_gemv`.
+
+**3. Do-not-try for end of batch.**
+- Q4 GEMV ISA/scheduling reorder edits.
+- Split-K.
+- Sequential SlotW.
+- Drop `moe_down a[9][512]`.
+- Gate/up layout change before transaction-efficiency measurement.
+- Act-prologue packing bundled with weight scheduling.
+- HBM%-only saturation claims.
+- Multi-knob speculative edits at batch end.
