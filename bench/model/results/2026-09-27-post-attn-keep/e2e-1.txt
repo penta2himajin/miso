@@ -1,0 +1,9 @@
+command: ['./build/bench/bench_decode']
+run 1 utc 2026-09-26T16:01:52.537098+00:00
+model load: 13.1 s
+warm-up: pp512 356.3 ms, 1436.8 tok/s
+measured: pp512 355.7 ms, 1439.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.78 ms/token, 147.6 tok/s
+measured: 256 tokens at ctx 273..529: 6.81 ms/token, 146.8 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

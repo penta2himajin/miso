@@ -1,0 +1,12 @@
+{
+  "source": "bench/model/results/2026-09-27-reprofile/profile-32k.csv.gz",
+  "tokens": 64,
+  "dispatches": 23360,
+  "first_index": "108532",
+  "last_index": "131891",
+  "kernel_us_per_token": 8693.40653125,
+  "span_us_per_token": 8703.72840625,
+  "positive_gap_ns": 672612,
+  "negative_overlap_ns": 12012,
+  "positive_gap_percent": 0.1207478221913871
+}

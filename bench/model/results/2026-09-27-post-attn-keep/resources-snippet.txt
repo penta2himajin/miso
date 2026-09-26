@@ -1,0 +1,3 @@
+  94   33  25824       0     0  256   2  void miso::kernels::attn_split_kernel<256>(miso::kernels::AttnSplitParams)
+  83   26   9296       0     0  256   3  void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams)
+ 106   26   9296       0     0  256   2  void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams)
