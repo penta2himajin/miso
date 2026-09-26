@@ -1,0 +1,3 @@
+# M8a loop2 Q4 r2 e2e (before revert).
+# measured tok/s: 135.6 / 135.2 / 136.8 → median 135.6 (baseline 136.4). Rejected.
+model: measured median ~7.37 ms/token, 135.6 tok/s
