@@ -37,3 +37,9 @@ Combine 268 µs, prep 54 µs. Gap 0.12%. Profiled median ~115 tok/s (instrumente
 2. First kernel hypothesis: **fewer Q-heads per split WG** (kGroup 8→4) to cut LDS
    ~26→21 KiB and raise occ 2→3; measure 32k split+combine (KV traffic doubles).
 3. Short track remains MoE gate/up + dense GEMV after the long bet A/B.
+
+## Hardware counters (3-token window `101105:102199`)
+
+Collected with the same pmc set as the pre-KEEP investigation. See
+`counter-medians.csv` and `counters.csv`. Timestamps under counter collection
+are not production timings.
