@@ -20,6 +20,7 @@ struct AddRmsNormParams {
   const float* weight;  // [kN]
   float* out;           // [tokens][kN]
   float eps;
+  _Float16* out_h = nullptr;  // optional pre-rounded copy of out (decode GEMV reuse)
 };
 
 // Tokens [first, first + count); one workgroup per token (grid-stride).
@@ -44,7 +45,10 @@ __device__ void add_rmsnorm_op(const AddRmsNormParams& p, unsigned first, unsign
       const unsigned i = threadIdx.x + k * kBlock;
       if (p.delta != nullptr)
         res[i] = h[k];
-      p.out[std::size_t{t} * kN + i] = h[k] * r * p.weight[i];
+      const float y = h[k] * r * p.weight[i];
+      p.out[std::size_t{t} * kN + i] = y;
+      if (p.out_h)
+        p.out_h[std::size_t{t} * kN + i] = static_cast<_Float16>(y);
     }
   }
 }

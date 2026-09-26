@@ -11,6 +11,7 @@
 
 #include <cstdint>
 
+#include "gemv_common.hpp"
 #include "wave.hpp"
 
 namespace miso::kernels {
@@ -22,9 +23,10 @@ enum class ActFormat {
 
 struct Q4kGemvParams {
   const std::uint8_t* w;  // n_rows rows of K/256 Q4_K r1 blocks; rows 16-byte aligned
-  const float* x;         // K activations
+  const float* x;         // K activations (used when x_h == nullptr)
   float* y;               // n_rows outputs
   unsigned n_rows;
+  const _Float16* x_h = nullptr;  // optional pre-rounded activations (Fp16 path)
 };
 
 namespace q4k_detail {
@@ -140,6 +142,22 @@ __device__ inline SlotAct<A> load_slot(const float* x, int slot) {
   return s;
 }
 
+// Pre-rounded activations: same SlotAct layout and offset sums as the Fp16 float path.
+template <ActFormat A>
+__device__ inline SlotAct<A> load_slot(const _Float16* x, int slot) {
+  static_assert(A == ActFormat::Fp16);
+  const int b = slot >> 3, i = slot & 7;
+  const _Float16* lo_p = x + 256 * b + 64 * (i >> 1) + 16 * (i & 1);
+  const auto lo = gemv::fp16x16(lo_p), hi = gemv::fp16x16(lo_p + 32);
+  SlotAct<A> s;
+  for (int c = 0; c < 4; ++c) {
+    s.a_lo[c] = lo.a[c], s.b_lo[c] = lo.b[c];
+    s.a_hi[c] = hi.a[c], s.b_hi[c] = hi.b[c];
+  }
+  s.s_lo = lo.s16, s.s_hi = hi.s16;
+  return s;
+}
+
 // Weights of one slot: the block header and the lane's 16 nibble bytes.
 struct SlotW {
   uint4 h, q;
@@ -199,8 +217,14 @@ __device__ void q4k_gemv_op(const Q4kGemvParams& p, unsigned first, unsigned cou
   const unsigned n_waves = gridDim.x * (kBlock / kWave);
 
   SlotAct<A> act[kIters];
-  for (int it = 0; it < kIters; ++it)
-    act[it] = load_slot<A>(p.x, lane + kWave * it);
+#pragma unroll
+  for (int it = 0; it < kIters; ++it) {
+    const int slot = lane + kWave * it;
+    if constexpr (A == ActFormat::Fp16)
+      act[it] = p.x_h ? load_slot<A>(p.x_h, slot) : load_slot<A>(p.x, slot);
+    else
+      act[it] = load_slot<A>(p.x, slot);
+  }
 
   const unsigned end = first + count;
   for (unsigned r0 = first + wave * kRows; r0 < end; r0 += n_waves * kRows) {

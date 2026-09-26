@@ -1,0 +1,9 @@
+command: ['/tmp/miso-gemv-fp16/baseline_decode']
+run 1 utc 2026-09-26T15:01:59.321448+00:00
+model load: 11.2 s
+warm-up: pp512 356.3 ms, 1437.0 tok/s
+measured: pp512 355.2 ms, 1441.6 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.82 ms/token, 146.6 tok/s
+measured: 256 tokens at ctx 273..529: 6.85 ms/token, 146.0 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

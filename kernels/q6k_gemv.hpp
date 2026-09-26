@@ -19,9 +19,10 @@ namespace miso::kernels {
 
 struct Q6kGemvParams {
   const std::uint8_t* w;  // n_rows Q6_K r1 rows of K / 256 blocks
-  const float* x;         // K activations
+  const float* x;         // K activations (used when x_h == nullptr)
   float* y;               // n_rows outputs
   unsigned n_rows;
+  const _Float16* x_h = nullptr;  // optional pre-rounded activations
 };
 
 namespace q6k_detail {
@@ -42,6 +43,12 @@ struct SlotAct {
 __device__ inline SlotAct load_slot(const float* x, int slot) {
   const int b = slot >> 3, i = slot & 7;
   const float* lo = x + 256 * b + 128 * (i >> 2) + 16 * (i & 3);
+  return {gemv::fp16x16(lo), gemv::fp16x16(lo + 64)};
+}
+
+__device__ inline SlotAct load_slot(const _Float16* x, int slot) {
+  const int b = slot >> 3, i = slot & 7;
+  const _Float16* lo = x + 256 * b + 128 * (i >> 2) + 16 * (i & 3);
   return {gemv::fp16x16(lo), gemv::fp16x16(lo + 64)};
 }
 
@@ -95,8 +102,10 @@ __device__ void q6k_gemv_op(const Q6kGemvParams& p, unsigned first, unsigned cou
 
   SlotAct act[kIters];
 #pragma unroll
-  for (int it = 0; it < kIters; ++it)
-    act[it] = load_slot(p.x, lane + kWave * it);
+  for (int it = 0; it < kIters; ++it) {
+    const int slot = lane + kWave * it;
+    act[it] = p.x_h ? load_slot(p.x_h, slot) : load_slot(p.x, slot);
+  }
 
   const unsigned end = first + count;
   for (unsigned r0 = first + wave * kRows; r0 < end; r0 += n_waves * kRows) {

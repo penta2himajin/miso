@@ -1,0 +1,24 @@
+# Post-PR29 baseline (main b9defbe) before gemv FP16 act reuse
+## run 1
+model load: 12.3 s
+warm-up: pp512 356.2 ms, 1437.6 tok/s
+measured: pp512 355.6 ms, 1439.9 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.91 ms/token, 144.6 tok/s
+measured: 256 tokens at ctx 273..529: 6.94 ms/token, 144.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 11.1 s
+warm-up: pp512 356.4 ms, 1436.6 tok/s
+measured: pp512 355.3 ms, 1441.0 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.91 ms/token, 144.7 tok/s
+measured: 256 tokens at ctx 273..529: 6.94 ms/token, 144.1 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 10.6 s
+warm-up: pp512 356.1 ms, 1438.0 tok/s
+measured: pp512 355.4 ms, 1440.5 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.87 ms/token, 145.5 tok/s
+measured: 256 tokens at ctx 273..529: 6.90 ms/token, 144.9 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+
+# Paired alternating median: base 146.0 cand 145.6 gain -0.27% → REJECT
