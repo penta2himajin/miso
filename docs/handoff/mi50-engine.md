@@ -15,14 +15,16 @@ Current-state sections (everything above "Session log") are overwritten each ses
 
 ## Status
 
-in-progress (M8a: 8× argmax top-k; median **134.2 tok/s**, MoE 70.4 µs)
+in-progress (M8a: wave0 top-k; median **136.4 tok/s**, MoE 69.3 µs)
 
 ## Next action
 
-O(n²) moe_topk → 8× masked argmax landed (+~6.5 tok/s). Next: MoE/GEMV bandwidth and/or producer-epilogue norms. Keep coop top-k and consumer 65× RMSNorm fusion closed.
+Wave0 top-k landed (134→136.4). Three failed follow-ups documented (down-skip, hdr-shfl, float4 norm, grid retune). Next still MoE/GEMV bandwidth or producer-epilogue norms.
 
 ## Verification
 
+- Wave-0-only `moe_topk`: MoE **69.3** µs; e2e median **136.4 tok/s** (`run21`, `run8-m8a-wave0-topk`).
+- Failed A/Bs (reverted): down-skip, header __shfl, float4 RMSNorm, MoE grid retune (`run5`–`run7`, `run20`).
 - `moe_topk` 8× masked argmax: MoE 85.6→**70.4** µs; e2e median **134.2 tok/s** (main 127.7) (`run19`, `run4-m8a-topk-algo`).
 - Cooperative top-k-in-router: **121.1 tok/s** — reverted.
 - Consumer-side post-attn RMSNorm fusion: first build +0.8 tok/s but **raced on residual**; race-fixed median **126.7** vs main **127.7** (−1) — reverted (`run17`/`run18`).
@@ -107,4 +109,6 @@ See ADR_001 (D1–D6), ADR_002 (D7–D13), ADR_003 (D14–D19), ADR_004 (FP16 de
 - 2026-09-26 (M8a peer loop): astra found residual race; fixed then median −1 tok/s vs main → reverted fusion. Peer consensus: next is top-k algorithm / MoE bandwidth / producer-epilogue norms — not more redundant consumer norms.
 
 - 2026-09-26 (M8a cont.): Replaced O(n²) top-k with 8× masked argmax per astra peer review; decode median 127.7 → **134.2 tok/s**.
+
+- 2026-09-26 (M8a ×3 loops): down-skip / hdr-shfl / float4-norm / grid retune all no e2e win; wave0 top-k +~2 tok/s → median **136.4**. Stopped after 3 loops as requested.
 
