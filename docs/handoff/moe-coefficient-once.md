@@ -6,11 +6,15 @@
 - Base: main `438fb45` (PR #34 merged)
 - Last work commit: `0729f95` @ 2026-09-27
 - Working tree: clean after the handoff commit
-- Last session: 2026-09-27 12:48 JST
+- Last session: 2026-09-27 12:52 JST
 
 ## Status
 
-ready-for-review; implementation and measurements complete, PR delivery pending.
+ready-for-review. [PR #35](https://github.com/penta2himajin/miso/pull/35) is open,
+ready (not draft) and mergeable. The branch is pushed and attached to this chat.
+Automatic subscription was attempted immediately after creation but GitHub
+returned `INSUFFICIENT_SCOPES`: the token lacks `notifications`. No auth changes
+were made; this does not block code review or merging.
 
 ## Next action
 
@@ -81,3 +85,5 @@ processes of seven rotating micro rounds, seven alternating short native pairs,
 and restored-context pairs at17/4k/32k with one extra4k pair after mixed signs.
 All measurement processes passed and have telemetry. The result supports keeping
 the local simplification while reporting native noise, small samples and outliers.
+Delivered ready PR #35 and attached it to the chat. GitHub rejected automatic
+subscription because the existing token lacks the notifications scope.
