@@ -1,0 +1,26 @@
+diff --git a/bench/deltanet/activation_prepare.hpp b/bench/deltanet/activation_prepare.hpp
+index 331ffe6..88f40de 100644
+--- a/bench/deltanet/activation_prepare.hpp
++++ b/bench/deltanet/activation_prepare.hpp
+@@ -11,7 +11,7 @@
+
+ namespace miso::bench::activation_prepare {
+
+-enum class Output { Fp32, Dual, Fp16 };
++enum class Output { Fp32, Dual, Fp16, Fp16Register };
+
+ struct StepParams {
+   kernels::DeltaNetStepParams base;
+@@ -112,9 +112,11 @@ __device__ void step_op(const StepParams& params, unsigned first, unsigned count
+         volatile float* out = &p.out[h * kDim + t];
+         *out = value;
+         params.half_out[h * kDim + t] = static_cast<_Float16>(*out);
+-      } else {
++      } else if constexpr (Mode == Output::Fp16) {
+         volatile float tmp = value;
+         params.half_out[h * kDim + t] = static_cast<_Float16>(tmp);
++      } else {
++        params.half_out[h * kDim + t] = static_cast<_Float16>(value);
+       }
+     }
+     __syncthreads();

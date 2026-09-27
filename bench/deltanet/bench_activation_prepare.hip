@@ -22,8 +22,9 @@ namespace {
 using namespace miso;
 namespace ap = miso::bench::activation_prepare;
 constexpr unsigned kTokens = 17, kHidden = 2048, kCore = 4096, kProj = 12352;
-constexpr const char* kVariants[] = {"baseline", "float_control", "dual_float", "dual_half",
-                                     "half_only"};
+constexpr const char* kVariants[] = {"baseline",  "float_control", "dual_float",
+                                     "dual_half", "half_only",     "half_register"};
+constexpr unsigned kVariantCount = std::size(kVariants), kCaseCount = 3 * kVariantCount;
 constexpr const char* kScopes[] = {"producer", "consumer", "chain"};
 
 __global__ void round_half_kernel(const float* input, _Float16* output, unsigned count) {
@@ -120,7 +121,7 @@ struct Probe {
   DeltaNetLayer weights;
   DeviceBuffer<float> projections{kTokens * kProj}, cached_core{kTokens * kCore};
   DeviceBuffer<_Float16> cached_half{kTokens * kCore};
-  Frame reference, frames[5];
+  Frame reference, frames[kVariantCount];
   float eps;
   int layer_index;
   std::string input_source;
@@ -193,6 +194,8 @@ void Probe::produce(Frame& frame, unsigned variant, unsigned token, hipStream_t 
     ap::step_kernel<ap::Output::Fp32><<<32, 256, 0, stream>>>(prepared);
   else if (variant == 4)
     ap::step_kernel<ap::Output::Fp16><<<32, 256, 0, stream>>>(prepared);
+  else if (variant == 5)
+    ap::step_kernel<ap::Output::Fp16Register><<<32, 256, 0, stream>>>(prepared);
   else
     ap::step_kernel<ap::Output::Dual><<<32, 256, 0, stream>>>(prepared);
   MISO_HIP_CHECK(hipGetLastError());
@@ -240,7 +243,7 @@ void Probe::compare(Frame& frame, unsigned variant, unsigned scope, const Snapsh
     require_bits(got.state, expected.state, "state after batch");
     require_bits(got.conv0, expected.conv0, "conv[0] after batch");
     require_bits(got.conv1, expected.conv1, "conv[1] after batch");
-    if (variant != 4)
+    if (variant < 4)
       require_bits(got.core, expected.core, "FP32 producer output");
     if (variant >= 2)
       require_bits(got.half, expected.half, "rounded producer output");
@@ -253,7 +256,7 @@ void Probe::compare(Frame& frame, unsigned variant, unsigned scope, const Snapsh
   (void)distribution(got.state);
   (void)distribution(got.conv0);
   (void)distribution(got.conv1);
-  if (scope != 1 && variant != 4)
+  if (scope != 1 && variant < 4)
     (void)distribution(got.core);
   if (scope != 1 && variant >= 2)
     (void)distribution(got.half);
@@ -270,7 +273,7 @@ void Probe::check_tokens(hipStream_t stream) {
     round_half_kernel<<<16, 256, 0, stream>>>(reference.core.data(), reference.half.data(), kCore);
     MISO_HIP_CHECK(hipStreamSynchronize(stream));
     const auto expected = snapshot(reference);
-    for (unsigned variant = 0; variant < 5; ++variant) {
+    for (unsigned variant = 0; variant < kVariantCount; ++variant) {
       step(frames[variant], variant, 2, token, stream);
       MISO_HIP_CHECK(hipGetLastError());
       MISO_HIP_CHECK(hipStreamSynchronize(stream));
@@ -383,11 +386,12 @@ int main(int argc, char** argv) {
       MISO_HIP_CHECK(hipStreamSynchronize(stream));
       const auto consumer_expected = snapshot(p.reference);
       for (unsigned round = 0; round < (check_only ? 1u : rounds); ++round) {
-        for (unsigned order = 0; order < 15; ++order) {
+        for (unsigned order = 0; order < kCaseCount; ++order) {
           // Alternate direction as well as rotating the start. For seven rounds, each
           // candidate runs before its scope's baseline three times and after it four times.
-          const unsigned index = round % 2 == 0 ? (order + round) % 15 : (15 + round - order) % 15;
-          const unsigned scope = index / 5, variant = index % 5;
+          const unsigned index = round % 2 == 0 ? (order + round) % kCaseCount
+                                                : (kCaseCount + round - order) % kCaseCount;
+          const unsigned scope = index / kVariantCount, variant = index % kVariantCount;
           auto& frame = p.frames[variant];
           frame.reset(stream);
           for (unsigned i = 0; i < warmup; ++i)

@@ -1,0 +1,8 @@
+[1/2] Building HIP object tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o
+FAILED: tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o
+/opt/rocm-6.3.4/lib/llvm/bin/clang++ -DMISO_FIXTURE_DIR=\"/home/penta/repos/miso/tests/fixtures\" -DMISO_GOLDEN_DIR=\"/home/penta/repos/miso/tests/golden\" -DMISO_ORNITH_GGUF=\"/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf\" -D__HIP_ROCclr__=1 -I/home/penta/repos/miso/kernels -I/home/penta/repos/miso/src -isystem /home/penta/repos/miso/third_party --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 -O3 -DNDEBUG --offload-arch=gfx906 -Wall -Wextra -Werror -std=gnu++20 -MD -MT tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o -MF tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o.d -o tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o -x hip -c /home/penta/repos/miso/tests/test_deltanet_prepare.hip
+/home/penta/repos/miso/tests/test_deltanet_prepare.hip:329:47: error: no member named 'Fp16Register' in 'miso::bench::activation_prepare::Output'
+  329 |         prepare::step_kernel<prepare::Output::Fp16Register>
+      |                              ~~~~~~~~~~~~~~~~~^
+1 error generated when compiling for gfx906.
+ninja: build stopped: subcommand failed.

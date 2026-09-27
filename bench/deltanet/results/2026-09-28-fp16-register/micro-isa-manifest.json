@@ -1,0 +1,90 @@
+{
+  "binary_sha256": "c88c4f53a4e04771b627e0f10783350c84bc093fc4f1c2a3625c81832e8abf44",
+  "kernels": [
+    {
+      "kernel": "void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)0>(miso::bench::activation_prepare::StepParams)",
+      "resources": {
+        "group_segment_fixed_size": 2576,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare11step_kernelILNS1_6OutputE0EEEvNS1_10StepParamsE",
+        "private_segment_fixed_size": 0,
+        "sgpr_count": 54,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 182,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "8890c9cefa1aee756ef1863fc78b05d0743c05afc2db680f158b6ab3633f8fbf",
+      "isa_archive": "micro-step-0-isa.txt.gz",
+      "cvt_f16_f32_count": 0,
+      "isa_sha256": "9fc8c6e7b33e9c755e1d93924d22b99019cc20dc539b20627227bfb316b09686"
+    },
+    {
+      "kernel": "void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)2>(miso::bench::activation_prepare::StepParams)",
+      "resources": {
+        "group_segment_fixed_size": 2576,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare11step_kernelILNS1_6OutputE2EEEvNS1_10StepParamsE",
+        "private_segment_fixed_size": 8,
+        "sgpr_count": 62,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 182,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "8890c9cefa1aee756ef1863fc78b05d0743c05afc2db680f158b6ab3633f8fbf",
+      "isa_archive": "micro-step-2-isa.txt.gz",
+      "cvt_f16_f32_count": 1,
+      "isa_sha256": "d0d3066115686a219c75fec7116e181fa2a7fde65b1f27d677265dc95f8e3a4c"
+    },
+    {
+      "kernel": "void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)3>(miso::bench::activation_prepare::StepParams)",
+      "resources": {
+        "group_segment_fixed_size": 2576,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare11step_kernelILNS1_6OutputE3EEEvNS1_10StepParamsE",
+        "private_segment_fixed_size": 0,
+        "sgpr_count": 54,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 182,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "8890c9cefa1aee756ef1863fc78b05d0743c05afc2db680f158b6ab3633f8fbf",
+      "isa_archive": "micro-step-3-isa.txt.gz",
+      "cvt_f16_f32_count": 1,
+      "isa_sha256": "8bde4dc0571968d2de73feffd9cf161adcad8b3d0d62509e00599f5b594ddcc4"
+    },
+    {
+      "kernel": "void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)1>(miso::bench::activation_prepare::StepParams)",
+      "resources": {
+        "group_segment_fixed_size": 2576,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare11step_kernelILNS1_6OutputE1EEEvNS1_10StepParamsE",
+        "private_segment_fixed_size": 0,
+        "sgpr_count": 56,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 182,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "8890c9cefa1aee756ef1863fc78b05d0743c05afc2db680f158b6ab3633f8fbf",
+      "isa_archive": "micro-step-1-isa.txt.gz",
+      "cvt_f16_f32_count": 1,
+      "isa_sha256": "4e4609887e5f2321b25753b7f140cf73476d3e9b56734264949893ca7758e534"
+    },
+    {
+      "kernel": "void miso::bench::activation_prepare::q4_half_gemv_kernel<4096u, 256, 4>(miso::bench::activation_prepare::HalfGemvParams)",
+      "resources": {
+        "group_segment_fixed_size": 0,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare19q4_half_gemv_kernelILj4096ELi256ELi4EEEvNS1_14HalfGemvParamsE",
+        "private_segment_fixed_size": 0,
+        "sgpr_count": 36,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 110,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "8890c9cefa1aee756ef1863fc78b05d0743c05afc2db680f158b6ab3633f8fbf",
+      "isa_archive": "micro-half-gemv-isa.txt.gz",
+      "cvt_f16_f32_count": 0,
+      "isa_sha256": "7d7b1c71bbd586603d10b5c7f3ab83ecf25a63448525ae4c1eb58cd7fdc04981"
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "executables": {
+    "baseline": "c9d24c6087925fa09bf212cade523cddcd0b4d66be7d8c51823aba66ff168f6e",
+    "half_register": "1096bde2076ae8fc9110af19f5155358de0ff045fe2d9709e717454533006b9f"
+  },
+  "pairs": [
+    {
+      "pair": 1,
+      "order": [
+        "baseline",
+        "half_register"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "order": [
+        "half_register",
+        "baseline"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "order": [
+        "baseline",
+        "half_register"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 4,
+      "order": [
+        "half_register",
+        "baseline"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 5,
+      "order": [
+        "baseline",
+        "half_register"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 6,
+      "order": [
+        "half_register",
+        "baseline"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 7,
+      "order": [
+        "baseline",
+        "half_register"
+      ],
+      "generated_ids_count": 513,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "baseline": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        },
+        "half_register": {
+          "logits_sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+          "logits_bytes": 993280
+        }
+      }
+    }
+  ]
+}

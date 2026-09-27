@@ -1,0 +1,20 @@
+command: ['build/tests/test_deltanet_prepare', '--test-case=*prepared trajectory*', '--abort-after=1']
+run 1 utc 2026-09-27T15:15:11.748338+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+/home/penta/repos/miso/tests/test_deltanet_prepare.hip:266:
+TEST CASE:  prepared trajectory preserves all state, rounded activations and output GEMV bits
+
+/home/penta/repos/miso/tests/test_deltanet_prepare.hip:105: ERROR: CHECK( std::memcmp(actual.data(), expected.data(), actual.size() * sizeof(T)) == 0 ) is NOT correct!
+  values: CHECK( -1 == 0 )
+  logged: layer_index := 0
+          grid := 32
+          step := 7
+
+Aborting - too many failed asserts!
+===============================================================================
+[doctest] test cases:   1 |   0 passed | 1 failed | 3 skipped
+[doctest] assertions: 237 | 236 passed | 1 failed |
+[doctest] Status: FAILURE!
+exit: 1

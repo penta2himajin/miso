@@ -1,0 +1,30 @@
+{
+  "base_commit": "f258ce1",
+  "baseline_note": "Production source and original decode/engine SHA256 equal pre-PR36 main; native baseline and register both share outside-event full ID/logits dump instrumentation. CPU builds finished before any native process launched. GPU jobs serialized.",
+  "compiler": "ROCm6.3.4 clang18.0.0git gfx906 Release C++20 Ninja",
+  "binaries": {
+    "original_decode": "afe4f824182c17634340b275294d240eea131c140b6b43c3ae2ba868942dd96c",
+    "baseline_proof_decode": "c9d24c6087925fa09bf212cade523cddcd0b4d66be7d8c51823aba66ff168f6e",
+    "half_register_decode": "1096bde2076ae8fc9110af19f5155358de0ff045fe2d9709e717454533006b9f",
+    "baseline_engine.a": "b09779bc4dd1fa36da662b526cd4ac29d62a0687523b8cec4b664737abdec3e5",
+    "register_engine.a": "ca19445f0b0e755a826b0d419b5d49c97e52de5975ada4ebe265880a335f76e3",
+    "host.a": "79650cb90f9c3fbcb9daab249f3cb2361d44cbd06ac5e5e83d4a1db14bf6b9e0",
+    "baseline_context": "5944c5ebb31f908093a74d40bc9b209dffaca0f622b2f7cefa71a01801987e37",
+    "half_register_context": "8af6f24901c68413c5afe7f10b8d3584f9def382786ef307b14e035d308c9e91",
+    "context_probe.o": "573a4eb1c71721081ce85800f6337dac32197ab88e9074655662ba0f0a9e7f23",
+    "register_test_model": "f25f05f5655a84058b9b721232f192505def00ed3f4dcbf25bfd0ef96bec81e9",
+    "register_test_deltanet": "6e46cd3d8a0433f97d2decdc13a3ce7695026ccaed507839eb2ef2261bc9960d"
+  },
+  "source_sha256": {
+    "bench/deltanet/activation_prepare.hpp": "ec8ba80ee911642ccf2114a33ca1ba51c610dbc11e2d6f0e26ed2e8c63108428",
+    "bench/deltanet/bench_activation_prepare.hip": "9478d1a8e3a8d471f9e3ed579fc0fd3a9ab2cfb7e24d7f2b7d0e1d7bb8c0b354",
+    "tests/test_deltanet_prepare.hip": "0b3a57f651582787c816689e0b4abd5b68bf04bed3d1a5031ee9a3e41ec708a8",
+    "src/engine/deltanet.hip": "8a9b34b820df599870e1483d3ea871659a6f5c0dec603dd347d8dfc76fe14a5e",
+    "bench/model/bench_decode.hip": "334c373a492a7b824e839a57e84e59bc64cb139f3b18a33e5b7c28b9d980f440",
+    "bench/deltanet/results/2026-09-28-fp16-register/native-register.patch": "84400bdcc2a6a9935fd0c34beae60c6b29c9a1c642bfaf9e75ec93eb9a131573",
+    "bench/deltanet/results/2026-09-28-fp16-register/native-instrument.patch": "0ec75622c03b30e95766750358eb301a0592738882ac66f1e4600c3dcd12e171",
+    "bench/deltanet/results/2026-09-28-fp16-register/context_probe.hip": "72a2b06d1a5877ebdc7d67c6c5973c8191b3b6fadf1310004787eb27c47b4b94"
+  },
+  "micro_executable_sha256": "c88c4f53a4e04771b627e0f10783350c84bc093fc4f1c2a3625c81832e8abf44",
+  "context_note": "One identical context host object compiled from the already formatted context_probe.hip, linked with baseline/register archives."
+}

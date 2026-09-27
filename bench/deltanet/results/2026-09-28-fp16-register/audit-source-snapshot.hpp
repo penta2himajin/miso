@@ -11,7 +11,7 @@
 
 namespace miso::bench::activation_prepare {
 
-enum class Output { Fp32, Dual, Fp16, Fp16Register };
+enum class Output { Fp32, Dual, Fp16 };
 
 struct StepParams {
   kernels::DeltaNetStepParams base;
@@ -112,15 +112,9 @@ __device__ void step_op(const StepParams& params, unsigned first, unsigned count
         volatile float* out = &p.out[h * kDim + t];
         *out = value;
         params.half_out[h * kDim + t] = static_cast<_Float16>(*out);
-      } else if constexpr (Mode == Output::Fp16) {
+      } else {
         volatile float tmp = value;
         params.half_out[h * kDim + t] = static_cast<_Float16>(tmp);
-      } else {
-        // Opaque FP32 register boundary prevents the final multiply and half cast from
-        // becoming v_fma_mixlo_f16, which skips the baseline's intermediate FP32 rounding.
-        float rounded = value;
-        asm volatile("" : "+v"(rounded));
-        params.half_out[h * kDim + t] = static_cast<_Float16>(rounded);
       }
     }
     __syncthreads();

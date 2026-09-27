@@ -1,0 +1,25 @@
+command: ['/tmp/miso-deltanet-register/register_test_deltanet']
+run 1 utc 2026-09-27T15:20:35.504945+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+/home/penta/repos/miso/tests/test_deltanet.hip:37:
+TEST CASE:  Gated DeltaNet decode reproduces golden layer 0 token by token
+
+/home/penta/repos/miso/tests/test_deltanet.hip:66: MESSAGE: max relative L2 error over 17 tokens = 0.000295737
+
+===============================================================================
+/home/penta/repos/miso/tests/test_deltanet.hip:72:
+TEST CASE:  Gated DeltaNet prefill reproduces golden layer 0
+
+/home/penta/repos/miso/tests/test_deltanet.hip:104: MESSAGE: max relative L2 error over 17 tokens = 0.000295649
+  logged: first_chunk := 17
+
+/home/penta/repos/miso/tests/test_deltanet.hip:104: MESSAGE: max relative L2 error over 17 tokens = 0.000295649
+  logged: first_chunk := 10
+
+===============================================================================
+[doctest] test cases:  2 |  2 passed | 0 failed | 0 skipped
+[doctest] assertions: 55 | 55 passed | 0 failed |
+[doctest] Status: SUCCESS!
+exit: 0

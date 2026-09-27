@@ -1,0 +1,2 @@
+void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)3>(miso::bench::activation_prepare::StepParams)
+global_store_short v[1:2], v4, off                         // 00000000E624: DC688000 007F0401

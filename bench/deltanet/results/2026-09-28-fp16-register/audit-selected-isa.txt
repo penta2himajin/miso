@@ -1,0 +1,135 @@
+## baseline_step (audit.s source line 3790)
+	v_div_scale_f32 v13, vcc, v6, v10, v6
+	ds_read_b64 v[4:5], v11 offset:2560
+	s_waitcnt lgkmcnt(0)
+	v_add_f32_e32 v4, v4, v5
+	v_mov_b32_e32 v5, s43
+	v_rcp_f32_e32 v14, v12
+	v_fma_f32 v15, -v12, v14, 1.0
+	v_fmac_f32_e32 v14, v15, v14
+	v_mul_f32_e32 v15, v13, v14
+	v_fma_f32 v16, -v12, v15, v13
+	v_fmac_f32_e32 v15, v16, v14
+	v_fma_f32 v12, -v12, v15, v13
+	v_div_fmas_f32 v12, v12, v14, v15
+	v_mov_b32_e32 v13, s28
+	v_fmac_f32_e32 v13, 0x3c000000, v4
+	v_mul_f32_e32 v4, 0x4b800000, v13
+	v_cmp_gt_f32_e32 vcc, s33, v13
+	v_cndmask_b32_e32 v4, v13, v4, vcc
+	v_rsq_f32_e32 v4, v4
+	v_mul_f32_e32 v13, 0x45800000, v4
+	v_cndmask_b32_e32 v4, v4, v13, vcc
+	v_mul_f32_e32 v1, v1, v4
+	s_waitcnt vmcnt(0)
+	v_mul_f32_e32 v1, v7, v1
+	v_div_fixup_f32 v4, v12, v10, v6
+	v_mul_f32_e32 v4, v4, v1
+	v_add_co_u32_e32 v1, vcc, s42, v2
+	v_addc_co_u32_e32 v2, vcc, v5, v3, vcc
+	global_store_dword v[1:2], v4, off
+	s_branch .LBB3_2
+.LBB3_25:
+	s_endpgm
+
+## volatile_step (audit.s source line 7)
+	v_fmac_f32_e32 v14, v15, v13
+	v_fma_f32 v7, -v7, v14, v12
+	v_div_fmas_f32 v7, v7, v13, v14
+	v_mov_b32_e32 v12, s33
+	v_fmac_f32_e32 v12, 0x3c000000, v2
+	v_mul_f32_e32 v2, 0x4b800000, v12
+	v_cmp_gt_f32_e32 vcc, s44, v12
+	v_cndmask_b32_e32 v2, v12, v2, vcc
+	v_rsq_f32_e32 v12, v2
+	v_mov_b32_e32 v2, s38
+	v_mov_b32_e32 v3, s39
+	v_mul_f32_e32 v13, 0x45800000, v12
+	v_cndmask_b32_e32 v12, v12, v13, vcc
+	v_mul_f32_e32 v1, v1, v12
+	s_waitcnt vmcnt(0)
+	v_mul_f32_e32 v1, v5, v1
+	v_div_fixup_f32 v4, v7, v6, v4
+	v_mul_f32_e32 v1, v4, v1
+	flat_store_dword v[2:3], v1
+	s_waitcnt vmcnt(0)
+	flat_load_dword v3, v[2:3] glc
+	s_waitcnt vmcnt(0)
+	v_lshlrev_b64 v[1:2], 1, v[10:11]
+	v_mov_b32_e32 v4, s41
+	v_add_co_u32_e32 v1, vcc, s40, v1
+	v_addc_co_u32_e32 v2, vcc, v4, v2, vcc
+	s_waitcnt lgkmcnt(0)
+	v_cvt_f16_f32_e32 v3, v3
+	global_store_short v[1:2], v3, off
+	s_branch .LBB0_2
+.LBB0_25:
+	s_endpgm
+
+## live_step (audit.s source line 1276)
+	ds_read_b64 v[2:3], v11 offset:2560
+	s_waitcnt lgkmcnt(0)
+	v_add_f32_e32 v2, v2, v3
+	v_rcp_f32_e32 v13, v7
+	v_fma_f32 v14, -v7, v13, 1.0
+	v_fmac_f32_e32 v13, v14, v13
+	v_mul_f32_e32 v14, v12, v13
+	v_fma_f32 v15, -v7, v14, v12
+	v_fmac_f32_e32 v14, v15, v13
+	v_fma_f32 v7, -v7, v14, v12
+	v_div_fmas_f32 v7, v7, v13, v14
+	v_mov_b32_e32 v12, s33
+	v_fmac_f32_e32 v12, 0x3c000000, v2
+	v_mul_f32_e32 v2, 0x4b800000, v12
+	v_cmp_gt_f32_e32 vcc, s39, v12
+	v_cndmask_b32_e32 v2, v12, v2, vcc
+	v_rsq_f32_e32 v12, v2
+	v_lshlrev_b64 v[2:3], 1, v[10:11]
+	v_mov_b32_e32 v13, s35
+	v_mul_f32_e32 v10, 0x45800000, v12
+	v_cndmask_b32_e32 v10, v12, v10, vcc
+	v_mul_f32_e32 v1, v1, v10
+	s_waitcnt vmcnt(0)
+	v_mul_f32_e32 v1, v5, v1
+	v_div_fixup_f32 v4, v7, v6, v4
+	v_fma_mixlo_f16 v4, v4, v1, 0
+	v_add_co_u32_e32 v1, vcc, s34, v2
+	v_addc_co_u32_e32 v2, vcc, v13, v3, vcc
+	global_store_short v[1:2], v4, off
+	s_branch .LBB1_2
+.LBB1_25:
+	s_endpgm
+
+## register_step (audit.s source line 2531)
+	v_rcp_f32_e32 v13, v7
+	v_fma_f32 v14, -v7, v13, 1.0
+	v_fmac_f32_e32 v13, v14, v13
+	v_mul_f32_e32 v14, v12, v13
+	v_fma_f32 v15, -v7, v14, v12
+	v_fmac_f32_e32 v14, v15, v13
+	v_fma_f32 v7, -v7, v14, v12
+	v_div_fmas_f32 v7, v7, v13, v14
+	v_mov_b32_e32 v12, s33
+	v_fmac_f32_e32 v12, 0x3c000000, v2
+	v_mul_f32_e32 v2, 0x4b800000, v12
+	v_cmp_gt_f32_e32 vcc, s38, v12
+	v_cndmask_b32_e32 v2, v12, v2, vcc
+	v_rsq_f32_e32 v12, v2
+	v_lshlrev_b64 v[2:3], 1, v[10:11]
+	v_mov_b32_e32 v13, s35
+	v_mul_f32_e32 v10, 0x45800000, v12
+	v_cndmask_b32_e32 v10, v12, v10, vcc
+	v_mul_f32_e32 v1, v1, v10
+	s_waitcnt vmcnt(0)
+	v_mul_f32_e32 v1, v5, v1
+	v_div_fixup_f32 v4, v7, v6, v4
+	v_mul_f32_e32 v1, v4, v1
+	;;#ASMSTART
+	;;#ASMEND
+	v_cvt_f16_f32_e32 v4, v1
+	v_add_co_u32_e32 v1, vcc, s34, v2
+	v_addc_co_u32_e32 v2, vcc, v13, v3, vcc
+	global_store_short v[1:2], v4, off
+	s_branch .LBB2_2
+.LBB2_25:
+	s_endpgm

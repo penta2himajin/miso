@@ -1,0 +1,9 @@
+command: ['/tmp/miso-deltanet-register/register_test_model']
+run 1 utc 2026-09-27T15:20:13.697250+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 0 skipped
+[doctest] assertions: 20 | 20 passed | 0 failed |
+[doctest] Status: SUCCESS!
+exit: 0

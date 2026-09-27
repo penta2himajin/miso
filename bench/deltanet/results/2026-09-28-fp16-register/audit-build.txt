@@ -1,0 +1,19 @@
+CPU-only ISA/LLVM audit; no executable or GPU run.
+Compiler: /opt/rocm/bin/hipcc, ROCm 6.3.4, gfx906, O3, DNDEBUG, GNU C++20.
+Original working directory: /home/penta/repos/miso
+Original compile commands:
+/opt/rocm/bin/hipcc --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --offload-arch=gfx906 --cuda-device-only -O3 -DNDEBUG -std=gnu++20 -Ikernels -I/tmp/miso-register-rounding-audit -S /tmp/miso-register-rounding-audit/audit.hip -o /tmp/miso-register-rounding-audit/audit.s
+/opt/rocm/bin/hipcc --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --offload-arch=gfx906 --cuda-device-only -O3 -DNDEBUG -std=gnu++20 -Ikernels -I/tmp/miso-register-rounding-audit -S -emit-llvm /tmp/miso-register-rounding-audit/audit.hip -o /tmp/miso-register-rounding-audit/audit.ll
+Both commands exited 0. hipcc emitted only: argument unused during compilation: '--hip-link'.
+
+The exported C wrappers call each frozen step_op directly with first=0,count=32 and
+__launch_bounds__(256). They are isolated compiler probes, not the measured binaries.
+The snapshot hash matches PR36's helper. live changes only the Half-only final store;
+register substitutes float tmp + empty volatile asm '+v' + half cast for the volatile tmp.
+Namespace changes allow all three clones to coexist in one translation unit.
+HIP version: 6.3.42134-a9a80e791
+AMD clang version 18.0.0git (https://github.com/RadeonOpenCompute/llvm-project roc-6.3.4 25012 e5bf7e55c91490b07c49d8960fa7983d864936c4)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/rocm-6.3.4/lib/llvm/bin
+Configuration file: /opt/rocm-6.3.4/lib/llvm/bin/clang++.cfg

@@ -1,0 +1,9 @@
+command: ['/tmp/miso-deltanet-register/baseline_context', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf', '/home/penta/repos/miso/tests/golden/ornith-layers.gguf', '4096', '/tmp/miso-deltanet-register/proof/ctx4096-2-baseline.logits.bin']
+run 1 utc 2026-09-27T15:27:03.383162+00:00
+warm-up round=0 ctx=4096..4160 tokens=64 ms=455.743530 tok_s=140.430 ids_match=yes
+measured round=1 ctx=4096..4160 tokens=64 ms=455.971527 tok_s=140.360 ids_match=yes
+measured round=2 ctx=4096..4160 tokens=64 ms=455.530426 tok_s=140.496 ids_match=yes
+measured round=3 ctx=4096..4160 tokens=64 ms=456.331543 tok_s=140.249 ids_match=yes
+median ctx=4096 ms_token=7.124555 tok_s=140.360
+all generated ids: 14876 760 6511 314 9338 369 11751 13 561 6511 314 6124 369 25358 13 237829 110161 14876 760 6511 314 9338 369 11751 13 561 6511 314 6124 369 25358 13 237829 110161 14876 760 6511 314 9338 369 11751 13 561 6511 314 6124 369 25358 13 237829 110161 14876 760 6511 314 9338 369 11751 13 561 6511 314 6124 369 25358
+exit: 0

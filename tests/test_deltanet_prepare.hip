@@ -295,13 +295,13 @@ TEST_CASE("prepared trajectory preserves all state, rounded activations and outp
     MISO_HIP_CHECK(hipStreamSynchronize(stream));
     for (unsigned grid : {32u, 4u}) {
       CAPTURE(grid);
-      miso::DeltaNetState ref, dual, half;
+      miso::DeltaNetState ref, dual, half, reg;
       miso::DeviceBuffer<float> out_ref(std::vector<float>(kCore + 2 * kGuard, kCanary));
       miso::DeviceBuffer<float> out_dual(std::vector<float>(kCore + 2 * kGuard, kCanary));
       const std::vector<_Float16> half_canaries(kCore + 2 * kGuard, static_cast<_Float16>(77.0f));
       miso::DeviceBuffer<_Float16> half_ref(half_canaries), half_dual(half_canaries),
-          half_only(half_canaries);
-      miso::DeviceBuffer<float> y_ref(kHidden), y_dual(kHidden), y_half(kHidden);
+          half_only(half_canaries), half_reg(half_canaries);
+      miso::DeviceBuffer<float> y_ref(kHidden), y_dual(kHidden), y_half(kHidden), y_reg(kHidden);
       MISO_HIP_CHECK(hipDeviceSynchronize());
       for (unsigned step = 0; step < 34; ++step) {
         CAPTURE(step);
@@ -326,6 +326,8 @@ TEST_CASE("prepared trajectory preserves all state, rounded activations and outp
             {base(dual, out_dual.data() + kGuard), half_dual.data() + kGuard});
         prepare::step_kernel<prepare::Output::Fp16>
             <<<grid, 256, 0, stream>>>({base(half, nullptr), half_only.data() + kGuard});
+        prepare::step_kernel<prepare::Output::Fp16Register>
+            <<<grid, 256, 0, stream>>>({base(reg, nullptr), half_reg.data() + kGuard});
         round_half<<<16, 256, 0, stream>>>(out_ref.data() + kGuard, half_ref.data() + kGuard,
                                            kCore);
         const k::Q4kGemvParams fp{layer.out.data.data(), out_ref.data() + kGuard, y_ref.data(),
@@ -335,20 +337,26 @@ TEST_CASE("prepared trajectory preserves all state, rounded activations and outp
             {layer.out.data.data(), half_dual.data() + kGuard, y_dual.data(), kHidden});
         prepare::q4_half_gemv_kernel<kCore, 256, 4><<<240, 256, 0, stream>>>(
             {layer.out.data.data(), half_only.data() + kGuard, y_half.data(), kHidden});
+        prepare::q4_half_gemv_kernel<kCore, 256, 4><<<240, 256, 0, stream>>>(
+            {layer.out.data.data(), half_reg.data() + kGuard, y_reg.data(), kHidden});
         MISO_HIP_CHECK(hipGetLastError());
         MISO_HIP_CHECK(hipStreamSynchronize(stream));
         exact(out_dual.to_host(), out_ref.to_host());
         exact(half_dual.to_host(), half_ref.to_host());
         exact(half_only.to_host(), half_ref.to_host());
+        exact(half_reg.to_host(), half_ref.to_host());
         exact(y_dual.to_host(), y_ref.to_host());
         exact(y_half.to_host(), y_ref.to_host());
+        exact(y_reg.to_host(), y_ref.to_host());
         exact(dual.s.to_host(), ref.s.to_host());
         exact(half.s.to_host(), ref.s.to_host());
+        exact(reg.s.to_host(), ref.s.to_host());
         for (int i = 0; i < 2; ++i) {
           exact(dual.conv[i].to_host(), ref.conv[i].to_host());
           exact(half.conv[i].to_host(), ref.conv[i].to_host());
+          exact(reg.conv[i].to_host(), ref.conv[i].to_host());
         }
-        ref.parity = dual.parity = half.parity = 1 - ref.parity;
+        ref.parity = dual.parity = half.parity = reg.parity = 1 - ref.parity;
       }
     }
   }
