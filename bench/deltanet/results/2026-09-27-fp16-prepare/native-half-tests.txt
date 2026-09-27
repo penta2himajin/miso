@@ -1,0 +1,12 @@
+command: ['ctest', '--preset', 'default', '-R', '^(test_deltanet|test_model)$']
+run 1 utc 2026-09-27T14:44:50.618266+00:00
+Test project /home/penta/repos/miso/build
+    Start  7: test_deltanet
+1/2 Test  #7: test_deltanet ....................   Passed    0.38 sec
+    Start 10: test_model
+2/2 Test #10: test_model .......................   Passed   22.74 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  23.12 sec
+exit: 0

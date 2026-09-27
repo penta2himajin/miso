@@ -1,0 +1,220 @@
+{
+  "pairs": [
+    {
+      "pair": 1,
+      "order": [
+        "baseline",
+        "half_only"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 149.3,
+          "pp512_tok_s": 1440.0,
+          "log_sha256": "b32e0cfd5c87eeed14037d8b8fbb450f327b00e51b0339b411017a94bcdae833"
+        },
+        "half_only": {
+          "decode_tok_s": 151.2,
+          "pp512_tok_s": 1440.6,
+          "log_sha256": "5b2b42f7b0200eaf6ec5278df14f7f5243796fb7f2a49f949d25d88829e3f55a"
+        }
+      },
+      "decode_paired_percent": 1.272605492297374,
+      "pp512_paired_percent": 0.041666666666650976
+    },
+    {
+      "pair": 2,
+      "order": [
+        "half_only",
+        "baseline"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 148.9,
+          "pp512_tok_s": 1439.9,
+          "log_sha256": "05a0f93b93e3317f8da635b38b7a69d595f25d2d462e7248cc681caeb9196963"
+        },
+        "half_only": {
+          "decode_tok_s": 150.9,
+          "pp512_tok_s": 1442.2,
+          "log_sha256": "15c3a1be6ed7405ee70c2c968ed77696ba5f7bf55edfd7253dd331375afbe879"
+        }
+      },
+      "decode_paired_percent": 1.3431833445265218,
+      "pp512_paired_percent": 0.15973331481351494
+    },
+    {
+      "pair": 3,
+      "order": [
+        "baseline",
+        "half_only"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 147.5,
+          "pp512_tok_s": 1441.2,
+          "log_sha256": "b7c8f53c8177825ef28c0c63113a662c93548147a7a4f3f908af27954ecae628"
+        },
+        "half_only": {
+          "decode_tok_s": 148.9,
+          "pp512_tok_s": 1440.1,
+          "log_sha256": "7ee7d1cfd20960982097099a32671055dd0398227f269a2b47c3c3f783fede43"
+        }
+      },
+      "decode_paired_percent": 0.9491525423728886,
+      "pp512_paired_percent": -0.07632528448515696
+    },
+    {
+      "pair": 4,
+      "order": [
+        "half_only",
+        "baseline"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 150.2,
+          "pp512_tok_s": 1442.5,
+          "log_sha256": "c0d34afbfab8c1a3b70e40689b3a59d36cb4308325edf91d0299c81d979c6034"
+        },
+        "half_only": {
+          "decode_tok_s": 149.0,
+          "pp512_tok_s": 1440.1,
+          "log_sha256": "0644b4aeb2574592daf7a240ff33f1de458a5dabcfa53396827440cb9c492948"
+        }
+      },
+      "decode_paired_percent": -0.798934753661773,
+      "pp512_paired_percent": -0.16637781629116333
+    },
+    {
+      "pair": 5,
+      "order": [
+        "baseline",
+        "half_only"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 147.8,
+          "pp512_tok_s": 1440.9,
+          "log_sha256": "cf7b339c3b1eda3c1afb24609ada19fcb879a25eda3b4583062e48a688d40aac"
+        },
+        "half_only": {
+          "decode_tok_s": 147.7,
+          "pp512_tok_s": 1439.7,
+          "log_sha256": "b8a4a7446ba77eaabb9f4c08112c7cc6e4369fe884664adbd4e00cbdb7f2c6ca"
+        }
+      },
+      "decode_paired_percent": -0.06765899864683567,
+      "pp512_paired_percent": -0.08328128253175526
+    },
+    {
+      "pair": 6,
+      "order": [
+        "half_only",
+        "baseline"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 148.1,
+          "pp512_tok_s": 1439.3,
+          "log_sha256": "599c09218374db45a6d22e4005460e2caff4c4aa67ad815fa7b3fd768fb52398"
+        },
+        "half_only": {
+          "decode_tok_s": 148.7,
+          "pp512_tok_s": 1439.3,
+          "log_sha256": "529facac8b23aed262b40f32e56160200ac690ed6bb6f46c96c5b3defecc2adb"
+        }
+      },
+      "decode_paired_percent": 0.4051316677920358,
+      "pp512_paired_percent": 0.0
+    },
+    {
+      "pair": 7,
+      "order": [
+        "baseline",
+        "half_only"
+      ],
+      "variants": {
+        "baseline": {
+          "decode_tok_s": 149.7,
+          "pp512_tok_s": 1438.9,
+          "log_sha256": "7a2e89ffd6a1427837701040d60a31bd60520e42201969cd0456f59faec9556c"
+        },
+        "half_only": {
+          "decode_tok_s": 148.7,
+          "pp512_tok_s": 1440.2,
+          "log_sha256": "744ecf998692c8014a72358d7f6715045b1436f33b6738f6b09d3018afbc3313"
+        }
+      },
+      "decode_paired_percent": -0.6680026720106924,
+      "pp512_paired_percent": 0.0903467926888668
+    }
+  ],
+  "telemetry_note": "GPU-use>=90% samples include load/setup/warmup; not phase-aligned.",
+  "telemetry": {
+    "Temperature (Sensor edge) (C)": {
+      "min": 35.0,
+      "median": 41.0,
+      "max": 46.0
+    },
+    "Temperature (Sensor junction) (C)": {
+      "min": 37.0,
+      "median": 46.0,
+      "max": 66.0
+    },
+    "Temperature (Sensor memory) (C)": {
+      "min": 40.0,
+      "median": 46.0,
+      "max": 55.0
+    },
+    "fclk clock speed:": {
+      "min": 1080.0,
+      "median": 1080.0,
+      "max": 1278.0
+    },
+    "mclk clock speed:": {
+      "min": 800.0,
+      "median": 800.0,
+      "max": 1000.0
+    },
+    "sclk clock speed:": {
+      "min": 1485.0,
+      "median": 1725.0,
+      "max": 1725.0
+    },
+    "socclk clock speed:": {
+      "min": 850.0,
+      "median": 850.0,
+      "max": 971.0
+    },
+    "Current Socket Graphics Package Power (W)": {
+      "min": 32.0,
+      "median": 51.0,
+      "max": 257.0
+    }
+  },
+  "decode": {
+    "median_tok_s": {
+      "baseline": 148.9,
+      "half_only": 148.9
+    },
+    "paired_percent_median": 0.4051316677920358,
+    "paired_percent_range": [
+      -0.798934753661773,
+      1.3431833445265218
+    ],
+    "faster_pairs": 4,
+    "pair_count": 7
+  },
+  "pp512": {
+    "median_tok_s": {
+      "baseline": 1440.0,
+      "half_only": 1440.1
+    },
+    "paired_percent_median": 0.0,
+    "paired_percent_range": [
+      -0.16637781629116333,
+      0.15973331481351494
+    ],
+    "faster_pairs": 3,
+    "pair_count": 7
+  }
+}

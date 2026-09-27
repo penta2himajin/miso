@@ -1,0 +1,50 @@
+[1/4] Building HIP object bench/CMakeFiles/bench_activation_prepare.dir/deltanet/bench_activation_prepare.hip.o
+[2/4] Linking HIP executable bench/bench_activation_prepare
+# bench_activation_prepare (gfx906)
+VGPR SGPR    LDS scratch spill   wg occ  kernel
+   5   11      0       0     0 1024   8  _ZN12_GLOBAL__N_117round_half_kernelEPKfPDF16_j
+  17   14      0       0     0  256  10  miso::kernels::qgemm_act_kernel(miso::kernels::QGemmActParams)
+ 110   36      0       0     0  256   2  void miso::bench::activation_prepare::q4_half_gemv_kernel<4096u, 256, 4>(miso::bench::activation_prepare::HalfGemvParams)
+ 182   54   2576       0     0  256   1  void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)0>(miso::bench::activation_prepare::StepParams)
+ 182   56   2576       0     0  256   1  void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)1>(miso::bench::activation_prepare::StepParams)
+ 182   62   2576       8     0  256   1  void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)2>(miso::bench::activation_prepare::StepParams)
+  26   28     32       0     0  512   8  void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)
+  26   28     32       0     0  512   8  void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)
+ 256   68   2576     268    66  256   1  void miso::kernels::deltanet_seq_kernel<256>(miso::kernels::DeltaNetSeqParams)
+ 182   54   2576       0     0  256   1  void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams)
+ 182   54   2576       0     0  256   1  void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams)
+  68   40      0       0     0  256   3  void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)
+  63   43      0       0     0  256   4  void miso::kernels::mixed_gemv_kernel<2, 480u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)
+  45   20      0       0     0  256   5  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 1>(miso::kernels::Q4kGemvParams)
+  69   35      0       0     0  256   3  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams)
+ 110   36      0       0     0  256   2  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams)
+ 110   36      0       0     0  256   2  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams)
+  57   18      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams)
+  60   25      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams)
+ 120   47  19968       0     0  256   2  void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)0>(miso::kernels::QGemmParams)
+ 124   40  19968       0     0  256   2  void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)1>(miso::kernels::QGemmParams)
+[3/4] Building HIP object tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o
+[4/4] Linking HIP executable tests/test_deltanet_prepare
+# test_deltanet_prepare (gfx906)
+VGPR SGPR    LDS scratch spill   wg occ  kernel
+ 182   54   2576       0     0  256   1  (anonymous namespace)::frozen_step(miso::kernels::DeltaNetStepParams)
+   7   17      0       0     0 1024   8  _ZN12_GLOBAL__N_110round_halfEPKfPDF16_j
+  41   13      0       0     0 1024   4  _ZN12_GLOBAL__N_113compare_slotsEPKfPKDF16_PN4miso7kernels10q4k_detail7SlotActILNS5_9ActFormatE1EEESA_
+  17   14      0       0     0  256  10  miso::kernels::qgemm_act_kernel(miso::kernels::QGemmActParams)
+ 110   36      0       0     0  256   2  void miso::bench::activation_prepare::q4_half_gemv_kernel<4096u, 256, 4>(miso::bench::activation_prepare::HalfGemvParams)
+ 182   56   2576       0     0  256   1  void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)1>(miso::bench::activation_prepare::StepParams)
+ 182   62   2576       8     0  256   1  void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)2>(miso::bench::activation_prepare::StepParams)
+  26   28     32       0     0  512   8  void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)
+  26   28     32       0     0  512   8  void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)
+ 256   68   2576     268    66  256   1  void miso::kernels::deltanet_seq_kernel<256>(miso::kernels::DeltaNetSeqParams)
+ 182   54   2576       0     0  256   1  void miso::kernels::deltanet_step_kernel<256>(miso::kernels::DeltaNetStepParams)
+  68   40      0       0     0  256   3  void miso::kernels::mixed_gemv_kernel<1, 240u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)
+  63   43      0       0     0  256   4  void miso::kernels::mixed_gemv_kernel<2, 480u, 240u, 256>(miso::kernels::Q6kGemvParams, miso::kernels::Q4kGemvParams)
+  45   20      0       0     0  256   5  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 1>(miso::kernels::Q4kGemvParams)
+  69   35      0       0     0  256   3  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams)
+ 110   36      0       0     0  256   2  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams)
+ 110   36      0       0     0  256   2  void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams)
+  57   18      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 1>(miso::kernels::Q6kGemvParams)
+  60   25      0       0     0  256   4  void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams)
+ 120   47  19968       0     0  256   2  void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)0>(miso::kernels::QGemmParams)
+ 124   40  19968       0     0  256   2  void miso::kernels::qgemm_kernel<(miso::kernels::QFormat)1>(miso::kernels::QGemmParams)

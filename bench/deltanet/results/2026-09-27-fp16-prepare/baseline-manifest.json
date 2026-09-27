@@ -1,0 +1,14 @@
+{
+  "base_commit": "af54ec7",
+  "binaries": {
+    "baseline_decode": "afe4f824182c17634340b275294d240eea131c140b6b43c3ae2ba868942dd96c",
+    "baseline_engine.a": "b09779bc4dd1fa36da662b526cd4ac29d62a0687523b8cec4b664737abdec3e5",
+    "host.a": "79650cb90f9c3fbcb9daab249f3cb2361d44cbd06ac5e5e83d4a1db14bf6b9e0"
+  },
+  "source_sha256": {
+    "kernels/deltanet_step.hpp": "c8b68674f5860c7e74fb211b024fe3309fabb3b1930db6429001f362532b4a8d",
+    "kernels/q4k_gemv.hpp": "07e3776d5572971fe793b5790f4cd81ab417d727439bcfb76e6c7267db2e9d06",
+    "src/engine/deltanet.hip": "8a9b34b820df599870e1483d3ea871659a6f5c0dec603dd347d8dfc76fe14a5e",
+    "src/engine/weights.hip": "5d4de1a917cefcded89930605cf47185060a78d73b4e6a9edac3e113ee812fb6"
+  }
+}

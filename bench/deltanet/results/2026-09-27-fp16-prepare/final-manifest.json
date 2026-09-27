@@ -1,0 +1,30 @@
+{
+  "base_commit": "af54ec7",
+  "compiler": "ROCm6.3.4 AMD clang18.0.0git roc-6.3.4 25012",
+  "flags": "CMake Release gfx906 C++20 Ninja; context object hipcc -O3 -DNDEBUG --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --offload-arch=gfx906 -std=c++20 -Isrc -Ikernels",
+  "binaries": {
+    "baseline_decode": "afe4f824182c17634340b275294d240eea131c140b6b43c3ae2ba868942dd96c",
+    "baseline_proof_decode": "c9d24c6087925fa09bf212cade523cddcd0b4d66be7d8c51823aba66ff168f6e",
+    "half_only_decode": "f7942988402935f0ab37208140c0d81e9a25ef06402e27b86324e004f2e3b3b8",
+    "baseline_engine.a": "b09779bc4dd1fa36da662b526cd4ac29d62a0687523b8cec4b664737abdec3e5",
+    "half_only_engine.a": "613990561b642cbf13dedec41445076f7b7498cd39ec14ee01219b4d9fdd6667",
+    "host.a": "79650cb90f9c3fbcb9daab249f3cb2361d44cbd06ac5e5e83d4a1db14bf6b9e0",
+    "baseline_context": "24997e0373116d51e1af391a72f121cee796b0b440cee0b7157069ab1800fae3",
+    "half_only_context": "0bd5c42961a3d53b46e4e8d38d3698a478cfc5f5ebd257143a19e6a0e886454b",
+    "context_probe.o": "b75d0e590a0aa740597e3d6f2a2f387a05ea0294407c9ce63a31987bfcc83dab"
+  },
+  "sources": {
+    "bench/deltanet/activation_prepare.hpp": "2772ec0c93ec03c6ddf0f16242b65bfdb4fd1b6c6a91278490c17c16857eeacb",
+    "bench/deltanet/bench_activation_prepare.hip": "f321864cd5d6887fb0fbb72c1ddf2d7fb12a68c69c002a61055aeb5c4413cadd",
+    "tests/test_deltanet_prepare.hip": "2690bd8aac4067067adf2b071b0bd9ffc8d42ff48a543089ac6e19706cb9215c",
+    "bench/deltanet/results/2026-09-27-fp16-prepare/native-half-only.patch": "10213d854b5506208a02905b102f75e7e9438f629624ea96e3d05639b37ae2e8",
+    "bench/deltanet/results/2026-09-27-fp16-prepare/native-instrument.patch": "0ec75622c03b30e95766750358eb301a0592738882ac66f1e4600c3dcd12e171",
+    "bench/deltanet/results/2026-09-27-fp16-prepare/context_probe.hip": "72a2b06d1a5877ebdc7d67c6c5973c8191b3b6fadf1310004787eb27c47b4b94"
+  },
+  "micro_executable_sha256": "879a042472d74a490c74215f426cb76663371f6ae0060f4c7328c9141b9a83af",
+  "restored_main_decode_sha256": "afe4f824182c17634340b275294d240eea131c140b6b43c3ae2ba868942dd96c",
+  "note": "Native candidate engine is archived before production source restoration. Baseline proof and candidate share the outside-event host instrumentation patch. Context baseline/candidate share one identical probe object. Raw telemetry/logits checks are outside measured intervals.",
+  "context_build_source_unformatted_sha256": "6b2e908beb18452e938d96d4c64dbbd02592b0aac84c5095a6efdde79e7e7d76",
+  "context_source_note": "context-probe-build-source.hip.gz preserves exact pre-format compile source at context_probe.hip path; clang-format of that source equals tracked context_probe.hip. Shared context object built before formatting.",
+  "native_cpu_build_note": "First baseline process started14:50:19UTC; restored-main CPU build completed14:50:39UTC before candidate process started14:50:46UTC. GPU benchmarks remained serialized. Excluding first pair leaves 3/6 faster and paired median 0.16873633457260007%. Do not attribute timing differences to a specific kernel cost."
+}
