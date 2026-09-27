@@ -5,12 +5,16 @@
 - Branch: `ai-written/deltanet-fp16-prepare`
 - Last work commit: `cee421d` @2026-09-28
 - Working tree: clean after this handoff commit; production sources equal main
-- Last session: 2026-09-28 00:06 JST
+- Last session: 2026-09-28 00:08 JST
 
 ## Status
 
 ready-for-review: measurement milestone complete; current prototype adoption declined.
 Latest origin/main remains `af54ec7` (MoE coefficient-once PR35 merged).
+[PR36](https://github.com/penta2himajin/miso/pull/36) is OPEN, ready and MERGEABLE,
+and attached to this chat. Auto-subscription was attempted immediately after creation;
+GitHub returned `INSUFFICIENT_SCOPES` because the token lacks `notifications`.
+No authentication settings were changed.
 
 ## Next action
 
@@ -31,7 +35,7 @@ experiment retaining the token7 regression before any new native A/B measurement
 - Restored-main full build andCTest:22/22 pass,102.30s. Format/diff/Python,
   patch applicability, ISA/proof and source/binary/hash checks pass.
 - Restored `bench_decode` SHA256 exactly matches original main `afe4f824...`;
-  production sources have no diff. Run format/diff/Python checks before committing.
+  production sources have no diff.
 
 ## Context pointers
 
@@ -90,3 +94,7 @@ experiment retaining the token7 regression before any new native A/B measurement
   Archived exact pre-format context source, ISA/resources/patches/hashes and raw
   telemetry, verified all30 target matrix shapes, restored exact main binary and
   passed22/22 CTest. Work commit `cee421d`; measurement PR delivery follows.
+
+- 2026-09-28 (delivery): Opened ready PR36, attached it, confirmed mergeability,
+  and attempted auto-subscription. Notification scope is unavailable; delivery and
+  results are complete, with a clean pushed branch.
