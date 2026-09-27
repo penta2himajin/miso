@@ -1,0 +1,146 @@
+command: ['/opt/rocm/bin/rocprof', '--timestamp', 'on', '--stats', '-o', '/tmp/miso-norm-latency/profile-chain.csv', 'build/bench/bench_norm_chain', '--iterations', '128', '--rounds', '3', '--warmup', '128']
+run 1 utc 2026-09-26T18:25:19.023625+00:00
+RPL: on '260927_032519' from '/opt/rocm-6.3.4' in '/home/penta/repos/miso'
+RPL: profiling '"build/bench/bench_norm_chain" "--iterations" "128" "--rounds" "3" "--warmup" "128"'
+RPL: input file ''
+RPL: output dir '/tmp/rpl_data_260927_032519_1839528'
+RPL: result dir '/tmp/rpl_data_260927_032519_1839528/input_results_260927_032519'
+ROCProfiler: input from "/tmp/rpl_data_260927_032519_1839528/input.xml"
+  0 metrics
+device=AMD Radeon Graphics arch=gfx906:sramecc+:xnack- iterations=128 rounds=3 warmup=128 synthetic_inputs=1
+chain,execution,control,round,iterations,device_us_per_step,cpu_enqueue_us_per_step
+chain_check=gemv_norm_router:pass producer_n=2048 producer_k=4096 consumer_n=257
+gemv_norm_router,native,direct,0,128,28.295688,13.525680
+gemv_norm_router,graph,direct,0,128,25.064507,9.742570
+gemv_norm_router,native,empty,0,128,30.140657,22.945812
+gemv_norm_router,graph,empty,0,128,30.294398,18.105883
+gemv_norm_router,native,readwrite,0,128,30.798141,22.900070
+gemv_norm_router,graph,readwrite,0,128,30.948438,17.773008
+gemv_norm_router,native,norm,0,128,30.778438,22.475188
+gemv_norm_router,graph,norm,0,128,31.092180,17.567273
+gemv_norm_router,graph,direct,1,128,25.070991,9.531156
+gemv_norm_router,native,empty,1,128,30.389687,24.641219
+gemv_norm_router,graph,empty,1,128,30.239688,17.312156
+gemv_norm_router,native,readwrite,1,128,30.734688,23.201297
+gemv_norm_router,graph,readwrite,1,128,31.708423,18.035070
+gemv_norm_router,native,norm,1,128,30.976031,23.814984
+gemv_norm_router,graph,norm,1,128,30.923530,16.072875
+gemv_norm_router,native,direct,1,128,25.059829,14.000469
+gemv_norm_router,native,empty,2,128,30.157296,22.952609
+gemv_norm_router,graph,empty,2,128,30.638538,17.708414
+gemv_norm_router,native,readwrite,2,128,30.827289,22.573055
+gemv_norm_router,graph,readwrite,2,128,30.928539,16.463305
+gemv_norm_router,native,norm,2,128,30.731032,23.012836
+gemv_norm_router,graph,norm,2,128,31.146931,16.787305
+gemv_norm_router,native,direct,2,128,25.029548,12.973594
+gemv_norm_router,graph,direct,2,128,25.137046,10.323672
+chain_check=moe6_norm_qkv:pass producer_n=524288 producer_k=512 consumer_n=8192
+moe6_norm_qkv,native,direct,0,128,50.769195,9.480078
+moe6_norm_qkv,graph,direct,0,128,50.776694,7.252719
+moe6_norm_qkv,native,empty,0,128,55.069126,15.233672
+moe6_norm_qkv,graph,empty,0,128,55.302829,12.383125
+moe6_norm_qkv,native,readwrite,0,128,55.481579,14.964305
+moe6_norm_qkv,graph,readwrite,0,128,55.871569,12.714648
+moe6_norm_qkv,native,norm,0,128,55.835322,15.505703
+moe6_norm_qkv,graph,norm,0,128,56.157812,12.098297
+moe6_norm_qkv,graph,direct,1,128,50.877992,6.867859
+moe6_norm_qkv,native,empty,1,128,54.864187,15.430484
+moe6_norm_qkv,graph,empty,1,128,55.295438,11.855406
+moe6_norm_qkv,native,readwrite,1,128,55.686671,15.006672
+moe6_norm_qkv,graph,readwrite,1,128,55.879056,11.829594
+moe6_norm_qkv,native,norm,1,128,55.746563,14.818836
+moe6_norm_qkv,graph,norm,1,128,56.166556,12.433625
+moe6_norm_qkv,native,direct,1,128,50.432906,9.630359
+moe6_norm_qkv,native,empty,2,128,54.790478,15.742883
+moe6_norm_qkv,graph,empty,2,128,55.145483,11.412867
+moe6_norm_qkv,native,readwrite,2,128,55.444226,15.305672
+moe6_norm_qkv,graph,readwrite,2,128,56.255460,11.367898
+moe6_norm_qkv,native,norm,2,128,55.730470,16.284328
+moe6_norm_qkv,graph,norm,2,128,56.344241,12.023383
+moe6_norm_qkv,native,direct,2,128,50.556820,9.039328
+moe6_norm_qkv,graph,direct,2,128,50.875563,7.321430
+chain_check=moe4_norm_qkv:pass producer_n=524288 producer_k=512 consumer_n=8192
+moe4_norm_qkv,native,direct,0,128,46.001781,9.697867
+moe4_norm_qkv,graph,direct,0,128,45.656797,7.485594
+moe4_norm_qkv,native,empty,0,128,49.579233,15.814109
+moe4_norm_qkv,graph,empty,0,128,50.074220,12.689641
+moe4_norm_qkv,native,readwrite,0,128,49.964249,16.939773
+moe4_norm_qkv,graph,readwrite,0,128,50.655492,13.287266
+moe4_norm_qkv,native,norm,0,128,50.529242,16.925055
+moe4_norm_qkv,graph,norm,0,128,50.819233,12.338156
+moe4_norm_qkv,graph,direct,1,128,45.608006,6.768023
+moe4_norm_qkv,native,empty,1,128,49.714196,16.206695
+moe4_norm_qkv,graph,empty,1,128,50.201681,12.382609
+moe4_norm_qkv,native,readwrite,1,128,49.895447,16.444320
+moe4_norm_qkv,graph,readwrite,1,128,50.496679,12.490430
+moe4_norm_qkv,native,norm,1,128,50.435405,16.495742
+moe4_norm_qkv,graph,norm,1,128,51.067915,11.894273
+moe4_norm_qkv,native,direct,1,128,45.174249,9.736328
+moe4_norm_qkv,native,empty,2,128,49.572937,16.725859
+moe4_norm_qkv,graph,empty,2,128,49.924180,12.649516
+moe4_norm_qkv,native,readwrite,2,128,50.019205,16.666945
+moe4_norm_qkv,graph,readwrite,2,128,50.596695,12.785039
+moe4_norm_qkv,native,norm,2,128,50.236709,16.991195
+moe4_norm_qkv,graph,norm,2,128,50.859194,13.262797
+moe4_norm_qkv,native,direct,2,128,45.186780,9.670734
+moe4_norm_qkv,graph,direct,2,128,45.514248,7.746937
+
+ROCPRofiler: 51462 contexts collected, output directory /tmp/rpl_data_260927_032519_1839528/input_results_260927_032519
+File '/tmp/miso-norm-latency/profile-chain.csv' is generating
+File '/tmp/miso-norm-latency/profile-chain.stats.csv' is generating
+
+dump json 0:51462
+dump json 1000:51462
+dump json 2000:51462
+dump json 3000:51462
+dump json 4000:51462
+dump json 5000:51462
+dump json 6000:51462
+dump json 7000:51462
+dump json 8000:51462
+dump json 9000:51462
+dump json 10000:51462
+dump json 11000:51462
+dump json 12000:51462
+dump json 13000:51462
+dump json 14000:51462
+dump json 15000:51462
+dump json 16000:51462
+dump json 17000:51462
+dump json 18000:51462
+dump json 19000:51462
+dump json 20000:51462
+dump json 21000:51462
+dump json 22000:51462
+dump json 23000:51462
+dump json 24000:51462
+dump json 25000:51462
+dump json 26000:51462
+dump json 27000:51462
+dump json 28000:51462
+dump json 29000:51462
+dump json 30000:51462
+dump json 31000:51462
+dump json 32000:51462
+dump json 33000:51462
+dump json 34000:51462
+dump json 35000:51462
+dump json 36000:51462
+dump json 37000:51462
+dump json 38000:51462
+dump json 39000:51462
+dump json 40000:51462
+dump json 41000:51462
+dump json 42000:51462
+dump json 43000:51462
+dump json 44000:51462
+dump json 45000:51462
+dump json 46000:51462
+dump json 47000:51462
+dump json 48000:51462
+dump json 49000:51462
+dump json 50000:51462
+dump json 51000:51462
+dump json 51461:51462
+File '/tmp/miso-norm-latency/profile-chain.json' is generating
+exit: 0

@@ -1,0 +1,80 @@
+command: ['/home/penta/repos/miso/build/bench/bench_norm_chain', '--iterations', '128', '--rounds', '3', '--warmup', '128']
+run 1 utc 2026-09-26T18:27:42.196605+00:00
+device=AMD Radeon Graphics arch=gfx906:sramecc+:xnack- iterations=128 rounds=3 warmup=128 synthetic_inputs=1
+chain,execution,control,round,iterations,device_us_per_step,cpu_enqueue_us_per_step
+chain_check=gemv_norm_router:pass producer_n=2048 producer_k=4096 consumer_n=257
+gemv_norm_router,native,direct,0,128,28.233415,2.036047
+gemv_norm_router,graph,direct,0,128,26.902180,0.543805
+gemv_norm_router,native,empty,0,128,26.217187,2.850625
+gemv_norm_router,graph,empty,0,128,26.928430,0.656414
+gemv_norm_router,native,readwrite,0,128,32.183368,2.814273
+gemv_norm_router,graph,readwrite,0,128,33.000853,0.618961
+gemv_norm_router,native,norm,0,128,32.190751,3.181812
+gemv_norm_router,graph,norm,0,128,33.119485,0.934570
+gemv_norm_router,graph,direct,1,128,26.815835,0.482305
+gemv_norm_router,native,empty,1,128,26.228344,2.851477
+gemv_norm_router,graph,empty,1,128,27.018327,0.679906
+gemv_norm_router,native,readwrite,1,128,32.124501,2.834461
+gemv_norm_router,graph,readwrite,1,128,32.754485,0.641055
+gemv_norm_router,native,norm,1,128,32.189500,3.198070
+gemv_norm_router,graph,norm,1,128,33.298235,1.601430
+gemv_norm_router,native,direct,1,128,25.989665,1.997352
+gemv_norm_router,native,empty,2,128,26.160907,2.953961
+gemv_norm_router,graph,empty,2,128,27.160898,0.945023
+gemv_norm_router,native,readwrite,2,128,32.143336,2.906305
+gemv_norm_router,graph,readwrite,2,128,33.070821,1.339063
+gemv_norm_router,native,norm,2,128,32.222085,3.152203
+gemv_norm_router,graph,norm,2,128,33.009570,0.633664
+gemv_norm_router,native,direct,2,128,25.977165,2.009000
+gemv_norm_router,graph,direct,2,128,26.985899,0.559516
+chain_check=moe6_norm_qkv:pass producer_n=524288 producer_k=512 consumer_n=8192
+moe6_norm_qkv,native,direct,0,128,51.940523,2.282070
+moe6_norm_qkv,graph,direct,0,128,52.040525,0.758727
+moe6_norm_qkv,native,empty,0,128,51.214289,3.315648
+moe6_norm_qkv,graph,empty,0,128,52.265517,0.725477
+moe6_norm_qkv,native,readwrite,0,128,57.071712,3.276484
+moe6_norm_qkv,graph,readwrite,0,128,58.362938,0.754664
+moe6_norm_qkv,native,norm,0,128,57.562944,3.323258
+moe6_norm_qkv,graph,norm,0,128,58.599189,0.717680
+moe6_norm_qkv,graph,direct,1,128,52.218072,0.700148
+moe6_norm_qkv,native,empty,1,128,50.996844,3.699523
+moe6_norm_qkv,graph,empty,1,128,52.229330,0.785836
+moe6_norm_qkv,native,readwrite,1,128,57.100516,3.221039
+moe6_norm_qkv,graph,readwrite,1,128,58.434252,0.842367
+moe6_norm_qkv,native,norm,1,128,57.435468,3.214852
+moe6_norm_qkv,graph,norm,1,128,58.674194,0.686203
+moe6_norm_qkv,native,direct,1,128,51.106803,2.373406
+moe6_norm_qkv,native,empty,2,128,51.054306,3.630516
+moe6_norm_qkv,graph,empty,2,128,52.201789,0.774414
+moe6_norm_qkv,native,readwrite,2,128,57.124227,3.305945
+moe6_norm_qkv,graph,readwrite,2,128,388.759673,1.612070
+moe6_norm_qkv,native,norm,2,128,57.406727,3.426867
+moe6_norm_qkv,graph,norm,2,128,58.482960,0.731680
+moe6_norm_qkv,native,direct,2,128,51.168054,2.393992
+moe6_norm_qkv,graph,direct,2,128,51.664297,0.707984
+chain_check=moe4_norm_qkv:pass producer_n=524288 producer_k=512 consumer_n=8192
+moe4_norm_qkv,native,direct,0,128,46.021882,2.296180
+moe4_norm_qkv,graph,direct,0,128,45.690641,0.864070
+moe4_norm_qkv,native,empty,0,128,44.895649,3.341742
+moe4_norm_qkv,graph,empty,0,128,45.781884,1.534945
+moe4_norm_qkv,native,readwrite,0,128,50.981820,3.233352
+moe4_norm_qkv,graph,readwrite,0,128,51.859304,1.072609
+moe4_norm_qkv,native,norm,0,128,51.306814,3.314578
+moe4_norm_qkv,graph,norm,0,128,52.491795,0.675977
+moe4_norm_qkv,graph,direct,1,128,45.954384,0.631000
+moe4_norm_qkv,native,empty,1,128,44.891898,3.310094
+moe4_norm_qkv,graph,empty,1,128,46.061885,1.104711
+moe4_norm_qkv,native,readwrite,1,128,50.833069,3.211250
+moe4_norm_qkv,graph,readwrite,1,128,52.148048,0.669117
+moe4_norm_qkv,native,norm,1,128,51.289313,3.472633
+moe4_norm_qkv,graph,norm,1,128,52.563038,1.114836
+moe4_norm_qkv,native,direct,1,128,44.918150,2.316836
+moe4_norm_qkv,native,empty,2,128,44.878148,3.915273
+moe4_norm_qkv,graph,empty,2,128,45.773141,1.115445
+moe4_norm_qkv,native,readwrite,2,128,51.006820,3.119656
+moe4_norm_qkv,graph,readwrite,2,128,51.923048,0.677016
+moe4_norm_qkv,native,norm,2,128,51.288072,3.369297
+moe4_norm_qkv,graph,norm,2,128,52.424297,0.873711
+moe4_norm_qkv,native,direct,2,128,44.840649,2.337750
+moe4_norm_qkv,graph,direct,2,128,45.815639,0.642813
+exit: 0

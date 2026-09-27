@@ -1,0 +1,70 @@
+{
+  "source": "bench/model/results/2026-09-27-first-principles/profile-short.csv.gz",
+  "source_gzip_sha256": "ebb736a6ea8a61dd12886a91d96d07ada1e0ee5cfbf4e3a1b60d3dcddddcc77d",
+  "source_engine_work_commit": "8867a79 (PR #33 final combined implementation)",
+  "selection": "Final complete decode tokens, delimited by embedding dispatches",
+  "tokens": 256,
+  "dispatches": 88320,
+  "dispatches_per_token": 345,
+  "first_index": 95645,
+  "last_index": 183964,
+  "norm_count": 20736,
+  "norm_us_per_token": 685.10901953125,
+  "percentile_method": "Linear interpolation at (n - 1) * fraction",
+  "groups": {
+    "Embedding": {
+      "count": 256,
+      "calls_per_token": 1.0,
+      "mean_us": 5.58624609375,
+      "median_us": 5.6,
+      "p10_us": 5.12,
+      "p90_us": 6.2395,
+      "sum_us_per_token": 5.58624609375,
+      "predecessor_kernels": [
+        "void miso::kernels::embed_q4k_kernel<2048u, 256>(miso::kernels::EmbedParams, unsigned int) [clone .kd]"
+      ]
+    },
+    "MoE Q4 down": {
+      "count": 5120,
+      "calls_per_token": 20.0,
+      "mean_us": 9.7909626953125,
+      "median_us": 10.4,
+      "p10_us": 6.88,
+      "p90_us": 11.36,
+      "sum_us_per_token": 195.81925390625,
+      "predecessor_kernels": [
+        "void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]"
+      ]
+    },
+    "MoE Q6 down": {
+      "count": 5120,
+      "calls_per_token": 20.0,
+      "mean_us": 9.9330884765625,
+      "median_us": 10.72,
+      "p10_us": 6.88,
+      "p90_us": 11.2,
+      "sum_us_per_token": 198.66176953125,
+      "predecessor_kernels": [
+        "void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]"
+      ]
+    },
+    "Q4 GEMV": {
+      "count": 10240,
+      "calls_per_token": 40.0,
+      "mean_us": 7.12604375,
+      "median_us": 6.88,
+      "p10_us": 6.72,
+      "p90_us": 8.48,
+      "sum_us_per_token": 285.04175,
+      "predecessor_kernels": [
+        "void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]"
+      ]
+    }
+  },
+  "limitations": [
+    "Durations are rocprof BeginNs..EndNs intervals under timestamp tracing.",
+    "They are not native HIP-event measurements or pure arithmetic costs.",
+    "Predecessor correlation does not identify a causal memory or dispatch mechanism.",
+    "These sums are not functional speedup bounds; replacing a kernel changes the chain."
+  ]
+}

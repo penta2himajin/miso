@@ -1,0 +1,5 @@
+command: ['/tmp/miso-norm-chain-red']
+run 1 utc 2026-09-26T18:19:26.288841+00:00
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  readwrite control did not preserve its residual/output contract
+exit: -6

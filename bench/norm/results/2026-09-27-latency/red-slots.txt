@@ -1,0 +1,6 @@
+# check standalone controls passed
+# check native/graph producer/control/consumer ping-pong and independent ring passed
+actual_exit: 0 expected_exit: 1
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+AssertionError: independent ring with one slot must be rejected
