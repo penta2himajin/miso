@@ -1,0 +1,1540 @@
+{
+  "e2e": {
+    "baseline": {
+      "runs": [
+        148.8,
+        148.2,
+        149.8,
+        149.3,
+        149.4,
+        148.7,
+        148.3
+      ],
+      "median": 148.8,
+      "pp512_runs": [
+        1441.7,
+        1439.9,
+        1438.3,
+        1440.2,
+        1439.3,
+        1440.5,
+        1438.7
+      ],
+      "pp512_median": 1439.9
+    },
+    "candidate": {
+      "runs": [
+        150.4,
+        150.1,
+        148.9,
+        149.4,
+        150.2,
+        148.7,
+        149.8
+      ],
+      "median": 149.8,
+      "pp512_runs": [
+        1440.2,
+        1439.6,
+        1439.1,
+        1439.7,
+        1439.7,
+        1439.3,
+        1440.2
+      ],
+      "pp512_median": 1439.7
+    }
+  },
+  "contexts": {
+    "17": {
+      "baseline": [
+        149.256,
+        148.467
+      ],
+      "candidate": [
+        149.07,
+        149.849
+      ],
+      "baseline_median": 148.8615,
+      "candidate_median": 149.4595,
+      "median_change_percent": 0.4017156887442308,
+      "paired_changes_percent": [
+        -0.12461810580479682,
+        0.9308465854364734
+      ],
+      "paired_change_median_percent": 0.40311423981583827
+    },
+    "32768": {
+      "baseline": [
+        115.981,
+        115.706
+      ],
+      "candidate": [
+        117.846,
+        116.953
+      ],
+      "baseline_median": 115.8435,
+      "candidate_median": 117.3995,
+      "median_change_percent": 1.343191460893367,
+      "paired_changes_percent": [
+        1.6080220036040371,
+        1.0777314918846148
+      ],
+      "paired_change_median_percent": 1.342876747744326
+    },
+    "4096": {
+      "baseline": [
+        139.728,
+        139.34,
+        139.625
+      ],
+      "candidate": [
+        139.886,
+        138.269,
+        140.722
+      ],
+      "baseline_median": 139.625,
+      "candidate_median": 139.886,
+      "median_change_percent": 0.18692927484331712,
+      "paired_changes_percent": [
+        0.11307683499368615,
+        -0.7686235108367967,
+        0.7856759176365413
+      ],
+      "paired_change_median_percent": 0.11307683499368615
+    }
+  },
+  "paired_short": [
+    {
+      "run": 1,
+      "baseline_tok_s": 148.8,
+      "candidate_tok_s": 150.4,
+      "percent": 1.0752688172043001
+    },
+    {
+      "run": 2,
+      "baseline_tok_s": 148.2,
+      "candidate_tok_s": 150.1,
+      "percent": 1.2820512820512775
+    },
+    {
+      "run": 3,
+      "baseline_tok_s": 149.8,
+      "candidate_tok_s": 148.9,
+      "percent": -0.6008010680907949
+    },
+    {
+      "run": 4,
+      "baseline_tok_s": 149.3,
+      "candidate_tok_s": 149.4,
+      "percent": 0.06697923643670389
+    },
+    {
+      "run": 5,
+      "baseline_tok_s": 149.4,
+      "candidate_tok_s": 150.2,
+      "percent": 0.5354752342703994
+    },
+    {
+      "run": 6,
+      "baseline_tok_s": 148.7,
+      "candidate_tok_s": 148.7,
+      "percent": 0.0
+    },
+    {
+      "run": 7,
+      "baseline_tok_s": 148.3,
+      "candidate_tok_s": 149.8,
+      "percent": 1.0114632501685872
+    }
+  ],
+  "telemetry": {
+    "ctest.txt.smi.jsonl": {
+      "active_samples": 37,
+      "sha256": "ae39ee20e6661c0ae6f4321b2d3082acca3c21b9c638fd40163d23d767a688df",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 35.0,
+          "median": 38.0,
+          "max": 41.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 38.0,
+          "median": 42.0,
+          "max": 55.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 41.0,
+          "median": 42.0,
+          "max": 49.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 35.0,
+          "median": 49.0,
+          "max": 168.0
+        }
+      }
+    },
+    "ctx17-1-baseline.txt.smi.jsonl": {
+      "active_samples": 11,
+      "sha256": "00373160129d827438f75f342f85db4c8eab5555d83665b095557bc61164207f",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 39.0,
+          "median": 39.0,
+          "max": 43.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 44.0,
+          "max": 58.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 43.0,
+          "median": 43.0,
+          "max": 51.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 37.0,
+          "median": 49.0,
+          "max": 162.0
+        }
+      }
+    },
+    "ctx17-1-candidate.txt.smi.jsonl": {
+      "active_samples": 14,
+      "sha256": "d01f35a3ba11974c1d90f92c36ff9b6ea798a5afd275909eebd822708e8e36d6",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 39.0,
+          "median": 40.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 44.5,
+          "max": 59.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 45.0,
+          "max": 53.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 35.0,
+          "median": 48.0,
+          "max": 183.0
+        }
+      }
+    },
+    "ctx17-2-baseline.txt.smi.jsonl": {
+      "active_samples": 9,
+      "sha256": "6d0bc5abc629a9657036e05c75b557bff26224f8d44c10a1ef7b5cd683ca2361",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 40.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 41.0,
+          "median": 45.0,
+          "max": 59.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 45.0,
+          "max": 52.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1725.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 40.0,
+          "median": 53.0,
+          "max": 160.0
+        }
+      }
+    },
+    "ctx17-2-candidate.txt.smi.jsonl": {
+      "active_samples": 12,
+      "sha256": "7cdfb8fd73bb8035657df30d11a4f77eb4d7960f2ace8312d8a04aa1d0c9144f",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 39.0,
+          "median": 40.0,
+          "max": 43.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 45.0,
+          "max": 59.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 43.0,
+          "median": 44.0,
+          "max": 52.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 35.0,
+          "median": 49.0,
+          "max": 179.0
+        }
+      }
+    },
+    "ctx32768-1-baseline.txt.smi.jsonl": {
+      "active_samples": 143,
+      "sha256": "4e9f7301e7f3db2565b457707a8365feae95f2282cc1aa3c84a61f82fae5d5c7",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 44.0,
+          "median": 57.0,
+          "max": 60.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 48.0,
+          "median": 76.0,
+          "max": 79.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 48.0,
+          "median": 59.0,
+          "max": 69.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 37.0,
+          "median": 165.0,
+          "max": 271.0
+        }
+      }
+    },
+    "ctx32768-1-candidate.txt.smi.jsonl": {
+      "active_samples": 142,
+      "sha256": "913c2412186e56e68a7746a64d912608da85dab1078f4b387edda9e0eff24dd0",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 49.0,
+          "median": 60.0,
+          "max": 62.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 53.0,
+          "median": 79.0,
+          "max": 81.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 53.0,
+          "median": 62.0,
+          "max": 70.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 51.0,
+          "median": 166.0,
+          "max": 271.0
+        }
+      }
+    },
+    "ctx32768-2-baseline.txt.smi.jsonl": {
+      "active_samples": 139,
+      "sha256": "14d3e8c39f33c92e6ccbb8258b3f787a5feb7c043c69191de61f0d14c593b18b",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 51.0,
+          "median": 61.0,
+          "max": 63.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 54.0,
+          "median": 81.0,
+          "max": 83.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 55.0,
+          "median": 63.0,
+          "max": 71.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 39.0,
+          "median": 167.0,
+          "max": 263.0
+        }
+      }
+    },
+    "ctx32768-2-candidate.txt.smi.jsonl": {
+      "active_samples": 142,
+      "sha256": "398315ea64322677de75592a2b6c41d284b275631fe445d10a59e9f1761958ed",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 51.0,
+          "median": 61.0,
+          "max": 63.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 56.0,
+          "median": 80.0,
+          "max": 82.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 55.0,
+          "median": 63.0,
+          "max": 71.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 35.0,
+          "median": 166.0,
+          "max": 271.0
+        }
+      }
+    },
+    "ctx4096-1-baseline.txt.smi.jsonl": {
+      "active_samples": 19,
+      "sha256": "24257ff068431969e3830f231a4f7736c4e6a764bc7147fef185615af8d8f3a4",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 41.0,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 47.0,
+          "max": 68.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 45.0,
+          "max": 55.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 44.0,
+          "median": 51.0,
+          "max": 249.0
+        }
+      }
+    },
+    "ctx4096-1-candidate.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "04a8eaf6994611bc59cd76157205c01068e2bc71a78a1018ebab9faa4b404052",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.5,
+          "max": 49.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 47.0,
+          "median": 48.0,
+          "max": 69.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 47.5,
+          "max": 57.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1179.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 900.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1725.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 910.5,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 52.0,
+          "median": 103.5,
+          "max": 243.0
+        }
+      }
+    },
+    "ctx4096-2-baseline.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "25525af396ba571b74e4e7343e617fcac7885104c1f603de4d96fc9e2b782490",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 43.0,
+          "median": 45.0,
+          "max": 50.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 47.0,
+          "median": 51.0,
+          "max": 70.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 49.0,
+          "max": 58.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 34.0,
+          "median": 51.0,
+          "max": 230.0
+        }
+      }
+    },
+    "ctx4096-2-candidate.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "23e0915710be8ab20de8aa7bb9e2a399abe022803852c64f796f424e31908bd7",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 44.0,
+          "max": 49.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 50.0,
+          "max": 70.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 49.0,
+          "max": 57.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 53.0,
+          "max": 222.0
+        }
+      }
+    },
+    "ctx4096-3-baseline.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "2bd9dda53aff72ca690903d3bc2047849d770efb3cf7d6487af11a0d79e376cb",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 43.0,
+          "median": 44.0,
+          "max": 50.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 47.0,
+          "median": 51.0,
+          "max": 73.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 49.0,
+          "max": 59.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 52.5,
+          "max": 223.0
+        }
+      }
+    },
+    "ctx4096-3-candidate.txt.smi.jsonl": {
+      "active_samples": 23,
+      "sha256": "098c87e3392555ad03982c01e00a3e1eb045c20e5aff18c1387629fb60ee16e9",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 45.0,
+          "median": 46.0,
+          "max": 51.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 47.0,
+          "median": 52.0,
+          "max": 72.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 49.0,
+          "median": 51.0,
+          "max": 59.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 43.0,
+          "median": 53.0,
+          "max": 217.0
+        }
+      }
+    },
+    "e2e-1-baseline.txt.smi.jsonl": {
+      "active_samples": 19,
+      "sha256": "c4c145f53e75d23cea913486040b8447d0d1b9ac94603822794f0b1a9703a684",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 36.0,
+          "median": 37.0,
+          "max": 44.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 38.0,
+          "median": 44.0,
+          "max": 63.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 42.0,
+          "median": 42.0,
+          "max": 53.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 35.0,
+          "median": 48.0,
+          "max": 223.0
+        }
+      }
+    },
+    "e2e-1-candidate.txt.smi.jsonl": {
+      "active_samples": 21,
+      "sha256": "ac9ade6b6038d1bc63d0192d7a101eb28e538fe7d389108059bbca6fb9fa232c",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 39.0,
+          "median": 40.0,
+          "max": 45.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 45.0,
+          "max": 65.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 43.0,
+          "median": 44.0,
+          "max": 54.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 49.0,
+          "max": 167.0
+        }
+      }
+    },
+    "e2e-2-baseline.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "5355e2b5af8766030d6882586c3b97f5f0368653edceffd19439a3c5a4b2c445",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 42.0,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 43.0,
+          "median": 48.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 47.0,
+          "max": 55.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 51.5,
+          "max": 195.0
+        }
+      }
+    },
+    "e2e-2-candidate.txt.smi.jsonl": {
+      "active_samples": 23,
+      "sha256": "8837aae791fb5b6103e0701435cd3e4d141132b7cdc8eeb3021e20e839f843ce",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 41.0,
+          "max": 46.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 47.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 44.0,
+          "median": 45.0,
+          "max": 55.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 51.0,
+          "max": 229.0
+        }
+      }
+    },
+    "e2e-3-baseline.txt.smi.jsonl": {
+      "active_samples": 16,
+      "sha256": "c33d621a54aa87bdae18c8ae8fccc7af26c66be6742ad618a831e70615df549d",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 43.0,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 47.0,
+          "median": 49.5,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 47.0,
+          "max": 55.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1725.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 52.0,
+          "median": 53.0,
+          "max": 225.0
+        }
+      }
+    },
+    "e2e-3-candidate.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "4f3fd58234f36901b31fec585edbd3465c97cf4fa3a88fe2bb3cd1f126accd47",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 43.0,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 49.0,
+          "max": 67.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 48.0,
+          "max": 55.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 51.0,
+          "max": 222.0
+        }
+      }
+    },
+    "e2e-4-baseline.txt.smi.jsonl": {
+      "active_samples": 22,
+      "sha256": "3705905a64ffc79707bb3e8054f9de1831ccf9139bb24f73a617e226309b8b2d",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 43.0,
+          "max": 48.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 47.0,
+          "median": 49.5,
+          "max": 67.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 48.0,
+          "max": 57.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 38.0,
+          "median": 51.0,
+          "max": 238.0
+        }
+      }
+    },
+    "e2e-4-candidate.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "a2b0a61fae7bf9b91ad60a2426f773de12f5f959ebd807e0a92d00f1d7dd900f",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 43.0,
+          "max": 48.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 50.0,
+          "max": 68.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 47.0,
+          "max": 57.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 39.0,
+          "median": 53.0,
+          "max": 242.0
+        }
+      }
+    },
+    "e2e-5-baseline.txt.smi.jsonl": {
+      "active_samples": 21,
+      "sha256": "fb00ed20403e28c8cc6da70b6405ffea359fb7755886e6e4616e4b8e975c0a95",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 44.0,
+          "max": 48.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 49.0,
+          "max": 63.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 47.0,
+          "max": 56.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 39.0,
+          "median": 53.0,
+          "max": 169.0
+        }
+      }
+    },
+    "e2e-5-candidate.txt.smi.jsonl": {
+      "active_samples": 21,
+      "sha256": "50b45ba2d33cfcec65c1cedb7d8301d7b6bf2b3a7c9af63e7cceee34f121d2ca",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 43.0,
+          "max": 48.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 49.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 48.0,
+          "max": 56.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 51.0,
+          "max": 171.0
+        }
+      }
+    },
+    "e2e-6-baseline.txt.smi.jsonl": {
+      "active_samples": 12,
+      "sha256": "134da4686f39b572af2f64503cfe9cec2b5dcaaa5e841d245ecab59b2c9e663b",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 45.5,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 61.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 50.5,
+          "max": 56.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1278.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 1000.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 971.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 37.0,
+          "median": 152.5,
+          "max": 228.0
+        }
+      }
+    },
+    "e2e-6-candidate.txt.smi.jsonl": {
+      "active_samples": 15,
+      "sha256": "57f591426f3c7d33afebc1ef1d32cbb0a1df77eb1bfee1f3fbdb582980596f47",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 44.0,
+          "max": 48.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 62.0,
+          "max": 68.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 50.0,
+          "max": 56.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1278.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 1000.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1606.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 971.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 41.0,
+          "median": 157.0,
+          "max": 214.0
+        }
+      }
+    },
+    "e2e-7-baseline.txt.smi.jsonl": {
+      "active_samples": 18,
+      "sha256": "e720a9b8c718b56013ccbd211cbcd7eb24e9a0133b4dec025e38b5e9d0955e90",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 41.0,
+          "median": 42.5,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 44.0,
+          "median": 48.0,
+          "max": 65.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 45.0,
+          "median": 47.0,
+          "max": 55.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 39.0,
+          "median": 52.5,
+          "max": 213.0
+        }
+      }
+    },
+    "e2e-7-candidate.txt.smi.jsonl": {
+      "active_samples": 20,
+      "sha256": "b81b477f66482bd79d5968b33f6e26b051bae60d9d65a608c2459dab89478585",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 42.0,
+          "max": 47.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 45.0,
+          "median": 48.0,
+          "max": 67.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 46.0,
+          "median": 46.0,
+          "max": 56.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 33.0,
+          "median": 51.0,
+          "max": 219.0
+        }
+      }
+    },
+    "micro.txt.smi.jsonl": {
+      "active_samples": 36,
+      "sha256": "782222609425154948487f5a9ccb4d2f8174d647b33bc02e0b92756daf1cd220",
+      "measurements": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 40.0,
+          "median": 46.5,
+          "max": 50.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 56.0,
+          "median": 62.0,
+          "max": 66.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 55.0,
+          "max": 58.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1278.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 1000.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1725.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 971.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 84.0,
+          "median": 168.5,
+          "max": 187.0
+        }
+      }
+    },
+    "test-moe.txt.smi.jsonl": {
+      "active_samples": 0,
+      "sha256": "d61a0882fa31b4e70b3c0b8172180834536456078d0efb3ed4a2c4e511f01e0a",
+      "measurements": {}
+    }
+  },
+  "short_median_change_percent": 0.6720430107526987,
+  "telemetry_note": "GPU use >=90% samples include loading/warmup/prefill; not decode-only or variant-specific clocks."
+}

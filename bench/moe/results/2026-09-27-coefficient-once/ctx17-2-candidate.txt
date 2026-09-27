@@ -1,0 +1,8 @@
+command: ['/tmp/miso-moe-softmax/candidate_context', '/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf', '/home/penta/repos/miso/tests/golden/ornith-layers.gguf', '17']
+run 1 utc 2026-09-27T03:33:06.196485+00:00
+warm-up round=0 ctx=17..81 tokens=64 ms=427.059814 tok_s=149.862 ids_match=yes
+measured round=1 ctx=17..81 tokens=64 ms=427.175812 tok_s=149.821 ids_match=yes
+measured round=2 ctx=17..81 tokens=64 ms=427.067474 tok_s=149.859 ids_match=yes
+measured round=3 ctx=17..81 tokens=64 ms=427.096436 tok_s=149.849 ids_match=yes
+median ctx=17 ms_token=6.673382 tok_s=149.849
+exit: 0

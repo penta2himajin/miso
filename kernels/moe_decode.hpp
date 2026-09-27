@@ -90,7 +90,8 @@ __global__ void __launch_bounds__(kBlock) moe_router_kernel(MoeRouterParams p) {
 // Wave 0 owns selection: each of its 64 lanes holds four logits (lane + 64*j), and eight
 // wave-local argmaxes replace the previous eight block-wide reductions (peer review loop3).
 template <int kBlock>
-__device__ inline void moe_topk(const float* logits, int* ids, float* weights) {
+__device__ inline void moe_topk(const float* logits, int* ids, float* weights,
+                                bool compute_weights = true) {
   static_assert(kBlock == moe::kExperts);
   const int lane = threadIdx.x % kWave;
   const int wave = threadIdx.x / kWave;
@@ -131,20 +132,26 @@ __device__ inline void moe_topk(const float* logits, int* ids, float* weights) {
       pi[k] = best;
       pv[k] = logits[best];
     }
-    float mx = pv[0];
-#pragma unroll
-    for (int k = 1; k < moe::kTopK; ++k)
-      mx = fmaxf(mx, pv[k]);
-    float e = 0;
-#pragma unroll
-    for (int k = 0; k < moe::kTopK; ++k)
-      e += lane == k ? expf(pv[k] - mx) : 0.0f;
-    float sum = e;
-    sum += __shfl_xor(sum, 4);
-    sum += __shfl_xor(sum, 2);
-    sum += __shfl_xor(sum, 1);
     if (lane < moe::kTopK)
-      ids[lane] = pi[lane], weights[lane] = expf(pv[lane] - mx) / sum;
+      ids[lane] = pi[lane];
+    // The flag is uniform across a workgroup; ID selection and the final barrier stay common.
+    // Prefill uses the default full coefficients; decode exports coefficients only from block 0.
+    if (compute_weights) {
+      float mx = pv[0];
+#pragma unroll
+      for (int k = 1; k < moe::kTopK; ++k)
+        mx = fmaxf(mx, pv[k]);
+      float e = 0;
+#pragma unroll
+      for (int k = 0; k < moe::kTopK; ++k)
+        e += lane == k ? expf(pv[k] - mx) : 0.0f;
+      float sum = e;
+      sum += __shfl_xor(sum, 4);
+      sum += __shfl_xor(sum, 2);
+      sum += __shfl_xor(sum, 1);
+      if (lane < moe::kTopK)
+        weights[lane] = expf(pv[lane] - mx) / sum;
+    }
   }
   __syncthreads();
 }
@@ -168,7 +175,7 @@ __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigne
   constexpr unsigned kRowBytes = moe::kHidden / 256 * 144;
   __shared__ int sid[moe::kTopK];
   __shared__ float sw[moe::kTopK];
-  moe_topk<kBlock>(p.logits, sid, sw);
+  moe_topk<kBlock>(p.logits, sid, sw, blockIdx.x == 0);
   if (blockIdx.x == 0 && threadIdx.x < moe::kTopK)
     p.ids[threadIdx.x] = sid[threadIdx.x], p.weights[threadIdx.x] = sw[threadIdx.x];
   const int lane = threadIdx.x % kWave;

@@ -1,0 +1,62 @@
+0000000000005100 <void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams)>:
+	s_load_dwordx16 s[8:23], s[4:5], 0x0                       // 000000005100: C0120202 00000000
+	s_load_dwordx2 s[24:25], s[4:5], 0x40                      // 000000005108: C0060602 00000040
+	s_cmp_eq_u32 s6, 0                                         // 000000005110: BF068006
+	s_cselect_b64 s[26:27], -1, 0                              // 000000005114: 859A80C1
+	v_and_b32_e32 v44, 63, v0                                  // 000000005118: 265800BF
+	v_cmp_gt_u32_e32 vcc, 64, v0                               // 00000000511C: 7D9800C0
+	v_lshlrev_b32_e32 v10, 2, v0                               // 000000005120: 24140082
+	s_and_saveexec_b64 s[28:29], vcc                           // 000000005124: BE9C206A
+	s_cbranch_execz 1894                                       // 000000005128: BF880766 <void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams)+0x1dc4>
+	s_waitcnt lgkmcnt(0)                                       // 00000000512C: BF8CC07F
+	global_load_dword v1, v10, s[8:9]                          // 000000005130: DC508000 0108000A
+	v_cndmask_b32_e32 v1, v1, v7, vcc                          // 000000006A6C: 00020F01
+	v_cmp_eq_u32_e32 vcc, 7, v44                               // 000000006A70: 7D945887
+	v_lshlrev_b32_e32 v13, 2, v44                              // 000000006A74: 241A5882
+	v_cndmask_b32_e32 v1, v1, v8, vcc                          // 000000006A78: 00021101
+	ds_write_b32 v13, v1 offset:32                             // 000000006A7C: D81A0020 0000010D
+	s_or_b64 exec, exec, s[2:3]                                // 000000006A84: 87FE027E
+	s_andn2_b64 vcc, exec, s[26:27]                            // 000000006A88: 89EA1A7E
+	s_cbranch_vccnz 269                                        // 000000006A8C: BF87010D <void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams)+0x1dc4>
+	s_waitcnt vmcnt(6)                                         // 000000006A90: BF8C0F76
+	v_max_f32_e32 v1, v20, v20                                 // 000000006A94: 16022914
+	v_max_f32_e32 v2, v12, v12                                 // 000000006A98: 1604190C
+	v_max_f32_e32 v1, v2, v1                                   // 000000006A9C: 16020302
+	s_waitcnt vmcnt(4)                                         // 000000006AA0: BF8C0F74
+	v_exp_f32_e32 v5, v5                                       // 000000006E48: 7E0A4105
+	v_cvt_i32_f32_e32 v6, v7                                   // 000000006E4C: 7E0C1107
+	s_waitcnt lgkmcnt(0)                                       // 000000006E50: BF8CC07F
+	v_add_f32_e32 v3, v3, v4                                   // 000000006E54: 02060903
+	v_cmp_ngt_f32_e32 vcc, s3, v1                              // 000000006E58: 7C960203
+	v_ldexp_f32 v4, v5, v6                                     // 000000006E5C: D2880004 00020D05
+	v_cndmask_b32_e32 v4, 0, v4, vcc                           // 000000006E64: 00080880
+	v_cmp_nlt_f32_e32 vcc, s7, v1                              // 000000006E68: 7C9C0207
+	v_cndmask_b32_e32 v1, v2, v4, vcc                          // 000000006E6C: 00020902
+	v_div_scale_f32 v2, s[0:1], v3, v3, v1                     // 000000006E70: D1E00002 04060703
+	v_div_scale_f32 v4, vcc, v1, v3, v1                        // 000000006E78: D1E06A04 04060701
+	v_rcp_f32_e32 v5, v2                                       // 000000006E80: 7E0A4502
+	v_fma_f32 v6, -v2, v5, 1.0                                 // 000000006E84: D1CB0006 23CA0B02
+	v_fmac_f32_e32 v5, v6, v5                                  // 000000006E8C: 760A0B06
+	v_mul_f32_e32 v6, v4, v5                                   // 000000006E90: 0A0C0B04
+	v_fma_f32 v7, -v2, v6, v4                                  // 000000006E94: D1CB0007 24120D02
+	v_fmac_f32_e32 v6, v7, v5                                  // 000000006E9C: 760C0B07
+	v_fma_f32 v2, -v2, v6, v4                                  // 000000006EA0: D1CB0002 24120D02
+	v_div_fmas_f32 v2, v2, v5, v6                              // 000000006EA8: D1E20002 041A0B02
+	v_div_fixup_f32 v1, v2, v3, v1                             // 000000006EB0: D1DE0001 04060702
+	v_lshlrev_b32_e32 v2, 2, v44                               // 000000006EB8: 24045882
+	ds_write_b32 v2, v1                                        // 000000006EBC: D81A0000 00000102
+	s_or_b64 exec, exec, s[28:29]                              // 000000006EC4: 87FE1C7E
+	v_cmp_gt_u32_e32 vcc, 8, v0                                // 000000006EC8: 7D980088
+	s_and_b64 s[2:3], s[26:27], vcc                            // 000000006ECC: 86826A1A
+	s_waitcnt vmcnt(0) lgkmcnt(0)                              // 000000006ED0: BF8C0070
+	s_barrier                                                  // 000000006ED4: BF8A0000
+	s_and_saveexec_b64 s[0:1], s[2:3]                          // 000000006ED8: BE802002
+	s_cbranch_execz 7                                          // 000000006EDC: BF880007 <void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams)+0x1dfc>
+	ds_read2_b32 v[1:2], v10 offset1:8                         // 000000006EE0: D86E0800 0100000A
+	s_waitcnt lgkmcnt(0)                                       // 000000006EE8: BF8CC07F
+	global_store_dword v10, v2, s[22:23]                       // 000000006EEC: DC708000 0016020A
+	global_store_dword v10, v1, s[24:25]                       // 000000006EF4: DC708000 0018010A
+	s_or_b64 exec, exec, s[0:1]                                // 000000006EFC: 87FE007E
+	s_lshl_b32 s24, s6, 2                                      // 000000006F00: 8E188206
+	v_lshrrev_b32_e32 v45, 6, v0                               // 000000006F04: 205A0086
+	v_or_b32_e32 v41, s24, v45                                 // 000000006F08: 28525A18
