@@ -1,0 +1,419 @@
+0000000000002800 <miso::norm_bench::empty_kernel()>:
+	s_endpgm                                                   // 000000002800: BF810000
+	s_nop 0                                                    // 000000002804: BF800000
+	s_nop 0                                                    // 000000002808: BF800000
+	s_nop 0                                                    // 00000000280C: BF800000
+	s_nop 0                                                    // 000000002810: BF800000
+	s_nop 0                                                    // 000000002814: BF800000
+	s_nop 0                                                    // 000000002818: BF800000
+	s_nop 0                                                    // 00000000281C: BF800000
+	s_nop 0                                                    // 000000002820: BF800000
+	s_nop 0                                                    // 000000002824: BF800000
+	s_nop 0                                                    // 000000002828: BF800000
+	s_nop 0                                                    // 00000000282C: BF800000
+	s_nop 0                                                    // 000000002830: BF800000
+	s_nop 0                                                    // 000000002834: BF800000
+	s_nop 0                                                    // 000000002838: BF800000
+	s_nop 0                                                    // 00000000283C: BF800000
+	s_nop 0                                                    // 000000002840: BF800000
+	s_nop 0                                                    // 000000002844: BF800000
+	s_nop 0                                                    // 000000002848: BF800000
+	s_nop 0                                                    // 00000000284C: BF800000
+	s_nop 0                                                    // 000000002850: BF800000
+	s_nop 0                                                    // 000000002854: BF800000
+	s_nop 0                                                    // 000000002858: BF800000
+	s_nop 0                                                    // 00000000285C: BF800000
+	s_nop 0                                                    // 000000002860: BF800000
+	s_nop 0                                                    // 000000002864: BF800000
+	s_nop 0                                                    // 000000002868: BF800000
+	s_nop 0                                                    // 00000000286C: BF800000
+	s_nop 0                                                    // 000000002870: BF800000
+	s_nop 0                                                    // 000000002874: BF800000
+	s_nop 0                                                    // 000000002878: BF800000
+	s_nop 0                                                    // 00000000287C: BF800000
+	s_nop 0                                                    // 000000002880: BF800000
+	s_nop 0                                                    // 000000002884: BF800000
+	s_nop 0                                                    // 000000002888: BF800000
+	s_nop 0                                                    // 00000000288C: BF800000
+	s_nop 0                                                    // 000000002890: BF800000
+	s_nop 0                                                    // 000000002894: BF800000
+	s_nop 0                                                    // 000000002898: BF800000
+	s_nop 0                                                    // 00000000289C: BF800000
+	s_nop 0                                                    // 0000000028A0: BF800000
+	s_nop 0                                                    // 0000000028A4: BF800000
+	s_nop 0                                                    // 0000000028A8: BF800000
+	s_nop 0                                                    // 0000000028AC: BF800000
+	s_nop 0                                                    // 0000000028B0: BF800000
+	s_nop 0                                                    // 0000000028B4: BF800000
+	s_nop 0                                                    // 0000000028B8: BF800000
+	s_nop 0                                                    // 0000000028BC: BF800000
+	s_nop 0                                                    // 0000000028C0: BF800000
+	s_nop 0                                                    // 0000000028C4: BF800000
+	s_nop 0                                                    // 0000000028C8: BF800000
+	s_nop 0                                                    // 0000000028CC: BF800000
+	s_nop 0                                                    // 0000000028D0: BF800000
+	s_nop 0                                                    // 0000000028D4: BF800000
+	s_nop 0                                                    // 0000000028D8: BF800000
+	s_nop 0                                                    // 0000000028DC: BF800000
+	s_nop 0                                                    // 0000000028E0: BF800000
+	s_nop 0                                                    // 0000000028E4: BF800000
+	s_nop 0                                                    // 0000000028E8: BF800000
+	s_nop 0                                                    // 0000000028EC: BF800000
+	s_nop 0                                                    // 0000000028F0: BF800000
+	s_nop 0                                                    // 0000000028F4: BF800000
+	s_nop 0                                                    // 0000000028F8: BF800000
+	s_nop 0                                                    // 0000000028FC: BF800000
+
+0000000000002900 <miso::norm_bench::copy_kernel(miso::kernels::AddRmsNormParams)>:
+	s_load_dwordx2 s[0:1], s[4:5], 0x0                         // 000000002900: C0060002 00000000
+	s_load_dwordx2 s[2:3], s[4:5], 0x18                        // 000000002908: C0060082 00000018
+	v_lshlrev_b32_e32 v2, 2, v0                                // 000000002910: 24040082
+	v_or_b32_e32 v4, 0xfffffe00, v0                            // 000000002914: 280800FF FFFFFE00
+	s_waitcnt lgkmcnt(0)                                       // 00000000291C: BF8CC07F
+	v_mov_b32_e32 v1, s1                                       // 000000002920: 7E020201
+	v_add_co_u32_e32 v0, vcc, s0, v2                           // 000000002924: 32000400
+	v_addc_co_u32_e32 v1, vcc, 0, v1, vcc                      // 000000002928: 38020280
+	v_mov_b32_e32 v3, s3                                       // 00000000292C: 7E060203
+	v_add_co_u32_e32 v2, vcc, s2, v2                           // 000000002930: 32040402
+	v_addc_co_u32_e32 v3, vcc, 0, v3, vcc                      // 000000002934: 38060680
+	s_mov_b64 s[0:1], 0                                        // 000000002938: BE800180
+	s_movk_i32 s2, 0x5ff                                       // 00000000293C: B00205FF
+	global_load_dword v5, v[0:1], off                          // 000000002940: DC508000 057F0000
+	v_add_co_u32_e32 v0, vcc, 0x800, v0                        // 000000002948: 320000FF 00000800
+	v_add_u32_e32 v4, 0x200, v4                                // 000000002950: 680808FF 00000200
+	v_addc_co_u32_e32 v1, vcc, 0, v1, vcc                      // 000000002958: 38020280
+	v_cmp_lt_u32_e32 vcc, s2, v4                               // 00000000295C: 7D920802
+	s_or_b64 s[0:1], vcc, s[0:1]                               // 000000002960: 8780006A
+	s_waitcnt vmcnt(0)                                         // 000000002964: BF8C0F70
+	global_store_dword v[2:3], v5, off                         // 000000002968: DC708000 007F0502
+	v_add_co_u32_e32 v2, vcc, 0x800, v2                        // 000000002970: 320404FF 00000800
+	v_addc_co_u32_e32 v3, vcc, 0, v3, vcc                      // 000000002978: 38060680
+	s_andn2_b64 exec, exec, s[0:1]                             // 00000000297C: 89FE007E
+	s_cbranch_execnz 65519                                     // 000000002980: BF89FFEF <miso::norm_bench::copy_kernel(miso::kernels::AddRmsNormParams)+0x40>
+	s_endpgm                                                   // 000000002984: BF810000
+	s_nop 0                                                    // 000000002988: BF800000
+	s_nop 0                                                    // 00000000298C: BF800000
+	s_nop 0                                                    // 000000002990: BF800000
+	s_nop 0                                                    // 000000002994: BF800000
+	s_nop 0                                                    // 000000002998: BF800000
+	s_nop 0                                                    // 00000000299C: BF800000
+	s_nop 0                                                    // 0000000029A0: BF800000
+	s_nop 0                                                    // 0000000029A4: BF800000
+	s_nop 0                                                    // 0000000029A8: BF800000
+	s_nop 0                                                    // 0000000029AC: BF800000
+	s_nop 0                                                    // 0000000029B0: BF800000
+	s_nop 0                                                    // 0000000029B4: BF800000
+	s_nop 0                                                    // 0000000029B8: BF800000
+	s_nop 0                                                    // 0000000029BC: BF800000
+	s_nop 0                                                    // 0000000029C0: BF800000
+	s_nop 0                                                    // 0000000029C4: BF800000
+	s_nop 0                                                    // 0000000029C8: BF800000
+	s_nop 0                                                    // 0000000029CC: BF800000
+	s_nop 0                                                    // 0000000029D0: BF800000
+	s_nop 0                                                    // 0000000029D4: BF800000
+	s_nop 0                                                    // 0000000029D8: BF800000
+	s_nop 0                                                    // 0000000029DC: BF800000
+	s_nop 0                                                    // 0000000029E0: BF800000
+	s_nop 0                                                    // 0000000029E4: BF800000
+	s_nop 0                                                    // 0000000029E8: BF800000
+	s_nop 0                                                    // 0000000029EC: BF800000
+	s_nop 0                                                    // 0000000029F0: BF800000
+	s_nop 0                                                    // 0000000029F4: BF800000
+	s_nop 0                                                    // 0000000029F8: BF800000
+	s_nop 0                                                    // 0000000029FC: BF800000
+
+0000000000002a00 <miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)>:
+	s_load_dwordx8 s[4:11], s[4:5], 0x0                        // 000000002A00: C00E0102 00000000
+	v_lshlrev_b32_e32 v6, 2, v0                                // 000000002A08: 240C0082
+	v_or_b32_e32 v8, 0xfffffe00, v0                            // 000000002A0C: 281000FF FFFFFE00
+	s_mov_b64 s[2:3], 0                                        // 000000002A14: BE820180
+	s_waitcnt lgkmcnt(0)                                       // 000000002A18: BF8CC07F
+	v_mov_b32_e32 v1, s11                                      // 000000002A1C: 7E02020B
+	v_add_co_u32_e32 v0, vcc, s10, v6                          // 000000002A20: 32000C0A
+	v_addc_co_u32_e32 v1, vcc, 0, v1, vcc                      // 000000002A24: 38020280
+	v_mov_b32_e32 v3, s9                                       // 000000002A28: 7E060209
+	v_add_co_u32_e32 v2, vcc, s8, v6                           // 000000002A2C: 32040C08
+	v_addc_co_u32_e32 v3, vcc, 0, v3, vcc                      // 000000002A30: 38060680
+	s_cmp_lg_u64 s[6:7], 0                                     // 000000002A34: BF138006
+	v_mov_b32_e32 v5, s7                                       // 000000002A38: 7E0A0207
+	v_add_co_u32_e32 v4, vcc, s6, v6                           // 000000002A3C: 32080C06
+	v_addc_co_u32_e32 v5, vcc, 0, v5, vcc                      // 000000002A40: 380A0A80
+	s_cselect_b64 s[0:1], -1, 0                                // 000000002A44: 858080C1
+	v_mov_b32_e32 v7, s5                                       // 000000002A48: 7E0E0205
+	v_add_co_u32_e32 v6, vcc, s4, v6                           // 000000002A4C: 320C0C04
+	v_cndmask_b32_e64 v9, 0, 1, s[0:1]                         // 000000002A50: D1000009 00010280
+	v_addc_co_u32_e32 v7, vcc, 0, v7, vcc                      // 000000002A58: 380E0E80
+	v_cmp_ne_u32_e64 s[0:1], 1, v9                             // 000000002A5C: D0CD0000 00021281
+	s_movk_i32 s4, 0x5ff                                       // 000000002A64: B00405FF
+	s_branch 24                                                // 000000002A68: BF820018 <miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)+0xcc>
+	global_load_dword v10, v[2:3], off                         // 000000002A6C: DC508000 0A7F0002
+	v_add_u32_e32 v8, 0x200, v8                                // 000000002A74: 681010FF 00000200
+	v_cmp_lt_u32_e32 vcc, s4, v8                               // 000000002A7C: 7D921004
+	s_or_b64 s[2:3], vcc, s[2:3]                               // 000000002A80: 8782026A
+	s_waitcnt vmcnt(0)                                         // 000000002A84: BF8C0F70
+	v_mul_f32_e32 v9, v9, v10                                  // 000000002A88: 0A121509
+	global_store_dword v[0:1], v9, off                         // 000000002A8C: DC708000 007F0900
+	v_add_co_u32_e32 v0, vcc, 0x800, v0                        // 000000002A94: 320000FF 00000800
+	v_addc_co_u32_e32 v1, vcc, 0, v1, vcc                      // 000000002A9C: 38020280
+	v_add_co_u32_e32 v2, vcc, 0x800, v2                        // 000000002AA0: 320404FF 00000800
+	v_addc_co_u32_e32 v3, vcc, 0, v3, vcc                      // 000000002AA8: 38060680
+	v_add_co_u32_e32 v4, vcc, 0x800, v4                        // 000000002AAC: 320808FF 00000800
+	v_addc_co_u32_e32 v5, vcc, 0, v5, vcc                      // 000000002AB4: 380A0A80
+	v_add_co_u32_e32 v6, vcc, 0x800, v6                        // 000000002AB8: 320C0CFF 00000800
+	v_addc_co_u32_e32 v7, vcc, 0, v7, vcc                      // 000000002AC0: 380E0E80
+	s_andn2_b64 exec, exec, s[2:3]                             // 000000002AC4: 89FE027E
+	s_cbranch_execz 14                                         // 000000002AC8: BF88000E <miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)+0x104>
+	global_load_dword v9, v[6:7], off                          // 000000002ACC: DC508000 097F0006
+	s_and_b64 vcc, exec, s[0:1]                                // 000000002AD4: 86EA007E
+	s_cbranch_vccnz 4                                          // 000000002AD8: BF870004 <miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)+0xec>
+	global_load_dword v10, v[4:5], off                         // 000000002ADC: DC508000 0A7F0004
+	s_waitcnt vmcnt(0)                                         // 000000002AE4: BF8C0F70
+	v_add_f32_e32 v9, v9, v10                                  // 000000002AE8: 02121509
+	s_and_b64 vcc, exec, s[0:1]                                // 000000002AEC: 86EA007E
+	s_cbranch_vccnz 65502                                      // 000000002AF0: BF87FFDE <miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)+0x6c>
+	s_waitcnt vmcnt(0)                                         // 000000002AF4: BF8C0F70
+	global_store_dword v[6:7], v9, off                         // 000000002AF8: DC708000 007F0906
+	s_branch 65498                                             // 000000002B00: BF82FFDA <miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)+0x6c>
+	s_endpgm                                                   // 000000002B04: BF810000
+	s_nop 0                                                    // 000000002B08: BF800000
+	s_nop 0                                                    // 000000002B0C: BF800000
+	s_nop 0                                                    // 000000002B10: BF800000
+	s_nop 0                                                    // 000000002B14: BF800000
+	s_nop 0                                                    // 000000002B18: BF800000
+	s_nop 0                                                    // 000000002B1C: BF800000
+	s_nop 0                                                    // 000000002B20: BF800000
+	s_nop 0                                                    // 000000002B24: BF800000
+	s_nop 0                                                    // 000000002B28: BF800000
+	s_nop 0                                                    // 000000002B2C: BF800000
+	s_nop 0                                                    // 000000002B30: BF800000
+	s_nop 0                                                    // 000000002B34: BF800000
+	s_nop 0                                                    // 000000002B38: BF800000
+	s_nop 0                                                    // 000000002B3C: BF800000
+	s_nop 0                                                    // 000000002B40: BF800000
+	s_nop 0                                                    // 000000002B44: BF800000
+	s_nop 0                                                    // 000000002B48: BF800000
+	s_nop 0                                                    // 000000002B4C: BF800000
+	s_nop 0                                                    // 000000002B50: BF800000
+	s_nop 0                                                    // 000000002B54: BF800000
+	s_nop 0                                                    // 000000002B58: BF800000
+	s_nop 0                                                    // 000000002B5C: BF800000
+	s_nop 0                                                    // 000000002B60: BF800000
+	s_nop 0                                                    // 000000002B64: BF800000
+	s_nop 0                                                    // 000000002B68: BF800000
+	s_nop 0                                                    // 000000002B6C: BF800000
+	s_nop 0                                                    // 000000002B70: BF800000
+	s_nop 0                                                    // 000000002B74: BF800000
+	s_nop 0                                                    // 000000002B78: BF800000
+	s_nop 0                                                    // 000000002B7C: BF800000
+	s_nop 0                                                    // 000000002B80: BF800000
+	s_nop 0                                                    // 000000002B84: BF800000
+	s_nop 0                                                    // 000000002B88: BF800000
+	s_nop 0                                                    // 000000002B8C: BF800000
+	s_nop 0                                                    // 000000002B90: BF800000
+	s_nop 0                                                    // 000000002B94: BF800000
+	s_nop 0                                                    // 000000002B98: BF800000
+	s_nop 0                                                    // 000000002B9C: BF800000
+	s_nop 0                                                    // 000000002BA0: BF800000
+	s_nop 0                                                    // 000000002BA4: BF800000
+	s_nop 0                                                    // 000000002BA8: BF800000
+	s_nop 0                                                    // 000000002BAC: BF800000
+	s_nop 0                                                    // 000000002BB0: BF800000
+	s_nop 0                                                    // 000000002BB4: BF800000
+	s_nop 0                                                    // 000000002BB8: BF800000
+	s_nop 0                                                    // 000000002BBC: BF800000
+	s_nop 0                                                    // 000000002BC0: BF800000
+	s_nop 0                                                    // 000000002BC4: BF800000
+	s_nop 0                                                    // 000000002BC8: BF800000
+	s_nop 0                                                    // 000000002BCC: BF800000
+	s_nop 0                                                    // 000000002BD0: BF800000
+	s_nop 0                                                    // 000000002BD4: BF800000
+	s_nop 0                                                    // 000000002BD8: BF800000
+	s_nop 0                                                    // 000000002BDC: BF800000
+	s_nop 0                                                    // 000000002BE0: BF800000
+	s_nop 0                                                    // 000000002BE4: BF800000
+	s_nop 0                                                    // 000000002BE8: BF800000
+	s_nop 0                                                    // 000000002BEC: BF800000
+	s_nop 0                                                    // 000000002BF0: BF800000
+	s_nop 0                                                    // 000000002BF4: BF800000
+	s_nop 0                                                    // 000000002BF8: BF800000
+	s_nop 0                                                    // 000000002BFC: BF800000
+
+0000000000002e00 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)>:
+	s_load_dword s20, s[4:5], 0x28                             // 000000002E00: C0020502 00000028
+	s_waitcnt lgkmcnt(0)                                       // 000000002E08: BF8CC07F
+	s_cmp_ge_u32 s6, s20                                       // 000000002E0C: BF091406
+	s_cbranch_scc1 221                                         // 000000002E10: BF8500DD <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x388>
+	s_load_dwordx8 s[8:15], s[4:5], 0x0                        // 000000002E14: C00E0202 00000000
+	v_and_b32_e32 v1, 63, v0                                   // 000000002E1C: 260200BF
+	v_cmp_eq_u32_e64 s[0:1], 63, v1                            // 000000002E20: D0CA0000 000202BF
+	v_lshrrev_b32_e32 v1, 4, v0                                // 000000002E28: 20020084
+	v_and_b32_e32 v9, 28, v1                                   // 000000002E2C: 2612029C
+	v_lshlrev_b32_e32 v1, 2, v0                                // 000000002E30: 24020082
+	s_waitcnt lgkmcnt(0)                                       // 000000002E34: BF8CC07F
+	v_mov_b32_e32 v6, s13                                      // 000000002E38: 7E0C020D
+	v_add_co_u32_e32 v1, vcc, s12, v1                          // 000000002E3C: 3202020C
+	s_load_dword s21, s[4:5], 0x20                             // 000000002E40: C0020542 00000020
+	s_load_dword s22, s[4:5], 0x30                             // 000000002E48: C0020582 00000030
+	v_addc_co_u32_e32 v2, vcc, 0, v6, vcc                      // 000000002E50: 38040C80
+	s_movk_i32 s2, 0x1800                                      // 000000002E54: B0021800
+	v_or_b32_e32 v11, 0x400, v0                                // 000000002E58: 281600FF 00000400
+	v_add_co_u32_e32 v3, vcc, s2, v1                           // 000000002E60: 32060202
+	v_addc_co_u32_e32 v4, vcc, 0, v2, vcc                      // 000000002E64: 38080480
+	v_lshlrev_b32_e32 v5, 2, v11                               // 000000002E68: 240A1682
+	v_or_b32_e32 v7, 0x600, v0                                 // 000000002E6C: 280E00FF 00000600
+	s_cmp_lg_u64 s[10:11], 0                                   // 000000002E74: BF13800A
+	v_add_co_u32_e32 v5, vcc, s12, v5                          // 000000002E78: 320A0A0C
+	s_mov_b32 s7, 0                                            // 000000002E7C: BE870080
+	v_mov_b32_e32 v10, 0                                       // 000000002E80: 7E140280
+	s_cselect_b64 s[4:5], -1, 0                                // 000000002E84: 858480C1
+	v_addc_co_u32_e32 v6, vcc, 0, v6, vcc                      // 000000002E88: 380C0C80
+	v_lshlrev_b32_e32 v12, 2, v7                               // 000000002E8C: 24180E82
+	s_mov_b32 s23, 0x800000                                    // 000000002E90: BE9700FF 00800000
+	v_lshlrev_b32_e32 v0, 2, v0                                // 000000002E98: 24000082
+	s_branch 16                                                // 000000002E9C: BF820010 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0xe0>
+	global_load_dword v13, v[3:4], off                         // 000000002EA0: DC508000 0D7F0003
+	v_mov_b32_e32 v7, s17                                      // 000000002EA8: 7E0E0211
+	v_add_co_u32_e32 v8, vcc, s16, v0                          // 000000002EAC: 32100010
+	v_addc_co_u32_e32 v15, vcc, 0, v7, vcc                     // 000000002EB0: 381E0E80
+	v_mul_f32_e32 v14, v14, v18                                // 000000002EB4: 0A1C250E
+	s_add_i32 s6, s6, s22                                      // 000000002EB8: 81061606
+	v_add_co_u32_e32 v7, vcc, 0x1000, v8                       // 000000002EBC: 320E10FF 00001000
+	v_addc_co_u32_e32 v8, vcc, 0, v15, vcc                     // 000000002EC4: 38101E80
+	s_cmp_lt_u32 s6, s20                                       // 000000002EC8: BF0A1406
+	s_waitcnt vmcnt(0)                                         // 000000002ECC: BF8C0F70
+	v_mul_f32_e32 v13, v14, v13                                // 000000002ED0: 0A1A1B0E
+	global_store_dword v[7:8], v13, off offset:2048            // 000000002ED4: DC708800 007F0D07
+	s_cbranch_scc0 170                                         // 000000002EDC: BF8400AA <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x388>
+	s_lshl_b64 s[2:3], s[6:7], 13                              // 000000002EE0: 8E828D06
+	s_add_u32 s12, s8, s2                                      // 000000002EE4: 800C0208
+	s_addc_u32 s13, s9, s3                                     // 000000002EE8: 820D0309
+	global_load_dword v17, v0, s[12:13]                        // 000000002EEC: DC508000 110C0000
+	s_add_u32 s16, s10, s2                                     // 000000002EF4: 8010020A
+	s_addc_u32 s17, s11, s3                                    // 000000002EF8: 8211030B
+	s_and_b64 vcc, exec, s[4:5]                                // 000000002EFC: 86EA047E
+	s_cbranch_vccz 4                                           // 000000002F00: BF860004 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x114>
+	global_load_dword v7, v0, s[16:17]                         // 000000002F04: DC508000 07100000
+	s_waitcnt vmcnt(0)                                         // 000000002F0C: BF8C0F70
+	v_add_f32_e32 v17, v17, v7                                 // 000000002F10: 02220F11
+	v_mov_b32_e32 v8, s13                                      // 000000002F14: 7E10020D
+	v_add_co_u32_e32 v7, vcc, s12, v0                          // 000000002F18: 320E000C
+	v_addc_co_u32_e32 v8, vcc, 0, v8, vcc                      // 000000002F1C: 38101080
+	global_load_dword v16, v[7:8], off offset:2048             // 000000002F20: DC508800 107F0007
+	v_cndmask_b32_e64 v13, 0, 1, s[4:5]                        // 000000002F28: D100000D 00110280
+	v_cmp_ne_u32_e64 s[2:3], 1, v13                            // 000000002F30: D0CD0002 00021A81
+	s_andn2_b64 vcc, exec, s[4:5]                              // 000000002F38: 89EA047E
+	s_cbranch_vccnz 4                                          // 000000002F3C: BF870004 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x150>
+	global_load_dword v13, v0, s[16:17] offset:2048            // 000000002F40: DC508800 0D100000
+	s_waitcnt vmcnt(0)                                         // 000000002F48: BF8C0F70
+	v_add_f32_e32 v16, v16, v13                                // 000000002F4C: 02201B10
+	v_lshlrev_b32_e32 v13, 2, v11                              // 000000002F50: 241A1682
+	global_load_dword v15, v13, s[12:13]                       // 000000002F54: DC508000 0F0C000D
+	s_and_b64 vcc, exec, s[2:3]                                // 000000002F5C: 86EA027E
+	s_cbranch_vccnz 4                                          // 000000002F60: BF870004 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x174>
+	global_load_dword v14, v13, s[16:17]                       // 000000002F64: DC508000 0E10000D
+	s_waitcnt vmcnt(0)                                         // 000000002F6C: BF8C0F70
+	v_add_f32_e32 v15, v15, v14                                // 000000002F70: 021E1D0F
+	v_add_co_u32_e32 v18, vcc, 0x1000, v7                      // 000000002F74: 32240EFF 00001000
+	v_addc_co_u32_e32 v19, vcc, 0, v8, vcc                     // 000000002F7C: 38261080
+	global_load_dword v14, v[18:19], off offset:2048           // 000000002F80: DC508800 0E7F0012
+	s_and_b64 vcc, exec, s[2:3]                                // 000000002F88: 86EA027E
+	s_cbranch_vccnz 4                                          // 000000002F8C: BF870004 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x1a0>
+	global_load_dword v18, v12, s[16:17]                       // 000000002F90: DC508000 1210000C
+	s_waitcnt vmcnt(0)                                         // 000000002F98: BF8C0F70
+	v_add_f32_e32 v14, v14, v18                                // 000000002F9C: 021C250E
+	s_waitcnt vmcnt(2)                                         // 000000002FA0: BF8C0F72
+	v_mul_f32_e32 v18, v16, v16                                // 000000002FA4: 0A242110
+	v_fmac_f32_e32 v18, v17, v17                               // 000000002FA8: 76242311
+	s_waitcnt vmcnt(1)                                         // 000000002FAC: BF8C0F71
+	v_fmac_f32_e32 v18, v15, v15                               // 000000002FB0: 76241F0F
+	s_waitcnt vmcnt(0)                                         // 000000002FB4: BF8C0F70
+	v_fmac_f32_e32 v18, v14, v14                               // 000000002FB8: 76241D0E
+	v_mov_b32_e32 v19, 0                                       // 000000002FBC: 7E260280
+	s_nop 0                                                    // 000000002FC0: BF800000
+	v_add_f32_dpp v18, v18, v18 quad_perm:[1,0,3,2] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000002FC4: 022424FA FF08B112
+	s_nop 1                                                    // 000000002FCC: BF800001
+	v_add_f32_dpp v18, v18, v18 quad_perm:[2,3,0,1] row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000002FD0: 022424FA FF084E12
+	s_nop 1                                                    // 000000002FD8: BF800001
+	v_add_f32_dpp v18, v18, v18 row_half_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000002FDC: 022424FA FF094112
+	s_nop 1                                                    // 000000002FE4: BF800001
+	v_add_f32_dpp v18, v18, v18 row_mirror row_mask:0xf bank_mask:0xf bound_ctrl:1// 000000002FE8: 022424FA FF094012
+	s_nop 1                                                    // 000000002FF0: BF800001
+	v_mov_b32_dpp v19, v18 row_bcast:15 row_mask:0xa bank_mask:0xf// 000000002FF4: 7E2602FA AF014212
+	v_add_f32_e32 v18, v18, v19                                // 000000002FFC: 02242712
+	v_mov_b32_e32 v19, 0                                       // 000000003000: 7E260280
+	s_nop 1                                                    // 000000003004: BF800001
+	v_mov_b32_dpp v19, v18 row_bcast:31 row_mask:0xc bank_mask:0xf// 000000003008: 7E2602FA CF014312
+	s_and_saveexec_b64 s[16:17], s[0:1]                        // 000000003010: BE902000
+	s_xor_b64 s[16:17], exec, s[16:17]                         // 000000003014: 8890107E
+	s_cbranch_execz 3                                          // 000000003018: BF880003 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x228>
+	v_add_f32_e32 v18, v18, v19                                // 00000000301C: 02242712
+	ds_write_b32 v9, v18                                       // 000000003020: D81A0000 00001209
+	s_or_b64 exec, exec, s[16:17]                              // 000000003028: 87FE107E
+	s_waitcnt lgkmcnt(0)                                       // 00000000302C: BF8CC07F
+	s_barrier                                                  // 000000003030: BF8A0000
+	ds_read_b128 v[18:21], v10                                 // 000000003034: D9FE0000 1200000A
+	ds_read_b128 v[22:25], v10 offset:16                       // 00000000303C: D9FE0010 1600000A
+	s_lshl_b64 s[16:17], s[6:7], 11                            // 000000003044: 8E908B06
+	s_lshl_b64 s[16:17], s[16:17], 2                           // 000000003048: 8E908210
+	s_add_u32 s16, s14, s16                                    // 00000000304C: 8010100E
+	s_waitcnt lgkmcnt(1)                                       // 000000003050: BF8CC17F
+	v_add_f32_e32 v18, v18, v19                                // 000000003054: 02242712
+	v_add_f32_e32 v18, v18, v20                                // 000000003058: 02242912
+	v_add_f32_e32 v18, v18, v21                                // 00000000305C: 02242B12
+	s_waitcnt lgkmcnt(0)                                       // 000000003060: BF8CC07F
+	v_add_f32_e32 v18, v18, v22                                // 000000003064: 02242D12
+	v_add_f32_e32 v18, v18, v23                                // 000000003068: 02242F12
+	v_add_f32_e32 v18, v18, v24                                // 00000000306C: 02243112
+	v_add_f32_e32 v18, v18, v25                                // 000000003070: 02243312
+	v_mov_b32_e32 v19, s21                                     // 000000003074: 7E260215
+	v_fmac_f32_e32 v19, 0x3a000000, v18                        // 000000003078: 762624FF 3A000000
+	v_mul_f32_e32 v18, 0x4b800000, v19                         // 000000003080: 0A2426FF 4B800000
+	v_cmp_gt_f32_e32 vcc, s23, v19                             // 000000003088: 7C882617
+	v_cndmask_b32_e32 v18, v19, v18, vcc                       // 00000000308C: 00242513
+	v_rsq_f32_e32 v18, v18                                     // 000000003090: 7E244912
+	s_addc_u32 s17, s15, s17                                   // 000000003094: 8211110F
+	s_barrier                                                  // 000000003098: BF8A0000
+	v_mul_f32_e32 v19, 0x45800000, v18                         // 00000000309C: 0A2624FF 45800000
+	v_cndmask_b32_e32 v18, v18, v19, vcc                       // 0000000030A4: 00242712
+	s_and_b64 vcc, exec, s[4:5]                                // 0000000030A8: 86EA047E
+	v_mul_f32_e32 v19, v17, v18                                // 0000000030AC: 0A262511
+	s_cbranch_vccz 45                                          // 0000000030B0: BF86002D <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x368>
+	global_store_dword v[7:8], v17, off                        // 0000000030B4: DC708000 007F1107
+	global_load_dword v17, v[1:2], off                         // 0000000030BC: DC508000 117F0001
+	s_waitcnt vmcnt(0)                                         // 0000000030C4: BF8C0F70
+	v_mul_f32_e32 v17, v19, v17                                // 0000000030C8: 0A222313
+	global_store_dword v0, v17, s[16:17]                       // 0000000030CC: DC708000 00101100
+	global_store_dword v[7:8], v16, off offset:2048            // 0000000030D4: DC708800 007F1007
+	s_cbranch_execnz 6                                         // 0000000030DC: BF890006 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x2f8>
+	global_load_dword v17, v[1:2], off                         // 0000000030E0: DC508000 117F0001
+	s_waitcnt vmcnt(0)                                         // 0000000030E8: BF8C0F70
+	v_mul_f32_e32 v17, v19, v17                                // 0000000030EC: 0A222313
+	global_store_dword v0, v17, s[16:17]                       // 0000000030F0: DC708000 00101100
+	global_load_dword v17, v[1:2], off offset:2048             // 0000000030F8: DC508800 117F0001
+	v_mul_f32_e32 v16, v16, v18                                // 000000003100: 0A202510
+	s_and_b64 vcc, exec, s[2:3]                                // 000000003104: 86EA027E
+	s_waitcnt vmcnt(0)                                         // 000000003108: BF8C0F70
+	v_mul_f32_e32 v16, v16, v17                                // 00000000310C: 0A202310
+	global_store_dword v0, v16, s[16:17] offset:2048           // 000000003110: DC708800 00101000
+	v_mul_f32_e32 v16, v15, v18                                // 000000003118: 0A20250F
+	s_cbranch_vccnz 19                                         // 00000000311C: BF870013 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x36c>
+	v_mov_b32_e32 v17, s13                                     // 000000003120: 7E22020D
+	v_add_co_u32_e32 v19, vcc, s12, v13                        // 000000003124: 32261A0C
+	v_addc_co_u32_e32 v20, vcc, 0, v17, vcc                    // 000000003128: 38282280
+	global_store_dword v[19:20], v15, off                      // 00000000312C: DC708000 007F0F13
+	global_load_dword v15, v[5:6], off                         // 000000003134: DC508000 0F7F0005
+	v_add_co_u32_e32 v7, vcc, 0x1800, v7                       // 00000000313C: 320E0EFF 00001800
+	v_addc_co_u32_e32 v8, vcc, 0, v8, vcc                      // 000000003144: 38101080
+	s_waitcnt vmcnt(0)                                         // 000000003148: BF8C0F70
+	v_mul_f32_e32 v15, v16, v15                                // 00000000314C: 0A1E1F10
+	global_store_dword v13, v15, s[16:17]                      // 000000003150: DC708000 00100F0D
+	global_store_dword v[7:8], v14, off                        // 000000003158: DC708000 007F0E07
+	s_cbranch_execnz 65359                                     // 000000003160: BF89FF4F <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0xa0>
+	s_branch 1                                                 // 000000003164: BF820001 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x36c>
+	s_branch 65501                                             // 000000003168: BF82FFDD <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0x2e0>
+	global_load_dword v7, v[5:6], off                          // 00000000316C: DC508000 077F0005
+	s_waitcnt vmcnt(0)                                         // 000000003174: BF8C0F70
+	v_mul_f32_e32 v7, v16, v7                                  // 000000003178: 0A0E0F10
+	global_store_dword v13, v7, s[16:17]                       // 00000000317C: DC708000 0010070D
+	s_branch 65350                                             // 000000003184: BF82FF46 <void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)+0xa0>
+	s_endpgm                                                   // 000000003188: BF810000

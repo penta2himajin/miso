@@ -1,0 +1,8 @@
+# bench_norm (gfx906)
+VGPR SGPR    LDS scratch spill   wg occ  kernel
+   7   10      0       0     0  512  10  miso::norm_bench::consumer_kernel(float const*, float*)
+   6   10      0       0     0  512  10  miso::norm_bench::copy_kernel(miso::kernels::AddRmsNormParams)
+   0    4      0       0     0  512  10  miso::norm_bench::empty_kernel()
+   9   12      0       0     0  512  10  miso::norm_bench::producer_kernel(float const*, float*, float*)
+  11   16      0       0     0  512  10  miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams)
+  26   28     32       0     0  512   8  void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int)

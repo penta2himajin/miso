@@ -1,0 +1,29 @@
+{
+  "base_commit": "10a00da424ae65a0526e6ecc009527739994c798",
+  "production_modified": false,
+  "measured_binaries": {
+    "bench_norm": "4e26035ca3467755f04449dab6b8852cc5371e27cb6090fbd390edf67cf5b566",
+    "bench_norm_chain": "33dcc14f5f03f8983527b70fb00e681cf38b799e2a5cc88fbdd5fb49174febf1",
+    "bench_decode": "2b562fab4ab452c806a03dbeb17f5509700f7ad701102a3e91d3388afdb101d6"
+  },
+  "final_binaries": {
+    "bench_norm": "fede799783bc83f878debbe46ad248b2aab85a0db1187af24395e3165be337df",
+    "bench_norm_chain": "33dcc14f5f03f8983527b70fb00e681cf38b799e2a5cc88fbdd5fb49174febf1",
+    "bench_decode": "2b562fab4ab452c806a03dbeb17f5509700f7ad701102a3e91d3388afdb101d6"
+  },
+  "code_objects": {
+    "bench_norm": [
+      "ef3085534fe6c833d5c71f74b38bf3789416cf9033396bd164edcd3d82a3f646"
+    ],
+    "bench_norm_chain": [
+      "2e504f8d585138537d40a906792e6647fda1f791ef11048002c50f7403319305",
+      "1cbd8628bf55dd02e21bf231f5431abfb0181e6b7c049b0ced8b9595e12a508f"
+    ]
+  },
+  "note": "After measurements, bench_norm host CLI rejects --slots 1. Device code unchanged, checked against archived measured code objects.",
+  "source_files": {
+    "bench/norm/bench_norm.hip": "e7fa5fcf7707c8b9ff8e0f3de59107eff05bace8992b1860a95f972d3cf2e878",
+    "bench/norm/bench_model_chain.hip": "755034fd5839e13cc344c9e7e760eea1bbd9c3a4637a055189045ae9bf8c54ab",
+    "bench/norm/controls.hpp": "6cc601b4deac0961151288cfc6957d79c5687be314dde09b54f84cf660f54337"
+  }
+}

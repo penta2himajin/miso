@@ -1,0 +1,52 @@
+{
+  "__amd_rocclr_fillBufferAligned.kd": {
+    "count": 510,
+    "median_us": 4.959,
+    "mean_us": 4.956474509803922
+  },
+  "void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 4096u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]": {
+    "count": 6176,
+    "median_us": 17.28,
+    "mean_us": 17.293726845854923
+  },
+  "void miso::kernels::moe_router_kernel<256>(miso::kernels::MoeRouterParams) [clone .kd]": {
+    "count": 6176,
+    "median_us": 7.36,
+    "mean_us": 7.431724093264249
+  },
+  "miso::norm_bench::empty_kernel() [clone .kd]": {
+    "count": 4632,
+    "median_us": 5.6,
+    "mean_us": 7.056960492227979
+  },
+  "miso::norm_bench::readwrite_kernel(miso::kernels::AddRmsNormParams) [clone .kd]": {
+    "count": 4632,
+    "median_us": 6.72,
+    "mean_us": 8.270895941278066
+  },
+  "void miso::kernels::add_rmsnorm_kernel<2048u, 512>(miso::kernels::AddRmsNormParams, unsigned int) [clone .kd]": {
+    "count": 4632,
+    "median_us": 6.88,
+    "mean_us": 8.561535837651123
+  },
+  "void miso::kernels::moe_down_kernel<(miso::kernels::QType)1, 256>(miso::kernels::MoeDownParams) [clone .kd]": {
+    "count": 6176,
+    "median_us": 20.319,
+    "mean_us": 20.416139896373057
+  },
+  "void miso::kernels::q6k_gemv_kernel<2048u, 256, 2>(miso::kernels::Q6kGemvParams) [clone .kd]": {
+    "count": 6176,
+    "median_us": 26.719,
+    "mean_us": 27.435973769430053
+  },
+  "void miso::kernels::moe_down_kernel<(miso::kernels::QType)0, 256>(miso::kernels::MoeDownParams) [clone .kd]": {
+    "count": 6176,
+    "median_us": 18.879,
+    "mean_us": 19.001620628238342
+  },
+  "void miso::kernels::q4k_gemv_kernel<(miso::kernels::ActFormat)1, 2048u, 256, 4>(miso::kernels::Q4kGemvParams) [clone .kd]": {
+    "count": 6176,
+    "median_us": 21.92,
+    "mean_us": 22.939554566062178
+  }
+}

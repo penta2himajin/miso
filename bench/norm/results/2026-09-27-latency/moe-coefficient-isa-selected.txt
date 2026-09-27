@@ -1,0 +1,16 @@
+0000000000005100 <void miso::kernels::moe_gate_up_kernel<256>(miso::kernels::MoeGateUpParams)>:
+	v_exp_f32_e32 v21, v21                                     // 000000006B18: 7E2A4115
+	v_exp_f32_e32 v27, v27                                     // 000000006B3C: 7E36411B
+	v_exp_f32_e32 v28, v28                                     // 000000006B54: 7E38411C
+	v_exp_f32_e32 v29, v29                                     // 000000006B60: 7E3A411D
+	v_exp_f32_e32 v30, v30                                     // 000000006B68: 7E3C411E
+	v_exp_f32_e32 v18, v18                                     // 000000006C34: 7E244112
+	v_exp_f32_e32 v18, v18                                     // 000000006C88: 7E244112
+	v_exp_f32_e32 v18, v18                                     // 000000006CDC: 7E244112
+	v_exp_f32_e32 v3, v3                                       // 000000006E30: 7E064103
+	ds_write2_b32 v4, v2, v1 offset1:8                         // 000000006EBC: D81C0800 00010204
+	s_cmp_eq_u32 s6, 0                                         // 000000006EC8: BF068006
+	s_cselect_b64 s[0:1], -1, 0                                // 000000006ECC: 858080C1
+	v_cmp_gt_u32_e32 vcc, 8, v0                                // 000000006ED0: 7D980088
+	s_and_b64 s[2:3], s[0:1], vcc                              // 000000006ED4: 86826A00
+	s_lshl_b32 s14, s6, 2                                      // 000000006F08: 8E0E8206

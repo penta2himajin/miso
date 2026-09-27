@@ -1,0 +1,8 @@
+command: ['build/bench/bench_norm_chain', '--check']
+run 1 utc 2026-09-26T18:22:44.851305+00:00
+device=AMD Radeon Graphics arch=gfx906:sramecc+:xnack- iterations=256 rounds=7 warmup=256 synthetic_inputs=1
+chain,execution,control,round,iterations,device_us_per_step,cpu_enqueue_us_per_step
+chain_check=gemv_norm_router:pass producer_n=2048 producer_k=4096 consumer_n=257
+chain_check=moe6_norm_qkv:pass producer_n=524288 producer_k=512 consumer_n=8192
+chain_check=moe4_norm_qkv:pass producer_n=524288 producer_k=512 consumer_n=8192
+exit: 0

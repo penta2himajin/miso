@@ -1,0 +1,5 @@
+command: ['build/bench/bench_norm', '--check']
+run 1 utc 2026-09-27T02:58:17.606034+00:00
+# check standalone controls passed
+# check native/graph producer/control/consumer ping-pong and independent ring passed
+exit: 0
