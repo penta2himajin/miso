@@ -1,0 +1,19 @@
+[1/4] Building HIP object bench/CMakeFiles/bench_moe_coefficients.dir/moe/bench_coefficients.hip.o
+FAILED: bench/CMakeFiles/bench_moe_coefficients.dir/moe/bench_coefficients.hip.o
+/opt/rocm-6.3.4/lib/llvm/bin/clang++ -DMISO_GOLDEN_DIR=\"/home/penta/repos/miso/tests/golden\" -DMISO_ORNITH_GGUF=\"/home/penta/llm-mi50/models/ornith-1.5-35b-a3b/Ornith-1.5-35B-Q4_K_M.gguf\" -D__HIP_ROCclr__=1 -I/home/penta/repos/miso/kernels -I/home/penta/repos/miso/src --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 -O3 -DNDEBUG --offload-arch=gfx906 -Wall -Wextra -Werror -std=gnu++20 -MD -MT bench/CMakeFiles/bench_moe_coefficients.dir/moe/bench_coefficients.hip.o -MF bench/CMakeFiles/bench_moe_coefficients.dir/moe/bench_coefficients.hip.o.d -o bench/CMakeFiles/bench_moe_coefficients.dir/moe/bench_coefficients.hip.o -x hip -c /home/penta/repos/miso/bench/moe/bench_coefficients.hip
+In file included from /home/penta/repos/miso/bench/moe/bench_coefficients.hip:13:
+/home/penta/repos/miso/bench/moe/frozen_gateup.hpp:118:3: error: call to 'moe_gate_up_op' is ambiguous
+  118 |   moe_gate_up_op<kBlock>(p, 0, moe::kSlots * moe::kFf);
+      |   ^~~~~~~~~~~~~~~~~~~~~~
+/home/penta/repos/miso/bench/moe/bench_coefficients.hip:94:28: note: in instantiation of function template specialization 'miso::coeff_bench::frozen::gate_up_kernel<256>' requested here
+   94 |       coeff_bench::frozen::gate_up_kernel<kBlock><<<kGrid, kBlock, 0, stream>>>(p);
+      |                            ^
+/home/penta/repos/miso/kernels/moe_decode.hpp:173:17: note: candidate function [with kBlock = 256]
+  173 | __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigned count) {
+      |                 ^
+/home/penta/repos/miso/bench/moe/frozen_gateup.hpp:75:17: note: candidate function [with kBlock = 256]
+   75 | __device__ void moe_gate_up_op(const MoeGateUpParams& p, unsigned first, unsigned count) {
+      |                 ^
+1 error generated when compiling for gfx906.
+[2/4] Building HIP object CMakeFiles/miso_engine.dir/src/engine/moe.hip.o
+ninja: build stopped: subcommand failed.

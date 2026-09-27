@@ -1,0 +1,9 @@
+command: ['/tmp/miso-moe-softmax/baseline_decode']
+run 1 utc 2026-09-27T03:28:27.250188+00:00
+model load: 11.1 s
+warm-up: pp512 356.1 ms, 1437.7 tok/s
+measured: pp512 355.6 ms, 1439.9 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.73 ms/token, 148.7 tok/s
+measured: 256 tokens at ctx 273..529: 6.75 ms/token, 148.2 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

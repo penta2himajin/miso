@@ -1,0 +1,23 @@
+{
+  "base_commit": "438fb45",
+  "production_change": "moe_topk optional uniform coefficient flag; decode gate/up block0 only",
+  "binaries": {
+    "baseline_decode": "2b562fab4ab452c806a03dbeb17f5509700f7ad701102a3e91d3388afdb101d6",
+    "candidate_decode": "afe4f824182c17634340b275294d240eea131c140b6b43c3ae2ba868942dd96c",
+    "baseline_context": "04f692155d7c4c6a849ef09e841ce07cde655e154c75a52d56705191504668c8",
+    "candidate_context": "e8a287d75c0960624181a6a7514acf7e12153d7da554fbb797f3c6f3f3698495",
+    "baseline_engine.a": "a1946dd9cf5060403bab8dc847917f105353a1931ca6012fdab68d5b631804a8",
+    "candidate_engine.a": "b09779bc4dd1fa36da662b526cd4ac29d62a0687523b8cec4b664737abdec3e5",
+    "context_probe.o": "31b0ae411d95df2e4243d7fbaae154f58b2a858c1dd7bbff2d942502d79e0b7b"
+  },
+  "current_bench_decode_sha256": "afe4f824182c17634340b275294d240eea131c140b6b43c3ae2ba868942dd96c",
+  "benchmark_sha256": "f9d2324c3f47bef32df86928fb427a1206c637581c785adf11c52c737693b44f",
+  "source_sha256": {
+    "kernels/moe_decode.hpp": "99783307cea591668309d6c0fad680b1af0b15a931b8b31af4ebeb357ced93b2",
+    "tests/test_moe.hip": "c533c343a8a602e6199fdd0db5e2e33f2cbb82f9efde8e1ecb6a08115a9cd0c8",
+    "bench/moe/bench_coefficients.hip": "0c7ea808ff91d3153cb58e8f6a6fd0f987c54a8a1b42f1dbe94b7703adbd94c6",
+    "bench/moe/frozen_gateup.hpp": "7f827314d5b576602712b13d1ace2d3cc62c98c21c81f072469d187b436d78ee"
+  },
+  "context_probe_source": "bench/model/results/2026-09-26-decode-investigation/context_probe.hip",
+  "context_probe_source_sha256": "7d52139f7c1ef3e74ec19bc8023c766804f705620cf5af3616afdb3e57bd61f6"
+}

@@ -1,0 +1,9 @@
+command: ['/tmp/miso-moe-softmax/candidate_decode']
+run 1 utc 2026-09-27T03:27:54.809584+00:00
+model load: 11.8 s
+warm-up: pp512 356.3 ms, 1437.2 tok/s
+measured: pp512 355.5 ms, 1440.2 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.64 ms/token, 150.7 tok/s
+measured: 256 tokens at ctx 273..529: 6.65 ms/token, 150.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0
