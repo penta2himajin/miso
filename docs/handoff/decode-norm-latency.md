@@ -4,7 +4,7 @@
 
 - Branch: `ai-written/decode-norm-latency`
 - Base: `10a00da` (main after PR #33)
-- PR: pending creation
+- PR: https://github.com/penta2himajin/miso/pull/34 (open, ready for review)
 - Last work commit: `d71c45d` @ 2026-09-27 JST
 - Working tree: clean after handoff commit
 - Last session: 2026-09-27 JST
@@ -75,3 +75,7 @@ comparison; do not prioritize Norm reduction tuning from its traced family total
   inspected ISA and independent reviews. Native/graph/matched tracing show small
   reduction increments and strongly perturbable timestamp accounting. Committed
   raw data/scripts and documented three next hypotheses; inference unchanged.
+
+- 2026-09-27 (delivery): Created and attached ready PR #34. GitHub automatic
+  subscription failed because `updateSubscription` requires `notifications` scope;
+  the token has `gist`, `read:org`, `repo`, `workflow`. No authentication changes.
