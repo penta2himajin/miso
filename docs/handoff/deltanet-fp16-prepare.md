@@ -12,11 +12,15 @@
 
 ready-for-review: register-boundary measurement milestone complete; production
 adoption declined. PR36 merged into main at `f258ce1`. This branch retains only
-benchmark/test changes and immutable measurement results; ready PR delivery follows.
+benchmark/test changes and immutable measurement results.
+[PR37](https://github.com/penta2himajin/miso/pull/37) is OPEN, ready and MERGEABLE,
+and attached to this chat. Auto-subscription was attempted immediately after creation;
+GitHub returned `INSUFFICIENT_SCOPES` because the token lacks `notifications`.
+No authentication settings were changed.
 
 ## Next action
 
-Review the measurement PR, then measure native CPU enqueue walltime alongside GPU
+Review PR37, then measure native CPU enqueue walltime alongside GPU
 events and sparsely sample actual DeltaNet producer→GEMV chains, rotating layers.
 Use matched uninstrumented runs to quantify measurement perturbation. First establish
 whether the local chain gain survives inside the full model; do not attribute the
@@ -125,3 +129,5 @@ whole-model outcome to CPU gaps, cache interference or HBM without further evide
   explanation; retain benchmark/test improvement, immutable raw data and repro.
   Restored exact production binaries and passed22/22 CTest. Work commit `daa8572`;
   next diagnostic is matched native enqueue and sparse actual-chain timing.
+  Delivered ready PR37 and verified mergeability. Auto-subscription is unavailable
+  because the token lacks notification scope; no authentication changes were made.
