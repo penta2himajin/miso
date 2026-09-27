@@ -1,0 +1,25 @@
+--- a/bench/model/bench_decode.hip
++++ b/bench/model/bench_decode.hip
+@@ -116,5 +116,22 @@
+   for (unsigned k = 0; k < 8; ++k)
+     std::printf(" %d", pred[prompt.size() - 1 + k]);
+   std::printf("\n");
++  if (argc > 2) {
++    std::printf("all generated ids:");
++    for (unsigned k = 0; k <= 2 * gen; ++k)
++      std::printf(" %d", pred[prompt.size() - 1 + k]);
++    std::printf("\n");
++    const auto logits = s.logits.to_host();
++    FILE* output = std::fopen(argv[2], "wb");
++    if (!output) {
++      std::perror("logits output");
++      return 1;
++    }
++    const auto count = std::fwrite(logits.data(), sizeof(float), logits.size(), output);
++    std::fclose(output);
++    if (count != logits.size())
++      return 1;
++    std::printf("final logits file: %s values: %zu\n", argv[2], logits.size());
++  }
+   return 0;
+ }

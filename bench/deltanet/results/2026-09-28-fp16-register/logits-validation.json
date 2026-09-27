@@ -1,0 +1,26 @@
+{
+  "kind": "Post-measurement verification of retained final logits dumps",
+  "dumps": [
+    {
+      "dump": "ctx32768-final-logits.bin.gz",
+      "values": 248320,
+      "all_finite": true,
+      "sha256": "7930b7d29af513517b371879f87b18d9124a435eb44fed56771838d8b9371201",
+      "absmax": 17.603242874145508
+    },
+    {
+      "dump": "ctx4096-final-logits.bin.gz",
+      "values": 248320,
+      "all_finite": true,
+      "sha256": "1deb9cef146c598cd45d43bb4a8e68e2edcf06076355202084e541e5a8d3beac",
+      "absmax": 20.23281478881836
+    },
+    {
+      "dump": "native-final-logits.bin.gz",
+      "values": 248320,
+      "all_finite": true,
+      "sha256": "a3640b754ffd5cdceb1c4f7e87058895579a07e38c083722515b6345e17ab960",
+      "absmax": 18.5768985748291
+    }
+  ]
+}

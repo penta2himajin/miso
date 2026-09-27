@@ -1,0 +1,48 @@
+{
+  "executables": {
+    "baseline": "5944c5ebb31f908093a74d40bc9b209dffaca0f622b2f7cefa71a01801987e37",
+    "half_register": "8af6f24901c68413c5afe7f10b8d3584f9def382786ef307b14e035d308c9e91"
+  },
+  "pairs": [
+    {
+      "pair": 1,
+      "order": [
+        "baseline",
+        "half_register"
+      ],
+      "generated_ids_count": 65,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "baseline": {
+          "logits_sha256": "7930b7d29af513517b371879f87b18d9124a435eb44fed56771838d8b9371201",
+          "logits_bytes": 993280
+        },
+        "half_register": {
+          "logits_sha256": "7930b7d29af513517b371879f87b18d9124a435eb44fed56771838d8b9371201",
+          "logits_bytes": 993280
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "order": [
+        "half_register",
+        "baseline"
+      ],
+      "generated_ids_count": 65,
+      "ids_equal": true,
+      "final_logits_bitwise_equal": true,
+      "outputs": {
+        "half_register": {
+          "logits_sha256": "7930b7d29af513517b371879f87b18d9124a435eb44fed56771838d8b9371201",
+          "logits_bytes": 993280
+        },
+        "baseline": {
+          "logits_sha256": "7930b7d29af513517b371879f87b18d9124a435eb44fed56771838d8b9371201",
+          "logits_bytes": 993280
+        }
+      }
+    }
+  ]
+}

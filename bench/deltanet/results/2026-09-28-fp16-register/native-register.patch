@@ -1,0 +1,29 @@
+--- a/src/engine/deltanet.hip
++++ b/src/engine/deltanet.hip
+@@ -1,4 +1,6 @@
+ #include "engine/deltanet.hpp"
++
++#include "../../bench/deltanet/activation_prepare.hpp"
+
+ #include <cstddef>
+ #include <stdexcept>
+@@ -76,10 +78,17 @@
+                                          st.s.data(),
+                                          sc.o.data(),
+                                          eps};
+-  kernels::deltanet_step_kernel<kBlock><<<32, kBlock, 0, stream>>>(step);
++  const bench::activation_prepare::StepParams prepared{
++      step, reinterpret_cast<_Float16*>(sc.o.data())};
++  bench::activation_prepare::step_kernel<bench::activation_prepare::Output::Fp16Register>
++      <<<32, kBlock, 0, stream>>>(prepared);
+   MISO_HIP_CHECK(hipGetLastError());
+   st.parity = 1 - st.parity;
+-  gemv(w.out, sc.o.data(), y, stream);
++  const bench::activation_prepare::HalfGemvParams half_gemv{
++      w.out.data.data(), reinterpret_cast<const _Float16*>(sc.o.data()), y, w.out.n};
++  bench::activation_prepare::q4_half_gemv_kernel<4096, kBlock, 4>
++      <<<240, kBlock, 0, stream>>>(half_gemv);
++  MISO_HIP_CHECK(hipGetLastError());
+ }
+
+ void deltanet_prefill(const DeltaNetLayer& w, DeltaNetState& st, DeltaNetPrefillScratch& sc,

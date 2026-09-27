@@ -1,0 +1,78 @@
+{
+  "kind": "CPU-only isolated compiler audit, not GPU/performance evidence",
+  "source_snapshot_sha256": "2772ec0c93ec03c6ddf0f16242b65bfdb4fd1b6c6a91278490c17c16857eeacb",
+  "resources": {
+    "baseline": {
+      "next_free_vgpr": 182,
+      "next_free_sgpr": 50,
+      "private_segment_fixed_size": 0,
+      "group_segment_fixed_size": 2576,
+      "final_boundary_counts": {
+        "v_fma_mixlo_f16": 0,
+        "v_cvt_f16_f32": 0,
+        "flat_store_dword": 0,
+        "flat_load_dword": 0
+      }
+    },
+    "volatile": {
+      "next_free_vgpr": 182,
+      "next_free_sgpr": 56,
+      "private_segment_fixed_size": 8,
+      "group_segment_fixed_size": 2576,
+      "final_boundary_counts": {
+        "v_fma_mixlo_f16": 0,
+        "v_cvt_f16_f32": 1,
+        "flat_store_dword": 1,
+        "flat_load_dword": 1
+      }
+    },
+    "live": {
+      "next_free_vgpr": 182,
+      "next_free_sgpr": 50,
+      "private_segment_fixed_size": 0,
+      "group_segment_fixed_size": 2576,
+      "final_boundary_counts": {
+        "v_fma_mixlo_f16": 1,
+        "v_cvt_f16_f32": 0,
+        "flat_store_dword": 0,
+        "flat_load_dword": 0
+      }
+    },
+    "register": {
+      "next_free_vgpr": 182,
+      "next_free_sgpr": 50,
+      "private_segment_fixed_size": 0,
+      "group_segment_fixed_size": 2576,
+      "final_boundary_counts": {
+        "v_fma_mixlo_f16": 0,
+        "v_cvt_f16_f32": 1,
+        "flat_store_dword": 0,
+        "flat_load_dword": 0
+      }
+    }
+  },
+  "uncompressed_dumps_sha256": {
+    "audit-assembly.s": "6a7d2264053e5feb8aa2b74d62d12d2974f4da0779979d2771385e37e4d5f343",
+    "audit-optimized.ll": "02947534b4b9160169b3cb24425f4a1708cf5fdcd60d6fd456d8c810eebb1768"
+  },
+  "artifacts_sha256": {
+    "audit-assembly.s.gz": "f72bfa61c0f1b88465cd7c7574eac72390bbd81ea8eff9374c4a9764b4ceb84f",
+    "audit-build.txt": "f680181173325f219ad34c62ab04e4eb8620976ccaee7e3437f1dcdaa746acab",
+    "audit-live.hpp": "6429d4ae67f28a8a47edaed2fd3dba4fcd96d81cb858982e0686267ce77a97c5",
+    "audit-optimized.ll.gz": "198b9d2c7f2c3fe9ede033b107ec65d505c57288511fb306b655e50ea6a26585",
+    "audit-register.hpp": "6eba396ca3eff79b9240f39643c03aac6776ec42a4d29498d41961c0dd20ae6d",
+    "audit-reproduce.sh": "16a59b5a67e9f64de4301b87fb41d84ae044c2e896e9e4be021cd04ab919e485",
+    "audit-selected-isa.txt": "354c1e72201dbe42f1adb3c14a0c188c727ee5201e55952416ad7d98d74d87c7",
+    "audit-source-snapshot.hpp": "2772ec0c93ec03c6ddf0f16242b65bfdb4fd1b6c6a91278490c17c16857eeacb",
+    "audit-source.hip": "1dff6e0a2cfd6a43f973f0deda6e7a28db2de35536ab0894d03c0016869161f9",
+    "audit-volatile.hpp": "447a079d46ab0d8e0a5a1730aa0441f278ca347d3eece6130a6817c708d86990",
+    "audit-source-compiled.hip.gz": "7b3e6e59503bf032ed253c7a84fd613fc985e617d01042be0da3134dbba77b46"
+  },
+  "kernel_source_sha256": {
+    "kernels/deltanet_step.hpp": "c8b68674f5860c7e74fb211b024fe3309fabb3b1930db6429001f362532b4a8d",
+    "kernels/wave.hpp": "ee69d15ff070170dd6130596dcdf9c640ffab46411943976e4155a15d408e616",
+    "kernels/gemv_common.hpp": "6689b1ed67e39372f3447e8ba9b4888f4dbe7f86afe7b98ea0a30c6b7d38c522",
+    "kernels/q4k_gemv.hpp": "07e3776d5572971fe793b5790f4cd81ab417d727439bcfb76e6c7267db2e9d06"
+  },
+  "formatted_source_note": "audit-source-compiled.hip.gz retains exact original compiler input; audit-source.hip is its clang-format rendering. Reproduction extracts original input."
+}
