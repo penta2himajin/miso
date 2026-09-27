@@ -1,0 +1,52 @@
+process=2794698 device=AMD Radeon Graphics arch=gfx906:sramecc+:xnack- iterations=34 rounds=7 warmup=500 tokens=17
+# Stateful periodic cache-hot single-layer proxy, not natural autoregressive state.
+# Every warmup starts at zero; timed batches reset state/conv/parity outside events.
+# Consumer-only input is an untimed consecutive 17-token production snapshot and device FP16 cast.
+input layer=0 source=layer0.in weights_layer=0 matched_fixture=1
+check layer=0 scope=token_chain tokens=17 bitwise=pass input_source=layer0.in
+distribution layer=0 values=state count=524288 zero_fraction=0.027832031 subnormal_fraction=0.000000000 absmax=17.4920406
+distribution layer=0 values=conv0 count=24576 zero_fraction=0.013916016 subnormal_fraction=0.000000000 absmax=36.657402
+distribution layer=0 values=conv1 count=24576 zero_fraction=0.013916016 subnormal_fraction=0.000000000 absmax=31.1181488
+distribution layer=0 values=producer_fp32 count=4096 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=2.04606247
+distribution layer=0 values=producer_fp16 count=4096 zero_fraction=0.000000000 subnormal_fraction=0.048583984 absmax=2.046875
+distribution layer=0 values=consumer_fp32 count=2048 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=0.608878672
+cycle_check layer=0 iterations=34 lag=17 changed_fraction=0.846880744 rel_l2=0.096941778
+check layer=0 scope=producer variant=baseline iterations=34 bitwise=pass finite=pass
+check layer=0 scope=producer variant=float_control iterations=34 bitwise=pass finite=pass
+check layer=0 scope=producer variant=dual_float iterations=34 bitwise=pass finite=pass
+check layer=0 scope=producer variant=dual_half iterations=34 bitwise=pass finite=pass
+check layer=0 scope=producer variant=half_only iterations=34 bitwise=pass finite=pass
+check layer=0 scope=consumer variant=baseline iterations=34 bitwise=pass finite=pass
+check layer=0 scope=consumer variant=float_control iterations=34 bitwise=pass finite=pass
+check layer=0 scope=consumer variant=dual_float iterations=34 bitwise=pass finite=pass
+check layer=0 scope=consumer variant=dual_half iterations=34 bitwise=pass finite=pass
+check layer=0 scope=consumer variant=half_only iterations=34 bitwise=pass finite=pass
+check layer=0 scope=chain variant=baseline iterations=34 bitwise=pass finite=pass
+check layer=0 scope=chain variant=float_control iterations=34 bitwise=pass finite=pass
+check layer=0 scope=chain variant=dual_float iterations=34 bitwise=pass finite=pass
+check layer=0 scope=chain variant=dual_half iterations=34 bitwise=pass finite=pass
+check layer=0 scope=chain variant=half_only iterations=34 bitwise=pass finite=pass
+input layer=4 source=layer0.in weights_layer=4 matched_fixture=0
+check layer=4 scope=token_chain tokens=17 bitwise=pass input_source=layer0.in
+distribution layer=4 values=state count=524288 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=1.15521526
+distribution layer=4 values=conv0 count=24576 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=5.70559788
+distribution layer=4 values=conv1 count=24576 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=6.17354584
+distribution layer=4 values=producer_fp32 count=4096 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=1.036533
+distribution layer=4 values=producer_fp16 count=4096 zero_fraction=0.000000000 subnormal_fraction=0.046630859 absmax=1.03613281
+distribution layer=4 values=consumer_fp32 count=2048 zero_fraction=0.000000000 subnormal_fraction=0.000000000 absmax=0.429163635
+cycle_check layer=4 iterations=34 lag=17 changed_fraction=0.959171071 rel_l2=1.16917875
+check layer=4 scope=producer variant=baseline iterations=34 bitwise=pass finite=pass
+check layer=4 scope=producer variant=float_control iterations=34 bitwise=pass finite=pass
+check layer=4 scope=producer variant=dual_float iterations=34 bitwise=pass finite=pass
+check layer=4 scope=producer variant=dual_half iterations=34 bitwise=pass finite=pass
+check layer=4 scope=producer variant=half_only iterations=34 bitwise=pass finite=pass
+check layer=4 scope=consumer variant=baseline iterations=34 bitwise=pass finite=pass
+check layer=4 scope=consumer variant=float_control iterations=34 bitwise=pass finite=pass
+check layer=4 scope=consumer variant=dual_float iterations=34 bitwise=pass finite=pass
+check layer=4 scope=consumer variant=dual_half iterations=34 bitwise=pass finite=pass
+check layer=4 scope=consumer variant=half_only iterations=34 bitwise=pass finite=pass
+check layer=4 scope=chain variant=baseline iterations=34 bitwise=pass finite=pass
+check layer=4 scope=chain variant=float_control iterations=34 bitwise=pass finite=pass
+check layer=4 scope=chain variant=dual_float iterations=34 bitwise=pass finite=pass
+check layer=4 scope=chain variant=dual_half iterations=34 bitwise=pass finite=pass
+check layer=4 scope=chain variant=half_only iterations=34 bitwise=pass finite=pass

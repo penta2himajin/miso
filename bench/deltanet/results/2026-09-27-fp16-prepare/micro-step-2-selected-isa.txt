@@ -1,0 +1,5 @@
+void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)2>(miso::bench::activation_prepare::StepParams)
+flat_store_dword v[2:3], v1                                // 000000009234: DC700000 00000102
+flat_load_dword v3, v[2:3] glc                             // 000000009240: DC510000 03000002
+v_cvt_f16_f32_e32 v3, v3                                   // 000000009264: 7E061503
+global_store_short v[1:2], v3, off                         // 000000009268: DC688000 007F0301

@@ -1,0 +1,12 @@
+{
+  "record": "Preserve artifacts before rebuilding. Decode is a stale temporary Dual executable; engine archive matches the original baseline. Earlier native logs lack original source patch/binary archives and are retained as provisional.",
+  "available_hashes": {
+    "build/bench/bench_decode": "0417ebbe404a0c5a4abaffa2d91ab09178d5eb09d836c99f3bf200f7ade7ff48",
+    "build/libmiso_engine.a": "b09779bc4dd1fa36da662b526cd4ac29d62a0687523b8cec4b664737abdec3e5",
+    "build/bench/bench_activation_prepare": "879a042472d74a490c74215f426cb76663371f6ae0060f4c7328c9141b9a83af"
+  },
+  "bench_source_sha256": {
+    "bench/deltanet/activation_prepare.hpp": "2772ec0c93ec03c6ddf0f16242b65bfdb4fd1b6c6a91278490c17c16857eeacb",
+    "bench/deltanet/bench_activation_prepare.hip": "f321864cd5d6887fb0fbb72c1ddf2d7fb12a68c69c002a61055aeb5c4413cadd"
+  }
+}

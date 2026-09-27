@@ -1,0 +1,18 @@
+--- a/bench/deltanet/activation_prepare.hpp
++++ b/bench/deltanet/activation_prepare.hpp
+@@ -109,12 +109,10 @@
+       if constexpr (Mode == Output::Fp32) {
+         p.out[h * kDim + t] = value;
+       } else if constexpr (Mode == Output::Dual) {
+-        volatile float* out = &p.out[h * kDim + t];
+-        *out = value;
+-        params.half_out[h * kDim + t] = static_cast<_Float16>(*out);
++        p.out[h * kDim + t] = value;
++        params.half_out[h * kDim + t] = static_cast<_Float16>(value);
+       } else {
+-        volatile float tmp = value;
+-        params.half_out[h * kDim + t] = static_cast<_Float16>(tmp);
++        params.half_out[h * kDim + t] = static_cast<_Float16>(value);
+       }
+     }
+     __syncthreads();

@@ -1,0 +1,9 @@
+[1/2] Building HIP object tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o
+[2/2] Linking HIP executable tests/test_deltanet_prepare
+FAILED: tests/test_deltanet_prepare
+: && /opt/rocm-6.3.4/lib/llvm/bin/clang++ --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/11 -O3 -DNDEBUG --offload-arch=gfx906 --hip-link --rtlib=compiler-rt -unwindlib=libgcc tests/CMakeFiles/miso_test_main.dir/test_main.cpp.o tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o -o tests/test_deltanet_prepare  libmiso_host.a  libmiso_engine.a  libmiso_host.a  /opt/rocm-6.3.4/lib/libamdhip64.so.6.3.60304  -lgcc  -lgcc && cd /home/penta/repos/miso/build/tests && /home/penta/.local/share/mise/installs/python/3.10/bin/python3.10 /home/penta/repos/miso/tools/kernel_resources.py /home/penta/repos/miso/build/tests/test_deltanet_prepare --arch gfx906 --out /home/penta/repos/miso/build/kernel-resources/test_deltanet_prepare.txt
+ld.lld: error: undefined symbol: void miso::bench::activation_prepare::__device_stub__q4_half_gemv_kernel<4096u, 256, 4>(miso::bench::activation_prepare::HalfGemvParams)
+>>> referenced by test_deltanet_prepare.hip
+>>>               tests/CMakeFiles/test_deltanet_prepare.dir/test_deltanet_prepare.hip.o:(DOCTEST_ANON_FUNC_2())
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.

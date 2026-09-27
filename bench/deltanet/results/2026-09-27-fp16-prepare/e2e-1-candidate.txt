@@ -1,0 +1,9 @@
+command: ['/tmp/miso-fp16-e2e/candidate_decode']
+run 1 utc 2026-09-27T07:11:28.716788+00:00
+model load: 21.1 s
+warm-up: pp512 356.1 ms, 1437.9 tok/s
+measured: pp512 355.2 ms, 1441.3 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.69 ms/token, 149.5 tok/s
+measured: 256 tokens at ctx 273..529: 6.71 ms/token, 149.0 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

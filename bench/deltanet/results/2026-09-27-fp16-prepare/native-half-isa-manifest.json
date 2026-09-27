@@ -1,0 +1,39 @@
+{
+  "binary_sha256": "f7942988402935f0ab37208140c0d81e9a25ef06402e27b86324e004f2e3b3b8",
+  "kernels": [
+    {
+      "kernel": "void miso::bench::activation_prepare::step_kernel<(miso::bench::activation_prepare::Output)2>(miso::bench::activation_prepare::StepParams)",
+      "resources": {
+        "group_segment_fixed_size": 2576,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare11step_kernelILNS1_6OutputE2EEEvNS1_10StepParamsE",
+        "private_segment_fixed_size": 8,
+        "sgpr_count": 62,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 182,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "b09f8238c4efc8aad251de0ca939fc20eb71bb5062e5d535cc05ddb5bdde54a4",
+      "isa_archive": "native-half-step-2-isa.txt.gz",
+      "cvt_f16_f32_count": 1,
+      "isa_sha256": "e725efd854e690cd1e026c2d33baa9d026f68c7a7ab60a33bc42e5c9699ab7bd"
+    },
+    {
+      "kernel": "void miso::bench::activation_prepare::q4_half_gemv_kernel<4096u, 256, 4>(miso::bench::activation_prepare::HalfGemvParams)",
+      "resources": {
+        "group_segment_fixed_size": 0,
+        "max_flat_workgroup_size": 256,
+        "name": "_ZN4miso5bench18activation_prepare19q4_half_gemv_kernelILj4096ELi256ELi4EEEvNS1_14HalfGemvParamsE",
+        "private_segment_fixed_size": 0,
+        "sgpr_count": 36,
+        "sgpr_spill_count": 0,
+        "vgpr_count": 110,
+        "vgpr_spill_count": 0
+      },
+      "code_object_sha256": "b09f8238c4efc8aad251de0ca939fc20eb71bb5062e5d535cc05ddb5bdde54a4",
+      "isa_archive": "native-half-half-gemv-isa.txt.gz",
+      "cvt_f16_f32_count": 0,
+      "isa_sha256": "5fd643d53baf97b3fe11ad0b3640674042a604db245f5aad5eb383e3147d5b6d"
+    }
+  ]
+}

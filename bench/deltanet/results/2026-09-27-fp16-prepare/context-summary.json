@@ -1,0 +1,169 @@
+{
+  "contexts": [
+    {
+      "context": 32768,
+      "pairs": [
+        {
+          "pair": 1,
+          "order": [
+            "baseline",
+            "half_only"
+          ],
+          "tok_s": {
+            "baseline": 116.832,
+            "half_only": 117.393
+          },
+          "paired_percent": 0.48017666392770053
+        },
+        {
+          "pair": 2,
+          "order": [
+            "half_only",
+            "baseline"
+          ],
+          "tok_s": {
+            "baseline": 117.822,
+            "half_only": 117.286
+          },
+          "paired_percent": -0.45492352871280284
+        }
+      ],
+      "median_tok_s": {
+        "baseline": 117.327,
+        "half_only": 117.3395
+      },
+      "paired_percent_median": 0.012626567607448846,
+      "paired_percent_range": [
+        -0.45492352871280284,
+        0.48017666392770053
+      ],
+      "faster_pairs": 1,
+      "pair_count": 2,
+      "telemetry": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 42.0,
+          "median": 57.0,
+          "max": 62.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 46.0,
+          "median": 76.0,
+          "max": 81.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 47.0,
+          "median": 60.0,
+          "max": 69.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 37.0,
+          "median": 165.0,
+          "max": 269.0
+        }
+      }
+    },
+    {
+      "context": 4096,
+      "pairs": [
+        {
+          "pair": 1,
+          "order": [
+            "baseline",
+            "half_only"
+          ],
+          "tok_s": {
+            "baseline": 140.708,
+            "half_only": 139.191
+          },
+          "paired_percent": -1.0781192256303807
+        },
+        {
+          "pair": 2,
+          "order": [
+            "half_only",
+            "baseline"
+          ],
+          "tok_s": {
+            "baseline": 140.865,
+            "half_only": 138.794
+          },
+          "paired_percent": -1.470201966421747
+        }
+      ],
+      "median_tok_s": {
+        "baseline": 140.7865,
+        "half_only": 138.9925
+      },
+      "paired_percent_median": -1.2741605960260638,
+      "paired_percent_range": [
+        -1.470201966421747,
+        -1.0781192256303807
+      ],
+      "faster_pairs": 0,
+      "pair_count": 2,
+      "telemetry": {
+        "Temperature (Sensor edge) (C)": {
+          "min": 37.0,
+          "median": 42.0,
+          "max": 48.0
+        },
+        "Temperature (Sensor junction) (C)": {
+          "min": 42.0,
+          "median": 48.0,
+          "max": 69.0
+        },
+        "Temperature (Sensor memory) (C)": {
+          "min": 42.0,
+          "median": 46.0,
+          "max": 57.0
+        },
+        "fclk clock speed:": {
+          "min": 1080.0,
+          "median": 1080.0,
+          "max": 1278.0
+        },
+        "mclk clock speed:": {
+          "min": 800.0,
+          "median": 800.0,
+          "max": 1000.0
+        },
+        "sclk clock speed:": {
+          "min": 1485.0,
+          "median": 1725.0,
+          "max": 1725.0
+        },
+        "socclk clock speed:": {
+          "min": 850.0,
+          "median": 850.0,
+          "max": 971.0
+        },
+        "Current Socket Graphics Package Power (W)": {
+          "min": 36.0,
+          "median": 53.0,
+          "max": 252.0
+        }
+      }
+    }
+  ],
+  "telemetry_note": "GPU-use>=90% samples include load/setup/warmup; not phase-aligned."
+}

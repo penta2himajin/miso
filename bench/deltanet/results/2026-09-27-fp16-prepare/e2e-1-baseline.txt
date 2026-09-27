@@ -1,0 +1,9 @@
+command: ['/tmp/miso-fp16-e2e/baseline_decode']
+run 1 utc 2026-09-27T07:11:02.457922+00:00
+model load: 21.2 s
+warm-up: pp512 356.2 ms, 1437.3 tok/s
+measured: pp512 355.4 ms, 1440.8 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.77 ms/token, 147.8 tok/s
+measured: 256 tokens at ctx 273..529: 6.78 ms/token, 147.5 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+exit: 0

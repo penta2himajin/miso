@@ -1,0 +1,9 @@
+command: ['build/tests/test_deltanet_prepare']
+run 1 utc 2026-09-27T14:40:10.033923+00:00
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:    4 |    4 passed | 0 failed | 0 skipped
+[doctest] assertions: 3053 | 3053 passed | 0 failed |
+[doctest] Status: SUCCESS!
+exit: 0
