@@ -1,0 +1,23 @@
+# Candidate: rmsnorm packs xn_h; K=2048 gemvs from xn reuse FP16 acts
+# baseline median 144.1 (144.1/144.1/144.9); gate >=147.0 (+2%)
+## run 1
+model load: 10.0 s
+warm-up: pp512 355.9 ms, 1438.7 tok/s
+measured: pp512 355.6 ms, 1440.0 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.85 ms/token, 146.1 tok/s
+measured: 256 tokens at ctx 273..529: 6.88 ms/token, 145.4 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 2
+model load: 10.9 s
+warm-up: pp512 356.3 ms, 1437.1 tok/s
+measured: pp512 355.6 ms, 1440.0 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.87 ms/token, 145.6 tok/s
+measured: 256 tokens at ctx 273..529: 6.90 ms/token, 144.9 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369
+## run 3
+model load: 10.9 s
+warm-up: pp512 356.4 ms, 1436.6 tok/s
+measured: pp512 355.5 ms, 1440.3 tok/s
+warm-up: 256 tokens at ctx 17..273: 6.84 ms/token, 146.3 tok/s
+measured: 256 tokens at ctx 273..529: 6.87 ms/token, 145.6 tok/s
+first generated ids: 115197 36298 1710 561 6511 314 6124 369

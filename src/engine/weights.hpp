@@ -68,7 +68,8 @@ DeviceBuffer<float> upload_f32(const gguf::File& f, const std::string& name,
 void load_split(const gguf::File& f, const gguf::TensorInfo& t, std::byte* dst, LoadStage* st);
 
 // y = W x for one token (decode GEMV family, FP16 activations per ADR_004).
-void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream);
+void gemv(const QMatrix& w, const float* x, float* y, hipStream_t stream,
+          const _Float16* x_h = nullptr);
 
 // Two independent decode projections of x. Mixed Q4_K/Q6_K K=2048 matrices share one launch.
 void gemv_pair(const QMatrix& a, const QMatrix& b, const float* x, float* ya, float* yb,
